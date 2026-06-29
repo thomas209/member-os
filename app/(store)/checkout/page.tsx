@@ -12,7 +12,7 @@ export default function CheckoutPage() {
     street: "", number: "", floor: "", city: "", province: "", postalCode: "",
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 

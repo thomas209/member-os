@@ -26,7 +26,7 @@ export default function NewProductPage() {
     fetch("/api/admin/categories").then(r => r.json()).then(d => setCategories(d.categories || []));
   }
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
     if (e.target.name === "name") {
       setForm(prev => ({ ...prev, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") }));
