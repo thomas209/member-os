@@ -1,0 +1,340 @@
+// ============================================================
+// Member OS — Prisma Schema v1.0
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ADMIN
+// ============================================================
+
+model AdminUser {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  role          AdminRole  @default(OPERATOR)
+  isActive      Boolean    @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([email])
+  @@index([role, isActive])
+}
+
+// ============================================================
+// TAXONOMY
+// ============================================================
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  sortOrder Int       @default(0)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+
+  @@index([slug])
+  @@index([isActive, sortOrder])
+}
+
+model Brand {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  logoUrl   String?
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+// ============================================================
+// CATALOG
+// ============================================================
+
+model Product {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  brandId     String
+  brand       Brand     @relation(fields: [brandId], references: [id])
+  gender      Gender    @default(UNISEX)
+
+  price         Decimal   @db.Decimal(10, 2)
+  comparePrice  Decimal?  @db.Decimal(10, 2)
+  salePrice     Decimal?  @db.Decimal(10, 2)
+  saleEndsAt    DateTime?
+  costPrice     Decimal?  @db.Decimal(10, 2)
+  costCurrency  Currency  @default(ARS)
+
+  colorName   String?
+  colorHex    String?
+  groupSlug   String?
+
+  metaTitle       String?
+  metaDescription String?
+
+  weightGrams Int?
+  lengthCm    Decimal?  @db.Decimal(6, 2)
+  widthCm     Decimal?  @db.Decimal(6, 2)
+  heightCm    Decimal?  @db.Decimal(6, 2)
+
+  isActive    Boolean   @default(true)
+  isFeatured  Boolean   @default(false)
+  deletedAt   DateTime?
+
+  mlProductId String?   @unique
+  mlStatus    String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  variants    ProductVariant[]
+  images      ProductImage[]
+  orderItems  OrderItem[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([groupSlug])
+  @@index([isActive, isFeatured, deletedAt])
+  @@index([isActive, categoryId, deletedAt])
+  @@index([isActive, brandId, deletedAt])
+  @@index([deletedAt])
+}
+
+model ProductVariant {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size      String
+  sku       String?  @unique
+  stock     Int      @default(0)
+  sortOrder Int      @default(0)
+  mlVariantId String? @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderItems     OrderItem[]
+  stockMovements StockMovement[]
+
+  @@unique([productId, size])
+  @@index([productId, sortOrder])
+  @@index([sku])
+  @@index([stock])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  altText   String?
+  sortOrder Int     @default(0)
+  isPrimary Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([productId, sortOrder])
+  @@index([productId, isPrimary])
+}
+
+// ============================================================
+// INVENTORY
+// ============================================================
+
+model StockMovement {
+  id        String         @id @default(cuid())
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  type          StockMovementType
+  quantity      Int
+  previousStock Int
+  newStock      Int
+  orderId   String?
+  order     Order?  @relation(fields: [orderId], references: [id])
+  note      String?
+  createdBy String
+  createdAt DateTime @default(now())
+
+  @@index([variantId, createdAt])
+  @@index([orderId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// ============================================================
+// CUSTOMERS
+// ============================================================
+
+model Customer {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  phone       String?
+  firstName   String
+  lastName    String
+  defaultAddress Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  orders      Order[]
+
+  @@index([email])
+}
+
+// ============================================================
+// COUPONS
+// ============================================================
+
+model Coupon {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  type           DiscountType
+  value          Decimal      @db.Decimal(10, 2)
+  minOrderAmount Decimal?     @db.Decimal(10, 2)
+  maxUses        Int?
+  usedCount      Int          @default(0)
+  validFrom      DateTime?
+  validUntil     DateTime?
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  orders         Order[]
+
+  @@index([code, isActive])
+  @@index([validFrom, validUntil])
+}
+
+// ============================================================
+// ORDERS
+// ============================================================
+
+model Order {
+  id          String      @id @default(cuid())
+  orderNumber Int         @unique @default(autoincrement())
+
+  customerId  String?
+  customer    Customer?   @relation(fields: [customerId], references: [id])
+
+  guestEmail      String?
+  guestFirstName  String?
+  guestLastName   String?
+  guestPhone      String?
+
+  status      OrderStatus @default(PENDING)
+
+  subtotal       Decimal @db.Decimal(10, 2)
+  discountAmount Decimal @db.Decimal(10, 2) @default(0)
+  shippingCost   Decimal @db.Decimal(10, 2) @default(0)
+  total          Decimal @db.Decimal(10, 2)
+
+  couponId   String?
+  coupon     Coupon?  @relation(fields: [couponId], references: [id])
+  couponCode String?
+
+  shippingAddress Json
+
+  shippingMethod String?
+  trackingNumber String?
+  shippingLabel  String?
+
+  paymentId     String? @unique
+  paymentStatus String?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items          OrderItem[]
+  stockMovements StockMovement[]
+
+  @@index([orderNumber])
+  @@index([customerId])
+  @@index([guestEmail])
+  @@index([status])
+  @@index([paymentId])
+  @@index([createdAt])
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  order     Order  @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product        @relation(fields: [productId], references: [id])
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  productName  String
+  productBrand String
+  size         String
+  unitPrice    Decimal @db.Decimal(10, 2)
+  quantity     Int
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([variantId])
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  OPERATOR
+}
+
+enum Gender {
+  HOMBRE
+  MUJER
+  UNISEX
+  NINO
+}
+
+enum Currency {
+  ARS
+  USD
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum StockMovementType {
+  PURCHASE
+  RESTOCK
+  ADJUSTMENT
+  RETURN
+  CANCELLED
+}

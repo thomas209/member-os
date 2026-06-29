@@ -1,0 +1,140 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { preference } from "@/lib/mercadopago";
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { items, shippingAddress, couponCode } = body;
+
+    if (!items || items.length === 0) {
+      return NextResponse.json({ error: "El carrito esta vacio" }, { status: 400 });
+    }
+
+    // Validar stock y obtener productos
+    const orderItems = [];
+    let subtotal = 0;
+
+    for (const item of items) {
+      const variant = await prisma.productVariant.findUnique({
+        where: { id: item.variantId },
+        include: { product: { include: { brand: true } } },
+      });
+
+      if (!variant) {
+        return NextResponse.json({ error: "Variante no encontrada" }, { status: 400 });
+      }
+
+      if (variant.stock < item.quantity) {
+        return NextResponse.json({
+          error: "Stock insuficiente",
+          detail: { productName: variant.product.name, size: variant.size }
+        }, { status: 400 });
+      }
+
+      const price = Number(variant.product.price);
+      subtotal += price * item.quantity;
+
+      orderItems.push({
+        variantId: variant.id,
+        productId: variant.product.id,
+        productName: variant.product.name,
+        productBrand: variant.product.brand.name,
+        size: variant.size,
+        unitPrice: price,
+        quantity: item.quantity,
+      });
+    }
+
+    // Validar cupon
+    let discountAmount = 0;
+    let coupon = null;
+
+    if (couponCode) {
+      coupon = await prisma.coupon.findUnique({
+        where: { code: couponCode.toUpperCase() },
+      });
+
+      if (!coupon || !coupon.isActive) {
+        return NextResponse.json({ error: "Cupon invalido" }, { status: 400 });
+      }
+
+      if (coupon.validUntil && coupon.validUntil < new Date()) {
+        return NextResponse.json({ error: "Cupon expirado" }, { status: 400 });
+      }
+
+      if (coupon.maxUses && coupon.usedCount >= coupon.maxUses) {
+        return NextResponse.json({ error: "Cupon sin usos disponibles" }, { status: 400 });
+      }
+
+      if (coupon.minOrderAmount && subtotal < Number(coupon.minOrderAmount)) {
+        return NextResponse.json({ error: "Monto minimo no alcanzado" }, { status: 400 });
+      }
+
+      if (coupon.type === "PERCENTAGE") {
+        discountAmount = subtotal * (Number(coupon.value) / 100);
+      } else {
+        discountAmount = Number(coupon.value);
+      }
+    }
+
+    const total = subtotal - discountAmount;
+
+    // Crear orden en DB
+    const order = await prisma.order.create({
+      data: {
+        guestEmail: shippingAddress.email,
+        guestFirstName: shippingAddress.firstName,
+        guestLastName: shippingAddress.lastName,
+        guestPhone: shippingAddress.phone,
+        status: "PENDING",
+        subtotal,
+        discountAmount,
+        shippingCost: 0,
+        total,
+        couponId: coupon?.id,
+        couponCode: couponCode?.toUpperCase(),
+        shippingAddress,
+        items: {
+          create: orderItems,
+        },
+      },
+    });
+
+    // Crear preferencia en MP
+    const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+
+    const mpPreference = await preference.create({
+      body: {
+        items: orderItems.map((item) => ({
+          id: item.variantId,
+          title: item.productName + " - Talle " + item.size,
+          quantity: item.quantity,
+          unit_price: item.unitPrice,
+          currency_id: "ARS",
+        })),
+        payer: {
+          email: shippingAddress.email,
+          name: shippingAddress.firstName,
+          surname: shippingAddress.lastName,
+        },
+        back_urls: {
+          success: baseUrl + "/checkout/success?orderId=" + order.id,
+          failure: baseUrl + "/checkout?error=payment_failed",
+          pending: baseUrl + "/checkout/success?orderId=" + order.id,
+        },
+        external_reference: order.id,
+        notification_url: baseUrl + "/api/webhooks/mercadopago",
+      },
+    });
+
+    return NextResponse.json({
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      checkoutUrl: mpPreference.init_point,
+    });
+  } catch (error) {
+    console.error("Checkout error:", error);
+    return NextResponse.json({ error: "Error al procesar el checkout" }, { status: 500 });
+  }
+}
