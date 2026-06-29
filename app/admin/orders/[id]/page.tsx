@@ -87,7 +87,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     <p style={{fontSize:"12px",color:"#737373",marginBottom:"2px"}}>{item.productBrand}</p>
                     <p style={{fontSize:"12px",color:"#737373"}}>Talle {item.size} x {item.quantity}</p>
                   </div>
-                  <p style={{fontSize:"14px",fontWeight:"700"}}>${Number(item.unitPrice * item.quantity).toLocaleString("es-AR")}</p>
+                  <p style={{fontSize:"14px",fontWeight:"700"}}>${(Number(item.unitPrice) * item.quantity).toLocaleString("es-AR")}</p>
                 </div>
               ))}
             </div>

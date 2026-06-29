@@ -110,7 +110,7 @@ export async function POST(request: Request) {
           id: item.variantId,
           title: item.productName + " - Talle " + item.size,
           quantity: item.quantity,
-          unit_price: item.unitPrice,
+          unit_price: Number(item.unitPrice),
           currency_id: "ARS",
         })),
         payer: {
