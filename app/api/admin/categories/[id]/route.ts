@@ -11,4 +11,3 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 }
 export const dynamic = "force-dynamic";
-export const dynamic = "force-dynamic";
