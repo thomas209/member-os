@@ -10,3 +10,5 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Error al actualizar categoria" }, { status: 500 });
   }
 }
+export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic";

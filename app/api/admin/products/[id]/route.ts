@@ -70,3 +70,4 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Error al actualizar producto" }, { status: 500 });
   }
 }
+export const dynamic = "force-dynamic";

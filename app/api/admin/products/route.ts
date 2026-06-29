@@ -74,3 +74,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Error al crear producto" }, { status: 500 });
   }
 }
+export const dynamic = "force-dynamic";
