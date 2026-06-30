@@ -155,3 +155,10 @@ a:hover .product-img {
     display: flex !important;
   }
 }
+
+.encargos-mobile::-webkit-scrollbar {
+  display: none;
+}
+.encargos-desktop::-webkit-scrollbar {
+  display: none;
+}
