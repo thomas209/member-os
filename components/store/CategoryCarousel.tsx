@@ -12,7 +12,7 @@ type Product = {
   images: { url: string }[];
 };
 
-async function getProductsByCategory(categorySlug: string, take = 8) {
+async function getProductsByCategory(categorySlug: string, take = 16) {
   const products = await prisma.product.findMany({
     where: {
       isActive: true,

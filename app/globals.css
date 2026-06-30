@@ -129,3 +129,29 @@ a:hover .product-img {
     padding: 0 16px;
   }
 }
+
+.category-grid-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .category-row-desktop {
+    display: none !important;
+  }
+  .category-grid-mobile {
+    display: grid !important;
+  }
+}
+
+.encargos-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .encargos-desktop {
+    display: none !important;
+  }
+  .encargos-mobile {
+    display: flex !important;
+  }
+}
