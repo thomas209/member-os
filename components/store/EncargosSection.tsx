@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 
 const placeholders = [
   { id: 1, name: "Jordan 1 Retro High", brand: "Jordan" },
@@ -10,76 +10,175 @@ const placeholders = [
   { id: 6, name: "Vans Sk8-Hi", brand: "Vans" },
 ];
 
-function FlipCard({ name, brand }: { name: string; brand: string }) {
+const ROTATIONS = [-3, 2, -2, 4, -1, 3];
+const ITEMS = [...placeholders, ...placeholders, ...placeholders];
+
+function PokerCard({ name, brand, rotation }: { name: string; brand: string; rotation: number }) {
+  const outerRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number>(0);
+  const targetTilt = useRef({ x: 0, y: 0 });
+  const currentTilt = useRef({ x: 0, y: 0 });
+  const glowPos = useRef({ x: 50, y: 50 });
+  const [hovered, setHovered] = useState(false);
   const [flipped, setFlipped] = useState(false);
+
+  useEffect(() => {
+    const animate = () => {
+      const ease = 0.08;
+      currentTilt.current.x += (targetTilt.current.x - currentTilt.current.x) * ease;
+      currentTilt.current.y += (targetTilt.current.y - currentTilt.current.y) * ease;
+      if (outerRef.current && !flipped) {
+        const { x, y } = currentTilt.current;
+        const lift = hovered ? -32 : 0;
+        const rot = hovered ? 0 : rotation;
+        outerRef.current.style.transform = `rotate(${rot}deg) translateY(${lift}px) perspective(1000px) rotateX(${x}deg) rotateY(${y}deg)`;
+        outerRef.current.style.filter = hovered
+          ? "drop-shadow(0 40px 60px rgba(0,0,0,0.9))"
+          : "drop-shadow(0 8px 20px rgba(0,0,0,0.5))";
+      }
+      if (glowRef.current) {
+        glowRef.current.style.background = `radial-gradient(circle at ${glowPos.current.x}% ${glowPos.current.y}%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.04) 40%, transparent 70%)`;
+        glowRef.current.style.opacity = hovered && !flipped ? "1" : "0";
+      }
+      rafRef.current = requestAnimationFrame(animate);
+    };
+    rafRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [hovered, flipped, rotation]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (flipped) return;
+    const el = outerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const dx = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
+    const dy = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
+    targetTilt.current = { x: -dy * 10, y: dx * 10 };
+    glowPos.current = {
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    };
+  };
+
+  const handleMouseLeave = () => {
+    targetTilt.current = { x: 0, y: 0 };
+    setHovered(false);
+  };
+
+  const handleClick = () => {
+    targetTilt.current = { x: 0, y: 0 };
+    currentTilt.current = { x: 0, y: 0 };
+    if (outerRef.current) {
+      outerRef.current.style.transform = `rotate(0deg) translateY(-32px) perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+    }
+    setFlipped(f => !f);
+  };
 
   return (
     <div
-      onClick={() => setFlipped(!flipped)}
       style={{
-        width: "200px",
-        aspectRatio: "3/4",
-        perspective: "1000px",
-        cursor: "pointer",
+        width: "280px",
+        aspectRatio: "2.5/3.5",
         flexShrink: 0,
-      }}
-    >
-      <div style={{
+        cursor: "pointer",
+        marginRight: "-48px",
         position: "relative",
-        width: "100%",
-        height: "100%",
-        transformStyle: "preserve-3d",
-        transition: "transform 0.6s cubic-bezier(0.76, 0, 0.24, 1)",
-        transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
-      }}>
-
-        {/* FRENTE */}
+        zIndex: hovered || flipped ? 10 : 1,
+      }}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
+    >
+      <div
+        ref={outerRef}
+        style={{
+          width: "100%",
+          height: "100%",
+          transform: `rotate(${rotation}deg)`,
+          willChange: "transform",
+          transition: flipped ? "transform 0.4s ease" : "filter 0.3s ease",
+        }}
+      >
         <div style={{
-          position: "absolute",
-          inset: 0,
-          backfaceVisibility: "hidden",
-          WebkitBackfaceVisibility: "hidden",
-          backgroundColor: "#111111",
-          border: "1px solid #2A2A2A",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "12px",
-          padding: "24px",
+          width: "100%",
+          height: "100%",
+          position: "relative",
+          transformStyle: "preserve-3d",
+          transition: "transform 0.7s cubic-bezier(0.76, 0, 0.24, 1)",
+          transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
         }}>
-          <p style={{fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)"}}>
-            Exclusivo
-          </p>
-          <p style={{fontSize: "26px", fontWeight: "800", color: "white", textAlign: "center", letterSpacing: "-0.02em", lineHeight: 1.1}}>
-            ENCARGO
-          </p>
-          <p style={{fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.2)", marginTop: "8px"}}>
-            Tocar para ver
-          </p>
-        </div>
 
-        {/* REVERSO */}
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          backfaceVisibility: "hidden",
-          WebkitBackfaceVisibility: "hidden",
-          transform: "rotateY(180deg)",
-          backgroundColor: "#F4F4F4",
-          display: "flex",
-          flexDirection: "column",
-        }}>
-          <div style={{flex: 1, backgroundColor: "#E8E8E8", display: "flex", alignItems: "center", justifyContent: "center"}}>
-            <p style={{fontSize: "10px", color: "#A3A3A3", letterSpacing: "0.08em"}}>SIN IMAGEN</p>
+          {/* FRENTE */}
+          <div style={{
+            position: "absolute", inset: 0,
+            backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
+            backgroundColor: "#0A0A0A", border: "1px solid #2A2A2A", borderRadius: "12px",
+            overflow: "hidden", display: "flex", flexDirection: "column",
+            alignItems: "center", justifyContent: "center", padding: "24px",
+          }}>
+            <div style={{ position: "absolute", inset: "10px", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "6px" }} />
+            <div style={{ position: "absolute", inset: "16px", backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 10px)" }} />
+            <div style={{ position: "absolute", top: "14px", left: "16px", textAlign: "center" }}>
+              <p style={{ fontSize: "18px", fontWeight: "800", color: "rgba(255,255,255,0.45)", lineHeight: 1 }}>M</p>
+              <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.2)" }}>♠</p>
+            </div>
+            <div style={{ position: "absolute", bottom: "14px", right: "16px", textAlign: "center", transform: "rotate(180deg)" }}>
+              <p style={{ fontSize: "18px", fontWeight: "800", color: "rgba(255,255,255,0.45)", lineHeight: 1 }}>M</p>
+              <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.2)" }}>♠</p>
+            </div>
+            <div style={{ textAlign: "center", zIndex: 1 }}>
+              <p style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)", marginBottom: "12px" }}>Exclusivo</p>
+              <p style={{ fontSize: "32px", fontWeight: "800", color: "white", letterSpacing: "-0.02em", lineHeight: 1 }}>ENCARGO</p>
+              <p style={{ fontSize: "36px", color: "rgba(255,255,255,0.05)", margin: "8px 0" }}>♠</p>
+              <p style={{ fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.15)" }}>Member Club</p>
+            </div>
+            <div ref={glowRef} style={{ position: "absolute", inset: 0, pointerEvents: "none", transition: "opacity 0.3s ease" }} />
           </div>
-          <div style={{padding: "12px", backgroundColor: "white", borderTop: "1px solid #E8E8E8"}}>
-            <p style={{fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#737373", marginBottom: "4px"}}>{brand}</p>
-            <p style={{fontSize: "13px", fontWeight: "600"}}>{name}</p>
-            <p style={{fontSize: "11px", color: "#737373", marginTop: "4px"}}>Por encargo</p>
-          </div>
-        </div>
 
+          {/* REVERSO con zoom */}
+          <div style={{
+            position: "absolute", inset: 0,
+            backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
+            transform: "rotateY(180deg)",
+            backgroundColor: "white", borderRadius: "12px",
+            overflow: "hidden", display: "flex", flexDirection: "column",
+            border: "1px solid #E8E8E8",
+          }}>
+            {/* Imagen con zoom al aparecer */}
+            <div style={{
+              flex: 1,
+              backgroundColor: "#F0F0F0",
+              overflow: "hidden",
+              position: "relative",
+            }}>
+              <div style={{
+                position: "absolute", inset: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transform: flipped ? "scale(1)" : "scale(1.2)",
+                transition: "transform 0.8s cubic-bezier(0.23, 1, 0.32, 1) 0.3s",
+              }}>
+                <p style={{ fontSize: "11px", color: "#B0B0B0", letterSpacing: "0.1em", textTransform: "uppercase" }}>Sin imagen</p>
+              </div>
+            </div>
+
+            {/* Info */}
+            <div style={{
+              padding: "20px",
+              backgroundColor: "white",
+              borderTop: "1px solid #F0F0F0",
+              transform: flipped ? "translateY(0)" : "translateY(20px)",
+              opacity: flipped ? 1 : 0,
+              transition: "transform 0.5s ease 0.4s, opacity 0.5s ease 0.4s",
+            }}>
+              <p style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#A0A0A0", marginBottom: "4px" }}>{brand}</p>
+              <p style={{ fontSize: "15px", fontWeight: "700", marginBottom: "4px", letterSpacing: "-0.01em" }}>{name}</p>
+              <p style={{ fontSize: "12px", color: "#A0A0A0" }}>Por encargo · 14 días</p>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );
@@ -87,74 +186,49 @@ function FlipCard({ name, brand }: { name: string; brand: string }) {
 
 export default function EncargosSection() {
   const trackRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
-  const startX = useRef(0);
-  const scrollLeft = useRef(0);
+  const animRef = useRef<number>(0);
+  const pausedRef = useRef(false);
+  const posRef = useRef(0);
 
-  const onMouseDown = (e: React.MouseEvent) => {
-    isDragging.current = true;
-    startX.current = e.pageX - (trackRef.current?.offsetLeft || 0);
-    scrollLeft.current = trackRef.current?.scrollLeft || 0;
-  };
-  const onMouseUp = () => { isDragging.current = false; };
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current) return;
-    e.preventDefault();
-    const x = e.pageX - (trackRef.current?.offsetLeft || 0);
-    const walk = (x - startX.current) * 2;
-    if (trackRef.current) trackRef.current.scrollLeft = scrollLeft.current - walk;
-  };
-  const onTouchStart = (e: React.TouchEvent) => {
-    startX.current = e.touches[0].pageX;
-    scrollLeft.current = trackRef.current?.scrollLeft || 0;
-  };
-  const onTouchMove = (e: React.TouchEvent) => {
-    const x = e.touches[0].pageX;
-    const walk = (x - startX.current) * 2;
-    if (trackRef.current) trackRef.current.scrollLeft = scrollLeft.current - walk;
-  };
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const SPEED = 0.25;
+    const singleWidth = track.scrollWidth / 3;
+    const animate = () => {
+      if (!pausedRef.current) {
+        posRef.current += SPEED;
+        if (posRef.current >= singleWidth) posRef.current -= singleWidth;
+        track.style.transform = `translateX(-${posRef.current}px)`;
+      }
+      animRef.current = requestAnimationFrame(animate);
+    };
+    animRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animRef.current);
+  }, []);
 
   return (
-    <section style={{backgroundColor: "#0A0A0A", padding: "48px 0"}}>
-      <div style={{maxWidth: "1440px", margin: "0 auto"}}>
-
-        <div style={{display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", marginBottom: "32px", paddingBottom: "16px", borderBottom: "1px solid #2A2A2A", padding: "0 16px 16px 16px"}}>
-          <div>
-            <p style={{fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: "6px"}}>Exclusivo</p>
-            <h2 style={{fontSize: "24px", fontWeight: "400", color: "white", letterSpacing: "0.02em", fontFamily: "Georgia, serif"}}>Encargos</h2>
-            <p style={{fontSize: "12px", color: "rgba(255,255,255,0.3)", marginTop: "6px", letterSpacing: "0.02em"}}>Productos exclusivos traídos especialmente para vos.</p>
-            <p style={{fontSize: "11px", color: "rgba(255,255,255,0.2)", marginTop: "4px", letterSpacing: "0.08em", textTransform: "uppercase"}}>Tiempo de entrega estimado: 14 días</p>
+    <section style={{ backgroundColor: "#0A0A0A", padding: "48px 0" }}>
+      <div style={{ maxWidth: "1440px", margin: "0 auto" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "0 16px 16px 16px", marginBottom: "48px", borderBottom: "1px solid #2A2A2A" }}>
+          <p style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: "6px" }}>Exclusivo</p>
+          <h2 style={{ fontSize: "24px", fontWeight: "400", color: "white", letterSpacing: "0.02em", fontFamily: "Georgia, serif" }}>Encargos</h2>
+          <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.3)", marginTop: "6px" }}>Productos exclusivos traídos especialmente para vos.</p>
+          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)", marginTop: "4px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Tiempo de entrega estimado: 14 días</p>
+          <a href="/encargos" style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", textDecoration: "none", marginTop: "12px" }}>Ver todo</a>
+        </div>
+        <div style={{ overflow: "hidden", width: "100%", padding: "60px 0" }}>
+          <div
+            ref={trackRef}
+            onMouseEnter={() => { pausedRef.current = true; }}
+            onMouseLeave={() => { pausedRef.current = false; }}
+            style={{ display: "flex", alignItems: "center", willChange: "transform", paddingLeft: "80px" }}
+          >
+            {ITEMS.map((p, i) => (
+              <PokerCard key={`${p.id}-${i}`} name={p.name} brand={p.brand} rotation={ROTATIONS[i % ROTATIONS.length]} />
+            ))}
           </div>
-          <a href="/encargos" style={{fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", textDecoration: "none", marginTop: "12px"}}>
-            Ver todo
-          </a>
         </div>
-
-        <div
-          ref={trackRef}
-          onMouseDown={onMouseDown}
-          onMouseUp={onMouseUp}
-          onMouseLeave={onMouseUp}
-          onMouseMove={onMouseMove}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          style={{
-            display: "flex",
-            gap: "8px",
-            overflowX: "auto",
-            cursor: "grab",
-            userSelect: "none",
-            paddingLeft: "16px",
-            paddingRight: "16px",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-          }}
-        >
-          {placeholders.map((p) => (
-            <FlipCard key={p.id} name={p.name} brand={p.brand} />
-          ))}
-        </div>
-
       </div>
     </section>
   );

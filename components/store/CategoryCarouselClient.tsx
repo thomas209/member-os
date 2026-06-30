@@ -63,7 +63,7 @@ export default function CategoryCarouselClient({ products }: { products: Product
         <a
           key={product.slug}
           href={"/product/" + product.slug}
-          style={{flexShrink: 0, width: "calc(50vw - 18px)", maxWidth: "260px", textDecoration: "none", color: "#0A0A0A", display: "block"}}
+          style={{flexShrink: 0, width: "85vw", maxWidth: "340px", textDecoration: "none", color: "#0A0A0A", display: "block"}}
         >
           <div style={{aspectRatio: "4/5", backgroundColor: "#F4F4F4", overflow: "hidden", marginBottom: "12px"}}>
             {product.image ? (

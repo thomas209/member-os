@@ -102,7 +102,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
           <p style={{fontSize:"14px",color:"#737373"}}>No hay productos en esta categoria.</p>
         </div>
       ) : (
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4, 1fr)",gap:"2px"}}>
+        <div className="catalog-grid">
           {products.map((product) => (
             <ProductCard
               key={product.id}
