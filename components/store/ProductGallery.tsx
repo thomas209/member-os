@@ -1,11 +1,27 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 type Image = { url: string; altText?: string | null };
 
 export default function ProductGallery({ images, productName }: { images: Image[]; productName: string }) {
   const [selected, setSelected] = useState(0);
 
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+  const onTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) setSelected((s) => (s === images.length - 1 ? 0 : s + 1));
+      else setSelected((s) => (s === 0 ? images.length - 1 : s - 1));
+    }
+  };
   if (images.length === 0) {
     return (
       <div className="aspect-[4/5] bg-neutral-100 flex items-center justify-center">
@@ -21,7 +37,7 @@ export default function ProductGallery({ images, productName }: { images: Image[
     <div className="flex flex-col gap-3">
 
       {/* Imagen principal */}
-      <div className="relative aspect-[4/5] bg-neutral-100 overflow-hidden">
+      <div className="relative aspect-[4/5] bg-neutral-100 overflow-hidden" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <img
           src={images[selected].url}
           alt={images[selected].altText || productName}
