@@ -2,7 +2,8 @@
 import { useState } from "react";
 import ImageUpload from "@/components/admin/ImageUpload";
 
-const SIZES = ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"];
+const SIZES_ZAPATILLAS = ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"];
+const SIZES_ROPA = ["XS", "S", "M", "L", "XL", "XXL"];
 
 export default function EditProductForm({ product, brands, categories }: any) {
   const [loading, setLoading] = useState(false);
@@ -184,7 +185,12 @@ export default function EditProductForm({ product, brands, categories }: any) {
       <div style={sectionStyle}>
         <h2 style={titleStyle}>Talles y stock</h2>
         <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"20px"}}>
-          {SIZES.map((size) => {
+          { ((() => {
+            const selectedCat = categories.find((c: any) => c.id === form.categoryId);
+            const catName = selectedCat?.name?.toLowerCase() || "";
+            const SIZES_ACTIVOS = catName.includes("ropa") ? SIZES_ROPA : catName.includes("zapatilla") ? SIZES_ZAPATILLAS : [...SIZES_ZAPATILLAS, ...SIZES_ROPA];
+            return SIZES_ACTIVOS;
+          })()).map((size) => {
             const selected = variants.find((v: any) => v.size === size);
             return (
               <button key={size} onClick={() => toggleSize(size)} style={{width:"48px",height:"48px",border:"1px solid",borderColor:selected?"#0A0A0A":"#E8E8E8",backgroundColor:selected?"#0A0A0A":"white",color:selected?"white":"#737373",fontSize:"13px",cursor:"pointer"}}>
