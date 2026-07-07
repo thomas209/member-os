@@ -1,3 +1,4 @@
+export const revalidate = 0;
 import { prisma } from "@/lib/prisma";
 import BrandCarousel from "@/components/store/BrandCarousel";
 import CategoryCarousel from "@/components/store/CategoryCarousel";
