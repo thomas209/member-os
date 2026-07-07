@@ -7,6 +7,50 @@ type Props = {
   multiple?: boolean;
 };
 
+// Redimensiona y comprime la imagen en el navegador antes de subirla,
+// para no superar el límite de tamaño de request de Vercel (~4.5MB).
+async function compressImage(file: File, maxDimension = 1600, quality = 0.85): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      let { width, height } = img;
+      if (width > maxDimension || height > maxDimension) {
+        if (width > height) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        } else {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { reject(new Error("No se pudo procesar la imagen")); return; }
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) { reject(new Error("No se pudo comprimir la imagen")); return; }
+          const newName = file.name.replace(/\.(png|jpg|jpeg|webp)$/i, "") + ".webp";
+          resolve(new File([blob], newName, { type: "image/webp" }));
+        },
+        "image/webp",
+        quality
+      );
+    };
+
+    img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error("No se pudo leer la imagen")); };
+    img.src = objectUrl;
+  });
+}
+
 export default function ImageUpload({ onUpload, label = "Subir imagen", multiple = false }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -19,7 +63,7 @@ export default function ImageUpload({ onUpload, label = "Subir imagen", multiple
 
     for (const file of files) {
       if (!file.type.startsWith("image/")) { setError("Solo se permiten imagenes"); return; }
-      if (file.size > 10 * 1024 * 1024) { setError("Cada imagen no puede superar 10MB"); return; }
+      if (file.size > 20 * 1024 * 1024) { setError("Cada imagen no puede superar 20MB"); return; }
     }
 
     setLoading(true);
@@ -28,8 +72,10 @@ export default function ImageUpload({ onUpload, label = "Subir imagen", multiple
     try {
       const uploadedUrls: string[] = [];
       for (const file of files) {
+        const compressed = await compressImage(file);
+
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", compressed);
         const res = await fetch("/api/upload", { method: "POST", body: formData });
         const data = await res.json();
         if (!res.ok) { setError(data.error || "Error al subir"); setLoading(false); return; }
@@ -78,7 +124,7 @@ export default function ImageUpload({ onUpload, label = "Subir imagen", multiple
         <p style={{fontSize:"13px",color:"#737373"}}>
           {loading ? "Subiendo imagenes..." : "Clickea para seleccionar imagenes"}
         </p>
-        <p style={{fontSize:"11px",color:"#A3A3A3",marginTop:"4px"}}>JPG, PNG, WebP — max 10MB por imagen</p>
+        <p style={{fontSize:"11px",color:"#A3A3A3",marginTop:"4px"}}>JPG, PNG, WebP — max 20MB por imagen</p>
       </div>
 
       {localImages.length > 0 && (
