@@ -24,6 +24,7 @@ export default function EditProductForm({ product, brands, categories }: any) {
     colorName: product.colorName || "",
     colorHex: product.colorHex || "#000000",
     isFeatured: product.isFeatured || false,
+    isEncargo: product.isEncargo || false,
     isActive: product.isActive ?? true,
   });
 
@@ -178,6 +179,10 @@ export default function EditProductForm({ product, brands, categories }: any) {
           <label style={{display:"flex",alignItems:"center",gap:"8px",cursor:"pointer",fontSize:"13px"}}>
             <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleChange} />
             Producto activo
+          </label>
+          <label style={{display:"flex",alignItems:"center",gap:"8px",cursor:"pointer",fontSize:"13px"}}>
+            <input type="checkbox" name="isEncargo" checked={form.isEncargo} onChange={handleChange} />
+            Es un encargo
           </label>
         </div>
       </div>

@@ -20,6 +20,7 @@ export default function NewProductPage() {
     price: "", comparePrice: "", costPrice: "",
     colorName: "", colorHex: "#000000",
     isFeatured: false,
+    isEncargo: false,
   });
 
   if (typeof window !== "undefined" && brands.length === 0 && categories.length === 0) {
@@ -164,6 +165,10 @@ export default function NewProductPage() {
           <label style={{display:"flex",alignItems:"center",gap:"8px",cursor:"pointer",fontSize:"13px"}}>
             <input type="checkbox" name="isFeatured" checked={form.isFeatured} onChange={handleChange} />
             Producto destacado (aparece en el home)
+          </label>
+          <label style={{display:"flex",alignItems:"center",gap:"8px",fontSize:"13px",marginTop:"12px"}}>
+            <input type="checkbox" name="isEncargo" checked={form.isEncargo} onChange={handleChange} />
+            Es un encargo (aparece en la seccion Encargos)
           </label>
         </div>
       </div>
