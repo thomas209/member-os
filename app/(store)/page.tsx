@@ -90,7 +90,7 @@ export default async function HomePage() {
       </section>
 
 
-      <CategoryCarousel title="Zapatillas" categorySlug="zapatillas" />
+      <CategoryCarousel title="Zapatillas" categorySlug="zapatillas" rows={2} />
       <CategoryCarousel title="Ropa" categorySlug="ropa" />
       <InstagramSection />
     </main>

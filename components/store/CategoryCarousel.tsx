@@ -32,9 +32,11 @@ async function getProductsByCategory(categorySlug: string, take = 16) {
 export default async function CategoryCarousel({
   title,
   categorySlug,
+  rows,
 }: {
   title: string;
   categorySlug: string;
+  rows?: 1 | 2;
 }) {
   const products = await getProductsByCategory(categorySlug);
 
@@ -47,7 +49,7 @@ export default async function CategoryCarousel({
           <h2 className="text-[13px] font-semibold tracking-widest uppercase">{title}</h2>
           <a href={"/catalog?category=" + categorySlug} className="text-[12px] text-neutral-400 no-underline">Ver todo</a>
         </div>
-        <CategoryCarouselClient products={products.map(p => ({
+        <CategoryCarouselClient rows={rows} products={products.map(p => ({
           id: p.id,
           slug: p.slug,
           name: p.name,
