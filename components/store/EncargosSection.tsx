@@ -135,7 +135,7 @@ function SimpleFlipCard({ product }: { product: EncargoProduct }) {
   return (
     <div
       onClick={function() { setFlipped(!flipped); }}
-      style={{ width: "54vw", maxWidth: "240px", aspectRatio: "2.5/3.5", flexShrink: 0, perspective: "1000px", cursor: "pointer", scrollSnapAlign: "start" }}
+      style={{ width: "44vw", maxWidth: "200px", aspectRatio: "2.5/3.5", flexShrink: 0, perspective: "1000px", cursor: "pointer", scrollSnapAlign: "start" }}
     >
       <div style={{
         width: "100%", height: "100%", position: "relative",
