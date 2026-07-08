@@ -17,6 +17,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
             <a href="/catalog" style={{fontSize: "13px", color: "#737373", textDecoration: "none", letterSpacing: "0.04em"}}>Catálogo</a>
             <a href="/catalog?gender=HOMBRE" style={{fontSize: "13px", color: "#737373", textDecoration: "none", letterSpacing: "0.04em"}}>Hombre</a>
             <a href="/catalog?gender=MUJER" style={{fontSize: "13px", color: "#737373", textDecoration: "none", letterSpacing: "0.04em"}}>Mujer</a>
+            <a href="/catalog?category=arte" style={{fontSize: "12px", color: "white", backgroundColor: "#DC2626", textDecoration: "none", letterSpacing: "0.04em", padding: "4px 14px", borderRadius: "999px", fontWeight: "600"}}>Arte</a>
           </nav>
           <CartButton />
         </div>
@@ -60,6 +61,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
           <a href="/catalog" onClick={() => setMenuOpen(false)} style={{padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#0A0A0A", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>Catálogo</a>
           <a href="/catalog?gender=HOMBRE" onClick={() => setMenuOpen(false)} style={{padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#0A0A0A", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>Hombre</a>
           <a href="/catalog?gender=MUJER" onClick={() => setMenuOpen(false)} style={{padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#0A0A0A", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>Mujer</a>
+          <a href="/catalog?category=arte" onClick={() => setMenuOpen(false)} style={{padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#DC2626", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>Arte</a>
         </div>
 
         {/* Links secundarios */}
