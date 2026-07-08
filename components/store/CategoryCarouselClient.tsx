@@ -60,7 +60,7 @@ function ProductRow({ products }: { products: Product[] }) {
   );
 }
 
-export default function CategoryCarouselClient({ products }: { products: Product[] }) {
+function DesktopRow({ products }: { products: Product[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const startX = useRef(0);
   const scrollLeft = useRef(0);
@@ -80,36 +80,49 @@ export default function CategoryCarouselClient({ products }: { products: Product
     if (trackRef.current) trackRef.current.scrollLeft = scrollLeft.current - walk;
   };
 
+  return (
+    <div
+      ref={trackRef}
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseUp}
+      onMouseMove={onMouseMove}
+      className="category-row-desktop"
+      style={{
+        display: "flex",
+        gap: "2px",
+        overflowX: "auto",
+        cursor: "grab",
+        userSelect: "none",
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+      }}
+    >
+      {products.map((product) => (
+        <div key={product.slug} style={{ flexShrink: 0, width: "260px" }}>
+          <ProductTile product={product} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function CategoryCarouselClient({ products, rows = 1 }: { products: Product[]; rows?: 1 | 2 }) {
   // Dividir en dos filas: pares e impares
   const rowTop = products.filter((_, i) => i % 2 === 0);
   const rowBottom = products.filter((_, i) => i % 2 === 1);
 
   return (
     <>
-      {/* DESKTOP: una sola fila */}
-      <div
-        ref={trackRef}
-        onMouseDown={onMouseDown}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseUp}
-        onMouseMove={onMouseMove}
-        className="category-row-desktop"
-        style={{
-          display: "flex",
-          gap: "2px",
-          overflowX: "auto",
-          cursor: "grab",
-          userSelect: "none",
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-        }}
-      >
-        {products.map((product) => (
-          <div key={product.slug} style={{ flexShrink: 0, width: "260px" }}>
-            <ProductTile product={product} />
-          </div>
-        ))}
-      </div>
+      {/* DESKTOP */}
+      {rows === 2 ? (
+        <div className="category-row-desktop-wrapper" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <DesktopRow products={rowTop} />
+          <DesktopRow products={rowBottom} />
+        </div>
+      ) : (
+        <DesktopRow products={products} />
+      )}
 
       {/* MOBILE: dos filas, cada una con scroll independiente */}
       <div className="category-grid-mobile" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
