@@ -135,7 +135,7 @@ function SimpleFlipCard({ product }: { product: EncargoProduct }) {
   return (
     <div
       onClick={function() { setFlipped(!flipped); }}
-      style={{ width: "44vw", maxWidth: "200px", aspectRatio: "2.5/3.5", flexShrink: 0, perspective: "1000px", cursor: "pointer", scrollSnapAlign: "start" }}
+      style={{ width: "54vw", maxWidth: "240px", aspectRatio: "2.5/3.5", flexShrink: 0, perspective: "1000px", cursor: "pointer", scrollSnapAlign: "start" }}
     >
       <div style={{
         width: "100%", height: "100%", position: "relative",
@@ -157,20 +157,24 @@ function SimpleFlipCard({ product }: { product: EncargoProduct }) {
         <div style={{
           position: "absolute", inset: 0,
           backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
-          transform: "rotateY(180deg)", backgroundColor: "white", borderRadius: "10px",
-          overflow: "hidden", display: "flex", flexDirection: "column", border: "1px solid #E8E8E8",
+          transform: "rotateY(180deg)", backgroundColor: "#F4F4F4", borderRadius: "10px",
+          overflow: "hidden", position: "relative", border: "1px solid #E8E8E8",
         }}>
-          <div style={{ flex: 1, backgroundColor: "#F4F4F4", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-            {imageUrl ? (
-              <img src={imageUrl} alt={product.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-            ) : (
+          {imageUrl ? (
+            <img src={imageUrl} alt={product.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <p style={{ fontSize: "10px", color: "#A3A3A3" }}>SIN IMAGEN</p>
-            )}
-          </div>
-          <div style={{ padding: "12px", backgroundColor: "white", borderTop: "1px solid #E8E8E8" }}>
-            <p style={{ fontSize: "9px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#737373", marginBottom: "3px" }}>{product.brand.name}</p>
-            <p style={{ fontSize: "12px", fontWeight: "600", marginBottom: "3px", lineHeight: 1.2 }}>{product.name}</p>
-            <p style={{ fontSize: "10px", color: "#A3A3A3" }}>Por encargo</p>
+            </div>
+          )}
+          <div style={{
+            position: "absolute", top: 0, left: 0, right: 0,
+            padding: "12px",
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 70%, transparent 100%)",
+          }}>
+            <p style={{ fontSize: "9px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.75)", marginBottom: "3px" }}>{product.brand.name}</p>
+            <p style={{ fontSize: "13px", fontWeight: "700", marginBottom: "3px", lineHeight: 1.2, color: "white" }}>{product.name}</p>
+            <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.8)" }}>Por encargo</p>
           </div>
         </div>
       </div>
