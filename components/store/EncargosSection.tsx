@@ -1,19 +1,22 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
 
-const placeholders = [
-  { id: 1, name: "Jordan 1 Retro High", brand: "Jordan" },
-  { id: 2, name: "Carhartt WIP Jacket", brand: "Carhartt" },
-  { id: 3, name: "Arc'teryx Beta Jacket", brand: "Arc'teryx" },
-  { id: 4, name: "Stussy 8 Ball Tee", brand: "Stussy" },
-  { id: 5, name: "The North Face Nuptse", brand: "The North Face" },
-  { id: 6, name: "Vans Sk8-Hi", brand: "Vans" },
-];
+type EncargoProduct = {
+  id: string;
+  name: string;
+  slug: string;
+  price: number | string;
+  brand: { name: string };
+  images: { url: string }[];
+};
+
+type Props = {
+  products: EncargoProduct[];
+};
 
 const ROTATIONS = [-3, 2, -2, 4, -1, 3];
-const ITEMS = [...placeholders, ...placeholders, ...placeholders];
 
-function PokerCard({ name, brand, rotation }: { name: string; brand: string; rotation: number }) {
+function PokerCard({ product, rotation }: { product: EncargoProduct; rotation: number }) {
   const outerRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
@@ -22,6 +25,8 @@ function PokerCard({ name, brand, rotation }: { name: string; brand: string; rot
   const glowPos = useRef({ x: 50, y: 50 });
   const [hovered, setHovered] = useState(false);
   const [flipped, setFlipped] = useState(false);
+
+  const imageUrl = product.images[0]?.url;
 
   useEffect(() => {
     const animate = () => {
@@ -98,15 +103,23 @@ function PokerCard({ name, brand, rotation }: { name: string; brand: string; rot
             <div ref={glowRef} style={{ position: "absolute", inset: 0, pointerEvents: "none", transition: "opacity 0.3s ease" }} />
           </div>
           <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)", backgroundColor: "white", borderRadius: "12px", overflow: "hidden", display: "flex", flexDirection: "column", border: "1px solid #E8E8E8" }}>
-            <div style={{ flex: 1, backgroundColor: "#F0F0F0", overflow: "hidden", position: "relative" }}>
-              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", transform: flipped ? "scale(1)" : "scale(1.2)", transition: "transform 0.8s cubic-bezier(0.23, 1, 0.32, 1) 0.3s" }}>
-                <p style={{ fontSize: "11px", color: "#B0B0B0", letterSpacing: "0.1em", textTransform: "uppercase" }}>Sin imagen</p>
-              </div>
-            </div>
+            <a href={"/product/" + product.slug} style={{ flex: 1, backgroundColor: "#F0F0F0", overflow: "hidden", position: "relative", display: "block" }} onClick={(e) => { if (!flipped) e.preventDefault(); }}>
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt={product.name}
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transform: flipped ? "scale(1)" : "scale(1.2)", transition: "transform 0.8s cubic-bezier(0.23, 1, 0.32, 1) 0.3s" }}
+                />
+              ) : (
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", transform: flipped ? "scale(1)" : "scale(1.2)", transition: "transform 0.8s cubic-bezier(0.23, 1, 0.32, 1) 0.3s" }}>
+                  <p style={{ fontSize: "11px", color: "#B0B0B0", letterSpacing: "0.1em", textTransform: "uppercase" }}>Sin imagen</p>
+                </div>
+              )}
+            </a>
             <div style={{ padding: "20px", backgroundColor: "white", borderTop: "1px solid #F0F0F0", transform: flipped ? "translateY(0)" : "translateY(20px)", opacity: flipped ? 1 : 0, transition: "transform 0.5s ease 0.4s, opacity 0.5s ease 0.4s" }}>
-              <p style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#A0A0A0", marginBottom: "4px" }}>{brand}</p>
-              <p style={{ fontSize: "15px", fontWeight: "700", marginBottom: "4px", letterSpacing: "-0.01em" }}>{name}</p>
-              <p style={{ fontSize: "12px", color: "#A0A0A0" }}>Por encargo · 14 días</p>
+              <p style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#A0A0A0", marginBottom: "4px" }}>{product.brand.name}</p>
+              <p style={{ fontSize: "15px", fontWeight: "700", marginBottom: "4px", letterSpacing: "-0.01em" }}>{product.name}</p>
+              <p style={{ fontSize: "12px", color: "#A0A0A0" }}>Por encargo · 14 días · ${Number(product.price).toLocaleString("es-AR")}</p>
             </div>
           </div>
         </div>
@@ -115,8 +128,10 @@ function PokerCard({ name, brand, rotation }: { name: string; brand: string; rot
   );
 }
 
-function SimpleFlipCard({ name, brand }: { name: string; brand: string }) {
+function SimpleFlipCard({ product }: { product: EncargoProduct }) {
   const [flipped, setFlipped] = useState(false);
+  const imageUrl = product.images[0]?.url;
+
   return (
     <div
       onClick={function() { setFlipped(!flipped); }}
@@ -145,12 +160,16 @@ function SimpleFlipCard({ name, brand }: { name: string; brand: string }) {
           transform: "rotateY(180deg)", backgroundColor: "white", borderRadius: "10px",
           overflow: "hidden", display: "flex", flexDirection: "column", border: "1px solid #E8E8E8",
         }}>
-          <div style={{ flex: 1, backgroundColor: "#F4F4F4", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <p style={{ fontSize: "10px", color: "#A3A3A3" }}>SIN IMAGEN</p>
+          <div style={{ flex: 1, backgroundColor: "#F4F4F4", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+            {imageUrl ? (
+              <img src={imageUrl} alt={product.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <p style={{ fontSize: "10px", color: "#A3A3A3" }}>SIN IMAGEN</p>
+            )}
           </div>
           <div style={{ padding: "12px", backgroundColor: "white", borderTop: "1px solid #E8E8E8" }}>
-            <p style={{ fontSize: "9px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#737373", marginBottom: "3px" }}>{brand}</p>
-            <p style={{ fontSize: "12px", fontWeight: "600", marginBottom: "3px", lineHeight: 1.2 }}>{name}</p>
+            <p style={{ fontSize: "9px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#737373", marginBottom: "3px" }}>{product.brand.name}</p>
+            <p style={{ fontSize: "12px", fontWeight: "600", marginBottom: "3px", lineHeight: 1.2 }}>{product.name}</p>
             <p style={{ fontSize: "10px", color: "#A3A3A3" }}>Por encargo</p>
           </div>
         </div>
@@ -159,15 +178,17 @@ function SimpleFlipCard({ name, brand }: { name: string; brand: string }) {
   );
 }
 
-export default function EncargosSection() {
+export default function EncargosSection({ products }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<number>(0);
   const pausedRef = useRef(false);
   const posRef = useRef(0);
 
+  const items = products.length > 0 ? [...products, ...products, ...products] : [];
+
   useEffect(() => {
     const track = trackRef.current;
-    if (!track) return;
+    if (!track || items.length === 0) return;
     const SPEED = 0.25;
     const singleWidth = track.scrollWidth / 3;
     const animate = () => {
@@ -180,7 +201,9 @@ export default function EncargosSection() {
     };
     animRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animRef.current);
-  }, []);
+  }, [items.length]);
+
+  if (products.length === 0) return null;
 
   return (
     <section style={{ backgroundColor: "#0A0A0A", padding: "48px 0", position: "relative", overflow: "hidden" }}>
@@ -195,15 +218,15 @@ export default function EncargosSection() {
 
         <div className="encargos-desktop" style={{ overflow: "hidden", width: "100%", padding: "60px 0" }}>
           <div ref={trackRef} onMouseEnter={() => { pausedRef.current = true; }} onMouseLeave={() => { pausedRef.current = false; }} style={{ display: "flex", alignItems: "center", willChange: "transform", paddingLeft: "80px" }}>
-            {ITEMS.map((p, i) => (
-              <PokerCard key={p.id + "-" + i} name={p.name} brand={p.brand} rotation={ROTATIONS[i % ROTATIONS.length]} />
+            {items.map((p, i) => (
+              <PokerCard key={p.id + "-" + i} product={p} rotation={ROTATIONS[i % ROTATIONS.length]} />
             ))}
           </div>
         </div>
 
         <div className="encargos-mobile" style={{ display: "none", gap: "12px", overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", padding: "0 16px" }}>
-          {placeholders.map((p) => (
-            <SimpleFlipCard key={p.id} name={p.name} brand={p.brand} />
+          {products.map((p) => (
+            <SimpleFlipCard key={p.id} product={p} />
           ))}
         </div>
       </div>
