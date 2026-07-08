@@ -102,8 +102,8 @@ function PokerCard({ product, rotation }: { product: EncargoProduct; rotation: n
             </div>
             <div ref={glowRef} style={{ position: "absolute", inset: 0, pointerEvents: "none", transition: "opacity 0.3s ease" }} />
           </div>
-          <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)", backgroundColor: "white", borderRadius: "12px", overflow: "hidden", display: "flex", flexDirection: "column", border: "1px solid #E8E8E8" }}>
-            <a href={"/product/" + product.slug} style={{ flex: 1, backgroundColor: "#F0F0F0", overflow: "hidden", position: "relative", display: "block" }} onClick={(e) => { if (!flipped) e.preventDefault(); }}>
+          <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)", backgroundColor: "#F0F0F0", borderRadius: "12px", overflow: "hidden", border: "1px solid #E8E8E8" }}>
+            <a href={"/product/" + product.slug} style={{ position: "absolute", inset: 0, display: "block" }} onClick={(e) => { if (!flipped) e.preventDefault(); }}>
               {imageUrl ? (
                 <img
                   src={imageUrl}
@@ -115,12 +115,19 @@ function PokerCard({ product, rotation }: { product: EncargoProduct; rotation: n
                   <p style={{ fontSize: "11px", color: "#B0B0B0", letterSpacing: "0.1em", textTransform: "uppercase" }}>Sin imagen</p>
                 </div>
               )}
+              <div style={{
+                position: "absolute", top: 0, left: 0, right: 0,
+                padding: "20px",
+                background: "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 65%, transparent 100%)",
+                transform: flipped ? "translateY(0)" : "translateY(-10px)",
+                opacity: flipped ? 1 : 0,
+                transition: "transform 0.5s ease 0.4s, opacity 0.5s ease 0.4s",
+              }}>
+                <p style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.8)", marginBottom: "4px" }}>{product.brand.name}</p>
+                <p style={{ fontSize: "16px", fontWeight: "700", marginBottom: "4px", letterSpacing: "-0.01em", color: "white" }}>{product.name}</p>
+                <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)" }}>Por encargo · 14 días · ${Number(product.price).toLocaleString("es-AR")}</p>
+              </div>
             </a>
-            <div style={{ padding: "20px", backgroundColor: "white", borderTop: "1px solid #F0F0F0", transform: flipped ? "translateY(0)" : "translateY(20px)", opacity: flipped ? 1 : 0, transition: "transform 0.5s ease 0.4s, opacity 0.5s ease 0.4s" }}>
-              <p style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#A0A0A0", marginBottom: "4px" }}>{product.brand.name}</p>
-              <p style={{ fontSize: "15px", fontWeight: "700", marginBottom: "4px", letterSpacing: "-0.01em" }}>{product.name}</p>
-              <p style={{ fontSize: "12px", color: "#A0A0A0" }}>Por encargo · 14 días · ${Number(product.price).toLocaleString("es-AR")}</p>
-            </div>
           </div>
         </div>
       </div>
