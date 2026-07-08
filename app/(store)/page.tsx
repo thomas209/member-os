@@ -14,6 +14,19 @@ async function getBrands() {
   });
 }
 
+async function getEncargos() {
+  const products = await prisma.product.findMany({
+    where: { isActive: true, deletedAt: null, isEncargo: true },
+    include: {
+      brand: { select: { name: true } },
+      images: { where: { isPrimary: true }, take: 1 },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 12,
+  });
+  return products.map((p) => ({ ...p, price: Number(p.price) }));
+}
+
 async function getFeaturedProducts() {
   const products = await prisma.product.findMany({
     where: { isActive: true, deletedAt: null, isFeatured: true },
@@ -30,6 +43,7 @@ async function getFeaturedProducts() {
 
 export default async function HomePage() {
   const featured = await getFeaturedProducts();
+  const encargos = await getEncargos();
   const brands = await getBrands();
 
   return (
@@ -38,7 +52,7 @@ export default async function HomePage() {
 
             <BrandCarousel brands={brands} />
 
-      <EncargosSection />
+      <EncargosSection products={encargos} />
 
       {/* DESTACADOS */}
       <section className="bg-white px-4 py-12 md:px-12 md:py-20">
