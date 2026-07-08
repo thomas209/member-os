@@ -158,7 +158,7 @@ function SimpleFlipCard({ product }: { product: EncargoProduct }) {
           position: "absolute", inset: 0,
           backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
           transform: "rotateY(180deg)", backgroundColor: "#F4F4F4", borderRadius: "10px",
-          overflow: "hidden", position: "relative", border: "1px solid #E8E8E8",
+          overflow: "hidden", border: "1px solid #E8E8E8",
         }}>
           {imageUrl ? (
             <img src={imageUrl} alt={product.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
