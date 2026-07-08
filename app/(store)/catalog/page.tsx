@@ -109,9 +109,9 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
             <a
               key={product.id}
               href={"/product/" + product.slug}
-              style={{ display: "block", textDecoration: "none", color: "#0A0A0A", marginBottom: "64px" }}
+              style={{ display: "block", textDecoration: "none", color: "#0A0A0A", marginBottom: "120px" }}
             >
-              <div style={{ width: "100%", aspectRatio: "16/9", backgroundColor: "#F4F4F4", overflow: "hidden" }}>
+              <div style={{ width: "100%", aspectRatio: "21/9", backgroundColor: "#F4F4F4", overflow: "hidden" }}>
                 {product.images[0] ? (
                   <img
                     src={product.images[0].url}
@@ -124,7 +124,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
                   </div>
                 )}
               </div>
-              <div style={{ maxWidth: "1440px", margin: "0 auto", padding: "24px 48px 0" }}>
+              <div style={{ maxWidth: "1440px", margin: "0 auto", padding: "40px 48px 0" }}>
                 <p style={{ fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#A3A3A3", marginBottom: "4px" }}>
                   {product.brand.name}
                 </p>
