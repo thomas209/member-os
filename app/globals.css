@@ -131,7 +131,7 @@ a:hover .product-img {
 }
 
 .category-grid-mobile {
-  display: none;
+  display: none !important;
 }
 
 @media (max-width: 768px) {
