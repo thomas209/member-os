@@ -29,6 +29,8 @@ model AdminUser {
 
   @@index([email])
   @@index([role, isActive])
+
+  cashRegisterSessions CashRegisterSession[]
 }
 
 // ============================================================
@@ -250,7 +252,12 @@ model Order {
   coupon     Coupon?  @relation(fields: [couponId], references: [id])
   couponCode String?
 
-  shippingAddress Json
+  shippingAddress Json?
+
+  channel               String  @default("ONLINE")
+  paymentMethod         String?
+  cashRegisterSessionId String?
+  cashRegisterSession   CashRegisterSession? @relation(fields: [cashRegisterSessionId], references: [id])
 
   shippingMethod String?
   trackingNumber String?
@@ -338,4 +345,18 @@ enum StockMovementType {
   ADJUSTMENT
   RETURN
   CANCELLED
+}
+model CashRegisterSession {
+  id                    String    @id @default(cuid())
+  openedById            String
+  openedBy              AdminUser @relation(fields: [openedById], references: [id])
+  openingAmount         Decimal   @db.Decimal(10, 2)
+  cartItems             Json      @default("[]")
+  status                String    @default("OPEN")
+  openedAt              DateTime  @default(now())
+  closedAt              DateTime?
+  closingAmountCounted  Decimal?  @db.Decimal(10, 2)
+  orders                Order[]
+
+  @@index([status])
 }
