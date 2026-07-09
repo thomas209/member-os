@@ -43,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   );
 
   return (
-    <div style={{display:"flex",minHeight:"100vh"}}>
+    <div className="admin-root" style={{display:"flex",minHeight:"100vh"}}>
 
       {/* SIDEBAR DESKTOP — igual que antes, sin cambios */}
       <aside className="admin-sidebar-desktop" style={{width:"240px",backgroundColor:"#0A0A0A",color:"white",display:"flex",flexDirection:"column",flexShrink:0}}>
@@ -89,6 +89,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <style>{`
         @media (max-width: 768px) {
+          .admin-root { flex-direction: column; }
           .admin-sidebar-desktop { display: none !important; }
           .admin-topbar-mobile { display: flex !important; }
         }
