@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 type Variant = { id: string; size: string; stock: number; qrDataUrl: string };
-type Product = { id: string; name: string; brand: string; price: number; variants: Variant[] };
+type Product = { id: string; name: string; brand: string; price: number; image: string | null; variants: Variant[] };
 
 export default function LabelsClient({ products }: { products: Product[] }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -63,6 +63,11 @@ export default function LabelsClient({ products }: { products: Product[] }) {
               <div key={product.id} style={{ borderBottom: "1px solid #F4F4F4", padding: "16px 20px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "10px" }}>
                   <input type="checkbox" checked={allSelected} onChange={() => toggleAllForProduct(product)} />
+                  {product.image ? (
+                    <img src={product.image} alt={product.name} style={{ width: "36px", height: "36px", objectFit: "cover", borderRadius: "4px" }} />
+                  ) : (
+                    <div style={{ width: "36px", height: "36px", backgroundColor: "#F4F4F4", borderRadius: "4px", flexShrink: 0 }} />
+                  )}
                   <p style={{ fontSize: "13px", fontWeight: "600" }}>{product.brand} — {product.name}</p>
                   <span style={{ fontSize: "12px", color: "#737373" }}>${product.price.toLocaleString("es-AR")}</span>
                 </div>

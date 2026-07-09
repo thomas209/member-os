@@ -8,6 +8,7 @@ export default async function LabelsPage() {
     where: { deletedAt: null, isActive: true },
     include: {
       brand: { select: { name: true } },
+      images: { where: { isPrimary: true }, take: 1 },
       variants: { select: { id: true, size: true, sku: true, stock: true }, orderBy: { sortOrder: "asc" } },
     },
     orderBy: { createdAt: "desc" },
@@ -21,6 +22,7 @@ export default async function LabelsPage() {
         id: p.id,
         name: p.name,
         brand: p.brand.name,
+        image: p.images[0]?.url ?? null,
         price: Number(p.price),
         variants: await Promise.all(
           p.variants.map(async (v) => ({
