@@ -19,6 +19,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
             deletedAt: true,
             brand: { select: { name: true } },
             images: { where: { isPrimary: true }, take: 1 },
+            variants: {
+              select: { id: true, size: true, stock: true },
+              orderBy: { sortOrder: "asc" },
+            },
           },
         },
       },
@@ -39,6 +43,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       price: Number(variant.product.price),
       stock: variant.stock,
       image: variant.product.images[0]?.url ?? null,
+      allVariants: variant.product.variants,
     });
   } catch (error) {
     console.error("Error buscando variante:", error);

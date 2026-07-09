@@ -1,6 +1,8 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 
+type VariantSummary = { id: string; size: string; stock: number };
+
 type ScannedItem = {
   variantId: string;
   productId: string;
@@ -12,6 +14,7 @@ type ScannedItem = {
   price: number;
   stock: number;
   image: string | null;
+  allVariants: VariantSummary[];
   qty: number;
 };
 
@@ -111,9 +114,9 @@ export default function PosPage() {
   };
 
   return (
-    <div className="pos-container" style={{ display: "flex", height: "100vh", backgroundColor: "#F4F4F4" }}>
+    <div style={{ display: "flex", height: "100vh", backgroundColor: "#F4F4F4" }} className="pos-container">
       {/* PANEL ESCANEO */}
-      <div className="pos-scan-panel" style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px", overflowY: "auto" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px", overflowY: "auto" }} className="pos-scan-panel">
         <h1 style={{ fontSize: "22px", fontWeight: "700", marginBottom: "20px" }}>Punto de venta</h1>
 
         {!scanning ? (
@@ -165,32 +168,59 @@ export default function PosPage() {
 
         {/* Tarjeta del ultimo producto escaneado */}
         {lastScanned && !loading && (
-          <div style={{ backgroundColor: "white", borderRadius: "12px", padding: "16px", display: "flex", gap: "16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
-            {lastScanned.image ? (
-              <img src={lastScanned.image} alt={lastScanned.name} style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px" }} />
-            ) : (
-              <div style={{ width: "80px", height: "80px", backgroundColor: "#F4F4F4", borderRadius: "8px" }} />
-            )}
-            <div>
-              <p style={{ fontSize: "11px", color: "#A3A3A3", textTransform: "uppercase", letterSpacing: "0.06em" }}>{lastScanned.brand}</p>
-              <p style={{ fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>{lastScanned.name}</p>
-              <p style={{ fontSize: "13px", color: "#737373" }}>
-                Talle {lastScanned.size}
-                {lastScanned.colorName ? " · " + lastScanned.colorName : ""}
-              </p>
-              <p style={{ fontSize: "13px", color: lastScanned.stock > 0 ? "#16A34A" : "#DC2626", fontWeight: "600" }}>
-                Stock: {lastScanned.stock}
-              </p>
-              <p style={{ fontSize: "16px", fontWeight: "700", marginTop: "4px" }}>
-                ${lastScanned.price.toLocaleString("es-AR")}
-              </p>
+          <div style={{ backgroundColor: "white", borderRadius: "12px", padding: "16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
+            <div style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
+              {lastScanned.image ? (
+                <img src={lastScanned.image} alt={lastScanned.name} style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px" }} />
+              ) : (
+                <div style={{ width: "80px", height: "80px", backgroundColor: "#F4F4F4", borderRadius: "8px" }} />
+              )}
+              <div>
+                <p style={{ fontSize: "11px", color: "#A3A3A3", textTransform: "uppercase", letterSpacing: "0.06em" }}>{lastScanned.brand}</p>
+                <p style={{ fontSize: "16px", fontWeight: "700", marginBottom: "4px" }}>{lastScanned.name}</p>
+                <p style={{ fontSize: "13px", color: "#737373" }}>
+                  {lastScanned.colorName ? lastScanned.colorName : ""}
+                </p>
+                <p style={{ fontSize: "16px", fontWeight: "700", marginTop: "4px" }}>
+                  ${lastScanned.price.toLocaleString("es-AR")}
+                </p>
+              </div>
+            </div>
+
+            {/* Desglose de todos los talles del modelo */}
+            <p style={{ fontSize: "11px", color: "#A3A3A3", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>
+              Talles disponibles
+            </p>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              {lastScanned.allVariants.map((v) => {
+                const isScanned = v.id === lastScanned.variantId;
+                return (
+                  <div
+                    key={v.id}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: "8px",
+                      border: isScanned ? "2px solid #0A0A0A" : "1px solid #E8E8E8",
+                      backgroundColor: isScanned ? "#0A0A0A" : "white",
+                      color: isScanned ? "white" : "#0A0A0A",
+                      textAlign: "center",
+                      minWidth: "56px",
+                    }}
+                  >
+                    <p style={{ fontSize: "13px", fontWeight: "700" }}>{v.size}</p>
+                    <p style={{ fontSize: "10px", color: isScanned ? "rgba(255,255,255,0.7)" : (v.stock > 0 ? "#16A34A" : "#DC2626") }}>
+                      Stock {v.stock}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
       </div>
 
       {/* PANEL CARRITO */}
-      <div className="pos-cart-panel" style={{ width: "380px", backgroundColor: "white", borderLeft: "1px solid #E8E8E8", display: "flex", flexDirection: "column" }}>
+      <div style={{ width: "380px", backgroundColor: "white", borderLeft: "1px solid #E8E8E8", display: "flex", flexDirection: "column" }} className="pos-cart-panel">
         <div style={{ padding: "20px", borderBottom: "1px solid #E8E8E8" }}>
           <h2 style={{ fontSize: "16px", fontWeight: "700" }}>Carrito ({cart.length})</h2>
         </div>
@@ -209,7 +239,12 @@ export default function PosPage() {
                 )}
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: "12px", fontWeight: "600" }}>{item.name}</p>
-                  <p style={{ fontSize: "11px", color: "#737373" }}>Talle {item.size}</p>
+                  <p style={{ fontSize: "11px", color: "#737373" }}>
+                    Talle {item.size}
+                    {item.qty > item.stock && (
+                      <span style={{ color: "#DC2626", fontWeight: "600" }}> · supera el stock ({item.stock})</span>
+                    )}
+                  </p>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
                     <button onClick={() => updateQty(item.variantId, item.qty - 1)} style={{ width: "20px", height: "20px", border: "1px solid #E8E8E8", background: "white", cursor: "pointer" }}>-</button>
                     <span style={{ fontSize: "12px" }}>{item.qty}</span>
