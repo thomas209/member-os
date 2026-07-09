@@ -92,6 +92,7 @@ export default async function HomePage() {
 
       <CategoryCarousel title="Zapatillas" categorySlug="zapatillas" rows={2} />
       <CategoryCarousel title="Ropa" categorySlug="ropa" />
+      <CategoryCarousel title="Accesorios" categorySlug="accesorios" />
       <InstagramSection />
     </main>
   );
