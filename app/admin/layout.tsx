@@ -6,6 +6,11 @@ const salesLinks = [
   { href: "/admin/customers", label: "Clientes" },
 ];
 
+const posLinks = [
+  { href: "/admin/pos", label: "Escanear" },
+  { href: "/admin/labels", label: "Etiquetas" },
+];
+
 const catalogLinks = [
   { href: "/admin/products", label: "Productos" },
   { href: "/admin/brands", label: "Marcas" },
@@ -31,6 +36,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         ))}
         <p style={{fontSize:"10px",letterSpacing:"0.12em",textTransform:"uppercase",color:"#525252",marginBottom:"8px",paddingLeft:"12px",marginTop:"16px"}}>Catalogo</p>
         {catalogLinks.map((item) => (
+          <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{display:"block",padding:"10px 12px",fontSize:"13px",color:"#A3A3A3",textDecoration:"none",marginBottom:"2px"}}>
+            {item.label}
+          </a>
+        ))}
+        <p style={{fontSize:"10px",letterSpacing:"0.12em",textTransform:"uppercase",color:"#525252",marginBottom:"8px",paddingLeft:"12px",marginTop:"16px"}}>Punto de Venta</p>
+        {posLinks.map((item) => (
           <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{display:"block",padding:"10px 12px",fontSize:"13px",color:"#A3A3A3",textDecoration:"none",marginBottom:"2px"}}>
             {item.label}
           </a>
