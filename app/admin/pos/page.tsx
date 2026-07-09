@@ -62,6 +62,32 @@ export default function PosPage() {
     setLoading(false);
   };
 
+  // Corregir el talle sin volver a escanear: usa la data que ya tenemos de allVariants
+  const switchToSize = (newVariant: VariantSummary) => {
+    if (!lastScanned || newVariant.id === lastScanned.variantId) return;
+
+    const previousVariantId = lastScanned.variantId;
+    const newItem: ScannedItem = {
+      ...lastScanned,
+      variantId: newVariant.id,
+      size: newVariant.size,
+      stock: newVariant.stock,
+    };
+
+    setCart((prev) => {
+      const previousInCart = prev.find((p) => p.variantId === previousVariantId);
+      const qtyToMove = previousInCart ? previousInCart.qty : 1;
+      const withoutOld = prev.filter((p) => p.variantId !== previousVariantId);
+      const existingNew = withoutOld.find((p) => p.variantId === newVariant.id);
+      if (existingNew) {
+        return withoutOld.map((p) => (p.variantId === newVariant.id ? { ...p, qty: p.qty + qtyToMove } : p));
+      }
+      return [...withoutOld, { ...newItem, qty: qtyToMove }];
+    });
+
+    setLastScanned(newItem);
+  };
+
   const startScanning = async () => {
     setError("");
     setScanning(true);
@@ -187,31 +213,36 @@ export default function PosPage() {
               </div>
             </div>
 
-            {/* Desglose de todos los talles del modelo */}
-            <p style={{ fontSize: "11px", color: "#A3A3A3", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>
+            {/* Desglose de todos los talles del modelo — clickeables para corregir el talle */}
+            <p style={{ fontSize: "11px", color: "#A3A3A3", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>
               Talles disponibles
+            </p>
+            <p style={{ fontSize: "11px", color: "#A3A3A3", marginBottom: "8px" }}>
+              Tocá otro talle si el cliente se lleva uno distinto al escaneado
             </p>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {lastScanned.allVariants.map((v) => {
-                const isScanned = v.id === lastScanned.variantId;
+                const isSelected = v.id === lastScanned.variantId;
                 return (
-                  <div
+                  <button
                     key={v.id}
+                    onClick={() => switchToSize(v)}
                     style={{
                       padding: "8px 12px",
                       borderRadius: "8px",
-                      border: isScanned ? "2px solid #0A0A0A" : "1px solid #E8E8E8",
-                      backgroundColor: isScanned ? "#0A0A0A" : "white",
-                      color: isScanned ? "white" : "#0A0A0A",
+                      border: isSelected ? "2px solid #0A0A0A" : "1px solid #E8E8E8",
+                      backgroundColor: isSelected ? "#0A0A0A" : "white",
+                      color: isSelected ? "white" : "#0A0A0A",
                       textAlign: "center",
                       minWidth: "56px",
+                      cursor: "pointer",
                     }}
                   >
                     <p style={{ fontSize: "13px", fontWeight: "700" }}>{v.size}</p>
-                    <p style={{ fontSize: "10px", color: isScanned ? "rgba(255,255,255,0.7)" : (v.stock > 0 ? "#16A34A" : "#DC2626") }}>
+                    <p style={{ fontSize: "10px", color: isSelected ? "rgba(255,255,255,0.7)" : (v.stock > 0 ? "#16A34A" : "#DC2626") }}>
                       Stock {v.stock}
                     </p>
-                  </div>
+                  </button>
                 );
               })}
             </div>
