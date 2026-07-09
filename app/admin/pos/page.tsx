@@ -111,9 +111,9 @@ export default function PosPage() {
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh", backgroundColor: "#F4F4F4" }}>
+    <div className="pos-container" style={{ display: "flex", height: "100vh", backgroundColor: "#F4F4F4" }}>
       {/* PANEL ESCANEO */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px", overflowY: "auto" }}>
+      <div className="pos-scan-panel" style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px", overflowY: "auto" }}>
         <h1 style={{ fontSize: "22px", fontWeight: "700", marginBottom: "20px" }}>Punto de venta</h1>
 
         {!scanning ? (
@@ -190,7 +190,7 @@ export default function PosPage() {
       </div>
 
       {/* PANEL CARRITO */}
-      <div style={{ width: "380px", backgroundColor: "white", borderLeft: "1px solid #E8E8E8", display: "flex", flexDirection: "column" }}>
+      <div className="pos-cart-panel" style={{ width: "380px", backgroundColor: "white", borderLeft: "1px solid #E8E8E8", display: "flex", flexDirection: "column" }}>
         <div style={{ padding: "20px", borderBottom: "1px solid #E8E8E8" }}>
           <h2 style={{ fontSize: "16px", fontWeight: "700" }}>Carrito ({cart.length})</h2>
         </div>
@@ -245,6 +245,14 @@ export default function PosPage() {
           </button>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .pos-container { flex-direction: column; height: auto !important; min-height: 100vh; }
+          .pos-scan-panel { padding: 16px !important; }
+          .pos-cart-panel { width: 100% !important; border-left: none !important; border-top: 1px solid #E8E8E8; }
+        }
+      `}</style>
     </div>
   );
 }
