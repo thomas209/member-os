@@ -138,13 +138,14 @@ export default function LabelsClient({ products }: { products: Product[] }) {
             margin: 0;
           }
           .label-name {
-            font-size: 7pt;
+            font-size: 6pt;
             font-weight: 700;
             margin: 0;
             line-height: 1.1;
-            white-space: nowrap;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
           }
           .label-size {
             font-size: 6.5pt;
