@@ -9,6 +9,7 @@ const salesLinks = [
 const posLinks = [
   { href: "/admin/pos", label: "Escanear" },
   { href: "/admin/labels", label: "Etiquetas" },
+  { href: "/admin/pos/cash-history", label: "Cierres de caja" },
 ];
 
 const catalogLinks = [

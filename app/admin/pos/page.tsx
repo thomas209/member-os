@@ -600,6 +600,10 @@ export default function PosPage() {
           onChange={(e) => setUsbScanInput(e.target.value)}
           onKeyDown={handleUsbScanKeyDown}
           placeholder="Lector de código de barras/QR (USB) — hacé click acá y escaneá"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
           style={{ width: "100%", maxWidth: "400px", padding: "12px 14px", fontSize: "13px", border: "1px dashed #A3A3A3", borderRadius: "8px", boxSizing: "border-box", marginBottom: "10px", color: "#525252" }}
         />
 
