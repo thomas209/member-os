@@ -27,11 +27,14 @@ export default async function CashHistoryDetailPage({ params }: { params: Promis
   const openingAmount = Number(session.openingAmount);
   const totals: Record<string, number> = { EFECTIVO: 0, TARJETA: 0, TRANSFERENCIA: 0 };
   let totalSales = 0;
+  let validOrderCount = 0;
   for (const o of session.orders) {
+    if (o.status === "CANCELLED") continue; // no cuenta para los totales de caja
     const method = o.paymentMethod || "EFECTIVO";
     const amount = Number(o.total);
     if (method in totals) totals[method] += amount;
     totalSales += amount;
+    validOrderCount += 1;
   }
   const expectedCash = openingAmount + totals.EFECTIVO;
   const counted = session.closingAmountCounted !== null ? Number(session.closingAmountCounted) : null;
@@ -69,7 +72,7 @@ export default async function CashHistoryDetailPage({ params }: { params: Promis
             </div>
           ))}
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px", fontWeight: "700", marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #E8E8E8" }}>
-            <span>Total ({session.orders.length} ventas)</span>
+            <span>Total ({validOrderCount} ventas)</span>
             <span>${totalSales.toLocaleString("es-AR")}</span>
           </div>
         </div>
@@ -109,29 +112,33 @@ export default async function CashHistoryDetailPage({ params }: { params: Promis
 
       <h2 style={{ fontSize: "13px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "16px", color: "#737373" }}>Ventas del turno</h2>
       <div style={{ backgroundColor: "white", border: "1px solid #E8E8E8" }}>
-        {session.orders.map((o) => (
-          <div key={o.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid #F4F4F4" }}>
-            <div>
-              <p style={{ fontSize: "13px", fontWeight: "600" }}>
-                Venta #{o.orderNumber} · {o.items.reduce((s, i) => s + i.quantity, 0)} productos
-              </p>
-              <p style={{ fontSize: "11px", color: "#737373" }}>
-                {new Date(o.createdAt).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Argentina/Buenos_Aires" })} · {PAYMENT_LABELS[o.paymentMethod || "EFECTIVO"] || o.paymentMethod}
-              </p>
+        {session.orders.map((o) => {
+          const voided = o.status === "CANCELLED";
+          return (
+            <div key={o.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid #F4F4F4", opacity: voided ? 0.5 : 1 }}>
+              <div>
+                <p style={{ fontSize: "13px", fontWeight: "600", textDecoration: voided ? "line-through" : "none" }}>
+                  Venta #{o.orderNumber} · {o.items.reduce((s, i) => s + i.quantity, 0)} productos
+                  {voided && <span style={{ marginLeft: "8px", fontSize: "10px", fontWeight: "700", color: "#DC2626", textDecoration: "none" }}>ANULADA</span>}
+                </p>
+                <p style={{ fontSize: "11px", color: "#737373" }}>
+                  {new Date(o.createdAt).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Argentina/Buenos_Aires" })} · {PAYMENT_LABELS[o.paymentMethod || "EFECTIVO"] || o.paymentMethod}
+                </p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <span style={{ fontSize: "13px", fontWeight: "700", textDecoration: voided ? "line-through" : "none" }}>${Number(o.total).toLocaleString("es-AR")}</span>
+                <a
+                  href={"/admin/pos/receipt/" + o.id}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: "12px", fontWeight: "600", color: "#0A0A0A", textDecoration: "underline" }}
+                >
+                  Comprobante
+                </a>
+              </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <span style={{ fontSize: "13px", fontWeight: "700" }}>${Number(o.total).toLocaleString("es-AR")}</span>
-              <a
-                href={"/admin/pos/receipt/" + o.id}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ fontSize: "12px", fontWeight: "600", color: "#0A0A0A", textDecoration: "underline" }}
-              >
-                Comprobante
-              </a>
-            </div>
-          </div>
-        ))}
+          );
+        })}
         {session.orders.length === 0 && (
           <div style={{ padding: "32px", textAlign: "center", fontSize: "13px", color: "#737373" }}>
             No hubo ventas en este turno

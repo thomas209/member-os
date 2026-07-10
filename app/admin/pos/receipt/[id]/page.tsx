@@ -1,36 +1,54 @@
 export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import PrintButton from "./PrintButton";
-
-const PAYMENT_LABELS: Record<string, string> = {
-  EFECTIVO: "Efectivo",
-  TARJETA: "Tarjeta",
-  TRANSFERENCIA: "Transferencia",
-};
+import PrintButton from "@/components/pos/PrintButton";
+import ReceiptTicket from "@/components/pos/ReceiptTicket";
+import VoidSaleButton from "./VoidSaleButton";
+import { buildWhatsappLink } from "@/lib/whatsapp";
 
 export default async function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   const order = await prisma.order.findUnique({
     where: { id },
-    include: { items: true },
+    include: { items: true, cashRegisterSession: { select: { status: true } } },
   });
 
   if (!order) notFound();
 
-  const dateStr = new Date(order.createdAt).toLocaleString("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "America/Argentina/Buenos_Aires",
-  });
+  const ticketData = {
+    orderNumber: order.orderNumber,
+    createdAt: order.createdAt,
+    paymentMethod: order.paymentMethod,
+    subtotal: Number(order.subtotal),
+    discountAmount: Number(order.discountAmount),
+    total: Number(order.total),
+    couponCode: order.couponCode,
+    status: order.status,
+    guestFirstName: order.guestFirstName,
+    guestLastName: order.guestLastName,
+    guestPhone: order.guestPhone,
+    guestEmail: order.guestEmail,
+    items: order.items.map((i) => ({
+      id: i.id,
+      productName: i.productName,
+      size: i.size,
+      unitPrice: Number(i.unitPrice),
+      quantity: i.quantity,
+    })),
+  };
 
-  const subtotalNum = Number(order.subtotal);
-  const discountNum = Number(order.discountAmount);
-  const discountPercent = subtotalNum > 0 ? Math.round((discountNum / subtotalNum) * 100) : 0;
+  const canVoid = order.channel === "POS" && order.status !== "CANCELLED" && order.cashRegisterSession?.status === "OPEN";
+  const alreadyClosed = order.channel === "POS" && order.status !== "CANCELLED" && order.cashRegisterSession?.status !== "OPEN";
+
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+  const publicReceiptUrl = baseUrl + "/receipt/" + order.id;
+  const whatsappLink = order.guestPhone
+    ? buildWhatsappLink(
+        order.guestPhone,
+        "Hola" + (order.guestFirstName ? " " + order.guestFirstName : "") + "! Te paso el comprobante de tu compra en Member Club: " + publicReceiptUrl
+      )
+    : null;
 
   return (
     <div style={{ padding: "24px", backgroundColor: "#F4F4F4", minHeight: "100vh" }}>
@@ -39,51 +57,26 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
         <PrintButton />
       </div>
 
-      <div className="receipt-ticket" style={{ maxWidth: "340px", margin: "0 auto", backgroundColor: "white", padding: "24px", fontFamily: "monospace", fontSize: "12px", color: "#0A0A0A" }}>
-        <p style={{ textAlign: "center", fontWeight: "700", fontSize: "14px", marginBottom: "4px" }}>Member Club</p>
-        <p style={{ textAlign: "center", color: "#737373", marginBottom: "16px" }}>Comprobante de venta</p>
+      <ReceiptTicket order={ticketData} />
 
-        <div style={{ borderTop: "1px dashed #A3A3A3", borderBottom: "1px dashed #A3A3A3", padding: "8px 0", marginBottom: "12px" }}>
-          <p>Venta #{order.orderNumber}</p>
-          <p>{dateStr}</p>
-          <p>Pago: {PAYMENT_LABELS[order.paymentMethod || ""] || order.paymentMethod || "-"}</p>
-          {order.guestFirstName && (
-            <p>Cliente: {order.guestFirstName} {order.guestLastName}</p>
-          )}
-          {order.guestPhone && <p>Tel: {order.guestPhone}</p>}
-          {order.guestEmail && <p>Email: {order.guestEmail}</p>}
-        </div>
+      <div className="no-print" style={{ maxWidth: "340px", margin: "16px auto 0", display: "flex", flexDirection: "column", gap: "10px" }}>
+        {whatsappLink && (
+          <a
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textAlign: "center", padding: "10px 14px", fontSize: "13px", fontWeight: "700", backgroundColor: "#16A34A", color: "white", borderRadius: "8px", textDecoration: "none" }}
+          >
+            Enviar por WhatsApp
+          </a>
+        )}
 
-        {order.items.map((item) => (
-          <div key={item.id} style={{ marginBottom: "8px" }}>
-            <p>{item.productName}</p>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Talle {item.size} x{item.quantity}</span>
-              <span>${(Number(item.unitPrice) * item.quantity).toLocaleString("es-AR")}</span>
-            </div>
-          </div>
-        ))}
-
-        <div style={{ borderTop: "1px dashed #A3A3A3", marginTop: "12px", paddingTop: "8px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span>Subtotal</span>
-            <span>${Number(order.subtotal).toLocaleString("es-AR")}</span>
-          </div>
-          {discountNum > 0 && (
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>
-                Descuento{order.couponCode ? " (" + order.couponCode + ")" : ""} -{discountPercent}%
-              </span>
-              <span>-${discountNum.toLocaleString("es-AR")}</span>
-            </div>
-          )}
-          <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "700", fontSize: "14px", marginTop: "4px" }}>
-            <span>Total</span>
-            <span>${Number(order.total).toLocaleString("es-AR")}</span>
-          </div>
-        </div>
-
-        <p style={{ textAlign: "center", color: "#A3A3A3", marginTop: "20px" }}>¡Gracias por tu compra!</p>
+        {canVoid && <VoidSaleButton orderId={order.id} />}
+        {alreadyClosed && (
+          <p style={{ fontSize: "12px", color: "#A3A3A3", textAlign: "center" }}>
+            La caja de este turno ya esta cerrada, no se puede anular desde aca.
+          </p>
+        )}
       </div>
 
       <style>{`

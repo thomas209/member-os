@@ -23,6 +23,8 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json({
+      // Se listan todas, incluidas las anuladas (para que quede el registro visible),
+      // pero el status permite al frontend excluirlas de los totales en pesos.
       orders: orders.map((o) => ({
         id: o.id,
         orderNumber: o.orderNumber,
@@ -31,6 +33,7 @@ export async function GET(request: Request) {
         total: Number(o.total),
         discountAmount: Number(o.discountAmount),
         itemCount: o.items.reduce((sum, i) => sum + i.quantity, 0),
+        status: o.status,
       })),
     });
   } catch (error) {

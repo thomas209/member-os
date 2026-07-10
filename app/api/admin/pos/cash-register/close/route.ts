@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     const byMethod = await prisma.order.groupBy({
       by: ["paymentMethod"],
-      where: { cashRegisterSessionId: session.id },
+      where: { cashRegisterSessionId: session.id, status: { not: "CANCELLED" } },
       _sum: { total: true },
     });
 

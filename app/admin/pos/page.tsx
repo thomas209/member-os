@@ -108,7 +108,7 @@ export default function PosPage() {
   // --- Historial de ventas del turno ---
   const [showSalesModal, setShowSalesModal] = useState(false);
   const [salesList, setSalesList] = useState<
-    { id: string; orderNumber: number; createdAt: string; paymentMethod: string | null; total: number; itemCount: number }[] | null
+    { id: string; orderNumber: number; createdAt: string; paymentMethod: string | null; total: number; itemCount: number; status: string }[] | null
   >(null);
   const [loadingSales, setLoadingSales] = useState(false);
 
@@ -1180,29 +1180,33 @@ export default function PosPage() {
               {loadingSales ? (
                 <p style={{ fontSize: "13px", color: "#737373" }}>Cargando...</p>
               ) : salesList && salesList.length > 0 ? (
-                salesList.map((s) => (
-                  <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #F4F4F4" }}>
-                    <div>
-                      <p style={{ fontSize: "13px", fontWeight: "600" }}>
-                        Venta #{s.orderNumber} · {s.itemCount} {s.itemCount === 1 ? "producto" : "productos"}
-                      </p>
-                      <p style={{ fontSize: "11px", color: "#737373" }}>
-                        {new Date(s.createdAt).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Argentina/Buenos_Aires" })} · {PAYMENT_LABELS[(s.paymentMethod as PaymentMethod) || "EFECTIVO"] || s.paymentMethod}
-                      </p>
+                salesList.map((s) => {
+                  const voided = s.status === "CANCELLED";
+                  return (
+                    <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #F4F4F4", opacity: voided ? 0.5 : 1 }}>
+                      <div>
+                        <p style={{ fontSize: "13px", fontWeight: "600", textDecoration: voided ? "line-through" : "none" }}>
+                          Venta #{s.orderNumber} · {s.itemCount} {s.itemCount === 1 ? "producto" : "productos"}
+                          {voided && <span style={{ marginLeft: "8px", fontSize: "10px", fontWeight: "700", color: "#DC2626", textDecoration: "none" }}>ANULADA</span>}
+                        </p>
+                        <p style={{ fontSize: "11px", color: "#737373" }}>
+                          {new Date(s.createdAt).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Argentina/Buenos_Aires" })} · {PAYMENT_LABELS[(s.paymentMethod as PaymentMethod) || "EFECTIVO"] || s.paymentMethod}
+                        </p>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <span style={{ fontSize: "13px", fontWeight: "700", textDecoration: voided ? "line-through" : "none" }}>${s.total.toLocaleString("es-AR")}</span>
+                        <a
+                          href={"/admin/pos/receipt/" + s.id}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: "11px", fontWeight: "600", color: "#0A0A0A", textDecoration: "underline" }}
+                        >
+                          Ver
+                        </a>
+                      </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <span style={{ fontSize: "13px", fontWeight: "700" }}>${s.total.toLocaleString("es-AR")}</span>
-                      <a
-                        href={"/admin/pos/receipt/" + s.id}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ fontSize: "11px", fontWeight: "600", color: "#0A0A0A", textDecoration: "underline" }}
-                      >
-                        Ver
-                      </a>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <p style={{ fontSize: "13px", color: "#A3A3A3", textAlign: "center", marginTop: "20px" }}>Todavia no hay ventas en este turno</p>
               )}
@@ -1212,7 +1216,7 @@ export default function PosPage() {
               <div style={{ display: "flex", justifyContent: "space-between", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #E8E8E8" }}>
                 <span style={{ fontSize: "13px", fontWeight: "600" }}>Total del turno</span>
                 <span style={{ fontSize: "16px", fontWeight: "700" }}>
-                  ${salesList.reduce((sum, s) => sum + s.total, 0).toLocaleString("es-AR")}
+                  ${salesList.filter((s) => s.status !== "CANCELLED").reduce((sum, s) => sum + s.total, 0).toLocaleString("es-AR")}
                 </span>
               </div>
             )}

@@ -7,15 +7,18 @@ export default async function CashHistoryPage() {
     take: 60,
     include: {
       openedBy: { select: { firstName: true, lastName: true } },
-      orders: { select: { paymentMethod: true, total: true } },
+      orders: { select: { paymentMethod: true, total: true, status: true } },
     },
   });
 
   const rows = sessions.map((s) => {
-    const cashSales = s.orders
+    // Las ventas anuladas no cuentan para los totales de caja, aunque sigan
+    // formando parte del historial general de pedidos
+    const validOrders = s.orders.filter((o) => o.status !== "CANCELLED");
+    const cashSales = validOrders
       .filter((o) => (o.paymentMethod || "EFECTIVO") === "EFECTIVO")
       .reduce((sum, o) => sum + Number(o.total), 0);
-    const totalSales = s.orders.reduce((sum, o) => sum + Number(o.total), 0);
+    const totalSales = validOrders.reduce((sum, o) => sum + Number(o.total), 0);
     const expectedCash = Number(s.openingAmount) + cashSales;
     const counted = s.closingAmountCounted !== null ? Number(s.closingAmountCounted) : null;
     const difference = counted !== null ? counted - expectedCash : null;
@@ -27,7 +30,7 @@ export default async function CashHistoryPage() {
       openedByName: s.openedBy.firstName + " " + s.openedBy.lastName,
       openingAmount: Number(s.openingAmount),
       totalSales,
-      orderCount: s.orders.length,
+      orderCount: validOrders.length,
       expectedCash,
       counted,
       difference,
