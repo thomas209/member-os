@@ -16,7 +16,10 @@ export async function GET(request: Request) {
       where: {
         isActive: true,
         deletedAt: null,
-        name: { contains: q, mode: "insensitive" },
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { variants: { some: { sku: { contains: q, mode: "insensitive" } } } },
+        ],
       },
       take: 8,
       orderBy: { name: "asc" },

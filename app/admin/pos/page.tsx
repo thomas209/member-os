@@ -80,6 +80,10 @@ export default function PosPage() {
   const [usbScanInput, setUsbScanInput] = useState("");
   const usbScanRef = useRef<HTMLInputElement>(null);
 
+  // Se incrementa cada vez que se agrega un producto, para volver a
+  // disparar la animacion de confirmacion aunque sea el mismo producto
+  const [scanFlash, setScanFlash] = useState(0);
+
   // --- Cobro ---
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
@@ -139,6 +143,18 @@ export default function PosPage() {
   useEffect(() => {
     usbScanRef.current?.focus();
   }, []);
+
+  // Avisar antes de cerrar/navegar si hay algo en el carrito sin cobrar,
+  // para no perder una venta a medio hacer por un toque accidental
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (cart.length === 0) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [cart.length]);
 
   const handleUsbScanKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== "Enter") return;
@@ -252,6 +268,7 @@ export default function PosPage() {
         }
         return [...prev, item];
       });
+      setScanFlash((n) => n + 1);
       usbScanRef.current?.focus();
     } catch {
       setError("Error de conexion");
@@ -312,6 +329,7 @@ export default function PosPage() {
     setSearchQuery("");
     setSearchResults(null);
     setError("");
+    setScanFlash((n) => n + 1);
     usbScanRef.current?.focus();
   };
 
@@ -563,7 +581,7 @@ export default function PosPage() {
             </p>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
               <a
-                href={"/admin/pos/receipt/" + lastSale.orderId}
+                href={"/admin/pos/receipt/" + lastSale.orderId + "?print=1"}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ fontSize: "12px", fontWeight: "600", color: "#16A34A", textDecoration: "underline" }}
@@ -669,9 +687,14 @@ export default function PosPage() {
 
         {loading && <p style={{ fontSize: "13px", color: "#737373" }}>Buscando producto...</p>}
 
-        {/* Tarjeta del ultimo producto escaneado */}
+        {/* Tarjeta del ultimo producto escaneado — el key fuerza que se vuelva a montar
+            en cada scan (incluso del mismo producto) para repetir la animacion de flash */}
         {lastScanned && !loading && (
-          <div style={{ backgroundColor: "white", borderRadius: "12px", padding: "16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
+          <div
+            key={lastScanned.variantId + "-" + scanFlash}
+            className="scan-flash"
+            style={{ backgroundColor: "white", borderRadius: "12px", padding: "16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+          >
             <div style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
               {lastScanned.image ? (
                 <img src={lastScanned.image} alt={lastScanned.name} style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px" }} />
@@ -1199,6 +1222,11 @@ export default function PosPage() {
           .pos-scan-panel { padding: 16px !important; }
           .pos-cart-panel { width: 100% !important; border-left: none !important; border-top: 1px solid #E8E8E8; }
         }
+        @keyframes scanFlash {
+          0% { background-color: #DCFCE7; box-shadow: 0 0 0 2px #16A34A; }
+          100% { background-color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        }
+        .scan-flash { animation: scanFlash 0.6s ease-out; }
       `}</style>
     </div>
   );
