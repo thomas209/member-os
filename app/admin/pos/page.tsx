@@ -89,6 +89,7 @@ export default function PosPage() {
   const [couponError, setCouponError] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountAmount: number } | null>(null);
   const [manualDiscountInput, setManualDiscountInput] = useState("");
+  const [manualDiscountMode, setManualDiscountMode] = useState<"PERCENT" | "AMOUNT">("PERCENT");
 
   // --- Historial de ventas del turno ---
   const [showSalesModal, setShowSalesModal] = useState(false);
@@ -98,7 +99,11 @@ export default function PosPage() {
   const [loadingSales, setLoadingSales] = useState(false);
 
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const manualDiscount = Math.max(0, Number(manualDiscountInput) || 0);
+  const manualDiscountRaw = Math.max(0, Number(manualDiscountInput) || 0);
+  const manualDiscount =
+    manualDiscountMode === "PERCENT"
+      ? total * (Math.min(manualDiscountRaw, 100) / 100)
+      : manualDiscountRaw;
   const discountAmount = Math.min(total, (appliedCoupon?.discountAmount || 0) + manualDiscount);
   const totalToCharge = total - discountAmount;
   const discountPercent = total > 0 ? Math.round((discountAmount / total) * 100) : 0;
@@ -375,6 +380,7 @@ export default function PosPage() {
     setCouponError("");
     setAppliedCoupon(null);
     setManualDiscountInput("");
+    setManualDiscountMode("PERCENT");
     setShowPaymentModal(true);
   };
 
@@ -796,13 +802,47 @@ export default function PosPage() {
             </div>
 
             <div style={{ marginBottom: "16px" }}>
-              <label style={{ fontSize: "11px", color: "#A3A3A3", textTransform: "uppercase", letterSpacing: "0.06em" }}>Descuento manual $ (opcional)</label>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <label style={{ fontSize: "11px", color: "#A3A3A3", textTransform: "uppercase", letterSpacing: "0.06em" }}>Descuento manual (opcional)</label>
+                <div style={{ display: "flex", gap: "4px" }}>
+                  <button
+                    onClick={() => setManualDiscountMode("PERCENT")}
+                    style={{
+                      padding: "3px 10px",
+                      fontSize: "11px",
+                      fontWeight: "700",
+                      borderRadius: "6px",
+                      border: manualDiscountMode === "PERCENT" ? "1px solid #0A0A0A" : "1px solid #E8E8E8",
+                      backgroundColor: manualDiscountMode === "PERCENT" ? "#0A0A0A" : "white",
+                      color: manualDiscountMode === "PERCENT" ? "white" : "#737373",
+                      cursor: "pointer",
+                    }}
+                  >
+                    %
+                  </button>
+                  <button
+                    onClick={() => setManualDiscountMode("AMOUNT")}
+                    style={{
+                      padding: "3px 10px",
+                      fontSize: "11px",
+                      fontWeight: "700",
+                      borderRadius: "6px",
+                      border: manualDiscountMode === "AMOUNT" ? "1px solid #0A0A0A" : "1px solid #E8E8E8",
+                      backgroundColor: manualDiscountMode === "AMOUNT" ? "#0A0A0A" : "white",
+                      color: manualDiscountMode === "AMOUNT" ? "white" : "#737373",
+                      cursor: "pointer",
+                    }}
+                  >
+                    $
+                  </button>
+                </div>
+              </div>
               <input
                 type="number"
                 inputMode="decimal"
                 value={manualDiscountInput}
                 onChange={(e) => setManualDiscountInput(e.target.value)}
-                placeholder="0"
+                placeholder={manualDiscountMode === "PERCENT" ? "0%" : "$0"}
                 style={{ width: "100%", padding: "10px 12px", fontSize: "14px", border: "1px solid #E8E8E8", borderRadius: "8px", marginTop: "6px", boxSizing: "border-box" }}
               />
             </div>
