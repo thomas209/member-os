@@ -25,7 +25,12 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "America/Argentina/Buenos_Aires",
   });
+
+  const subtotalNum = Number(order.subtotal);
+  const discountNum = Number(order.discountAmount);
+  const discountPercent = subtotalNum > 0 ? Math.round((discountNum / subtotalNum) * 100) : 0;
 
   return (
     <div style={{ padding: "24px", backgroundColor: "#F4F4F4", minHeight: "100vh" }}>
@@ -59,10 +64,12 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
             <span>Subtotal</span>
             <span>${Number(order.subtotal).toLocaleString("es-AR")}</span>
           </div>
-          {Number(order.discountAmount) > 0 && (
+          {discountNum > 0 && (
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Descuento{order.couponCode ? " (" + order.couponCode + ")" : ""}</span>
-              <span>-${Number(order.discountAmount).toLocaleString("es-AR")}</span>
+              <span>
+                Descuento{order.couponCode ? " (" + order.couponCode + ")" : ""} -{discountPercent}%
+              </span>
+              <span>-${discountNum.toLocaleString("es-AR")}</span>
             </div>
           )}
           <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "700", fontSize: "14px", marginTop: "4px" }}>

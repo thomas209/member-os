@@ -101,6 +101,7 @@ export default function PosPage() {
   const manualDiscount = Math.max(0, Number(manualDiscountInput) || 0);
   const discountAmount = Math.min(total, (appliedCoupon?.discountAmount || 0) + manualDiscount);
   const totalToCharge = total - discountAmount;
+  const discountPercent = total > 0 ? Math.round((discountAmount / total) * 100) : 0;
 
   const fetchCashSession = async () => {
     try {
@@ -813,7 +814,7 @@ export default function PosPage() {
                   <span>${total.toLocaleString("es-AR")}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "4px", color: "#DC2626" }}>
-                  <span>Descuento</span>
+                  <span>Descuento ({discountPercent}%)</span>
                   <span>-${discountAmount.toLocaleString("es-AR")}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px", fontWeight: "700", paddingTop: "6px", borderTop: "1px solid #E8E8E8" }}>
@@ -1018,7 +1019,7 @@ export default function PosPage() {
                         Venta #{s.orderNumber} · {s.itemCount} {s.itemCount === 1 ? "producto" : "productos"}
                       </p>
                       <p style={{ fontSize: "11px", color: "#737373" }}>
-                        {new Date(s.createdAt).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })} · {PAYMENT_LABELS[(s.paymentMethod as PaymentMethod) || "EFECTIVO"] || s.paymentMethod}
+                        {new Date(s.createdAt).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Argentina/Buenos_Aires" })} · {PAYMENT_LABELS[(s.paymentMethod as PaymentMethod) || "EFECTIVO"] || s.paymentMethod}
                       </p>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
