@@ -76,6 +76,10 @@ export default function PosPage() {
   const [searching, setSearching] = useState(false);
   const searchTimeoutRef = useRef<any>(null);
 
+  // --- Lector de codigo de barras/QR por USB (emula teclado + Enter) ---
+  const [usbScanInput, setUsbScanInput] = useState("");
+  const usbScanRef = useRef<HTMLInputElement>(null);
+
   // --- Cobro ---
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
@@ -129,6 +133,20 @@ export default function PosPage() {
   useEffect(() => {
     fetchCashSession();
   }, []);
+
+  // Foco automatico en el campo del lector USB al entrar a la pantalla,
+  // para poder escanear sin tener que tocar nada primero
+  useEffect(() => {
+    usbScanRef.current?.focus();
+  }, []);
+
+  const handleUsbScanKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    const code = usbScanInput.trim();
+    setUsbScanInput("");
+    if (code) lookupVariant(code);
+  };
 
   const openCashRegister = async () => {
     const amount = Number(openingAmountInput);
@@ -234,6 +252,7 @@ export default function PosPage() {
         }
         return [...prev, item];
       });
+      usbScanRef.current?.focus();
     } catch {
       setError("Error de conexion");
     }
@@ -293,6 +312,7 @@ export default function PosPage() {
     setSearchQuery("");
     setSearchResults(null);
     setError("");
+    usbScanRef.current?.focus();
   };
 
   // Corregir el talle sin volver a escanear: usa la data que ya tenemos de allVariants
@@ -463,7 +483,9 @@ export default function PosPage() {
       setCustomerEmail("");
       setCustomerPhone("");
     } catch {
-      setCheckoutError("Error de conexion");
+      setCheckoutError(
+        "Se perdio la conexion y no sabemos si la venta se registro. Antes de reintentar, cerra este cartel y revisa 'Ventas de hoy' — si ya aparece, no vuelvas a cobrar."
+      );
     }
     setCheckingOut(false);
   };
@@ -552,6 +574,16 @@ export default function PosPage() {
             </div>
           </div>
         )}
+
+        <input
+          ref={usbScanRef}
+          type="text"
+          value={usbScanInput}
+          onChange={(e) => setUsbScanInput(e.target.value)}
+          onKeyDown={handleUsbScanKeyDown}
+          placeholder="Lector de código de barras/QR (USB) — hacé click acá y escaneá"
+          style={{ width: "100%", maxWidth: "400px", padding: "12px 14px", fontSize: "13px", border: "1px dashed #A3A3A3", borderRadius: "8px", boxSizing: "border-box", marginBottom: "10px", color: "#525252" }}
+        />
 
         <div style={{ position: "relative", marginBottom: "16px" }}>
           <input
@@ -724,7 +756,21 @@ export default function PosPage() {
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
                     <button onClick={() => updateQty(item.variantId, item.qty - 1)} style={{ width: "20px", height: "20px", border: "1px solid #E8E8E8", background: "white", cursor: "pointer" }}>-</button>
                     <span style={{ fontSize: "12px" }}>{item.qty}</span>
-                    <button onClick={() => updateQty(item.variantId, item.qty + 1)} style={{ width: "20px", height: "20px", border: "1px solid #E8E8E8", background: "white", cursor: "pointer" }}>+</button>
+                    <button
+                      onClick={() => updateQty(item.variantId, item.qty + 1)}
+                      disabled={item.qty >= item.stock}
+                      title={item.qty >= item.stock ? "No hay mas stock disponible" : undefined}
+                      style={{
+                        width: "20px",
+                        height: "20px",
+                        border: "1px solid #E8E8E8",
+                        background: "white",
+                        cursor: item.qty >= item.stock ? "not-allowed" : "pointer",
+                        opacity: item.qty >= item.stock ? 0.4 : 1,
+                      }}
+                    >
+                      +
+                    </button>
                     <span style={{ fontSize: "12px", fontWeight: "700", marginLeft: "auto" }}>${(item.price * item.qty).toLocaleString("es-AR")}</span>
                   </div>
                 </div>
