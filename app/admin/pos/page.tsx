@@ -3,6 +3,17 @@ import { useState, useRef, useEffect } from "react";
 
 type VariantSummary = { id: string; size: string; stock: number };
 
+type SearchProduct = {
+  productId: string;
+  name: string;
+  brand: string;
+  colorName: string | null;
+  colorHex: string | null;
+  price: number;
+  image: string | null;
+  variants: VariantSummary[];
+};
+
 type ScannedItem = {
   variantId: string;
   productId: string;
@@ -58,6 +69,12 @@ export default function PosPage() {
   const scannerRef = useRef<any>(null);
   const lastCodeRef = useRef<string>("");
   const lastScanTimeRef = useRef<number>(0);
+
+  // --- Buscador manual (fallback si no se puede escanear) ---
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchProduct[] | null>(null);
+  const [searching, setSearching] = useState(false);
+  const searchTimeoutRef = useRef<any>(null);
 
   // --- Cobro ---
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -192,6 +209,61 @@ export default function PosPage() {
       setError("Error de conexion");
     }
     setLoading(false);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    if (value.trim().length < 2) {
+      setSearchResults(null);
+      return;
+    }
+    searchTimeoutRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch("/api/admin/pos/search?q=" + encodeURIComponent(value.trim()));
+        const data = await res.json();
+        setSearchResults(data.products || []);
+      } catch {
+        setSearchResults([]);
+      }
+      setSearching(false);
+    }, 300);
+  };
+
+  // Elegir un producto de los resultados de busqueda: arma el item igual que un escaneo,
+  // agarrando el primer talle con stock (o el primero disponible si estan todos en 0)
+  const selectSearchProduct = (product: SearchProduct) => {
+    const variant = product.variants.find((v) => v.stock > 0) || product.variants[0];
+    if (!variant) return;
+
+    const item: ScannedItem = {
+      variantId: variant.id,
+      productId: product.productId,
+      name: product.name,
+      brand: product.brand,
+      size: variant.size,
+      colorName: product.colorName,
+      colorHex: product.colorHex,
+      price: product.price,
+      stock: variant.stock,
+      image: product.image,
+      allVariants: product.variants,
+      qty: 1,
+    };
+
+    setLastScanned(item);
+    setCart((prev) => {
+      const existing = prev.find((p) => p.variantId === item.variantId);
+      if (existing) {
+        return prev.map((p) => (p.variantId === item.variantId ? { ...p, qty: p.qty + 1 } : p));
+      }
+      return [...prev, item];
+    });
+
+    setSearchQuery("");
+    setSearchResults(null);
+    setError("");
   };
 
   // Corregir el talle sin volver a escanear: usa la data que ya tenemos de allVariants
@@ -372,6 +444,43 @@ export default function PosPage() {
             <button onClick={() => setLastSale(null)} style={{ background: "none", border: "none", color: "#16A34A", cursor: "pointer", fontSize: "16px" }}>×</button>
           </div>
         )}
+
+        <div style={{ position: "relative", marginBottom: "16px" }}>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Buscar producto por nombre..."
+            style={{ width: "100%", maxWidth: "400px", padding: "12px 14px", fontSize: "14px", border: "1px solid #E8E8E8", borderRadius: "8px", boxSizing: "border-box" }}
+          />
+          {searchQuery.trim().length >= 2 && (
+            <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, maxWidth: "400px", backgroundColor: "white", border: "1px solid #E8E8E8", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", zIndex: 20, maxHeight: "320px", overflowY: "auto" }}>
+              {searching ? (
+                <p style={{ padding: "12px", fontSize: "13px", color: "#737373" }}>Buscando...</p>
+              ) : searchResults && searchResults.length > 0 ? (
+                searchResults.map((p) => (
+                  <button
+                    key={p.productId}
+                    onClick={() => selectSearchProduct(p)}
+                    style={{ display: "flex", gap: "10px", width: "100%", padding: "10px 12px", border: "none", borderBottom: "1px solid #F4F4F4", background: "white", cursor: "pointer", textAlign: "left" }}
+                  >
+                    {p.image ? (
+                      <img src={p.image} alt={p.name} style={{ width: "36px", height: "36px", objectFit: "cover", borderRadius: "6px", flexShrink: 0 }} />
+                    ) : (
+                      <div style={{ width: "36px", height: "36px", backgroundColor: "#F4F4F4", borderRadius: "6px", flexShrink: 0 }} />
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: "12px", fontWeight: "600" }}>{p.name}</p>
+                      <p style={{ fontSize: "11px", color: "#737373" }}>{p.brand} · ${p.price.toLocaleString("es-AR")}</p>
+                    </div>
+                  </button>
+                ))
+              ) : searchResults ? (
+                <p style={{ padding: "12px", fontSize: "13px", color: "#737373" }}>Sin resultados</p>
+              ) : null}
+            </div>
+          )}
+        </div>
 
         {!scanning ? (
           <button
