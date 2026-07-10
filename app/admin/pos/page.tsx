@@ -91,6 +91,12 @@ export default function PosPage() {
   const [manualDiscountInput, setManualDiscountInput] = useState("");
   const [manualDiscountMode, setManualDiscountMode] = useState<"PERCENT" | "AMOUNT">("PERCENT");
 
+  // --- Datos del cliente (opcionales, se cargan al momento de cobrar) ---
+  const [showCustomerFields, setShowCustomerFields] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+
   // --- Historial de ventas del turno ---
   const [showSalesModal, setShowSalesModal] = useState(false);
   const [salesList, setSalesList] = useState<
@@ -381,6 +387,10 @@ export default function PosPage() {
     setAppliedCoupon(null);
     setManualDiscountInput("");
     setManualDiscountMode("PERCENT");
+    setShowCustomerFields(false);
+    setCustomerName("");
+    setCustomerEmail("");
+    setCustomerPhone("");
     setShowPaymentModal(true);
   };
 
@@ -426,6 +436,9 @@ export default function PosPage() {
           paymentMethod: selectedMethod,
           couponCode: appliedCoupon?.code,
           manualDiscount,
+          customerName: customerName.trim(),
+          customerEmail: customerEmail.trim(),
+          customerPhone: customerPhone.trim(),
         }),
       });
       const data = await res.json();
@@ -446,6 +459,9 @@ export default function PosPage() {
       setShowPaymentModal(false);
       setAppliedCoupon(null);
       setManualDiscountInput("");
+      setCustomerName("");
+      setCustomerEmail("");
+      setCustomerPhone("");
     } catch {
       setCheckoutError("Error de conexion");
     }
@@ -863,6 +879,45 @@ export default function PosPage() {
                 </div>
               </div>
             )}
+
+            <div style={{ marginBottom: "16px" }}>
+              {!showCustomerFields ? (
+                <button
+                  onClick={() => setShowCustomerFields(true)}
+                  style={{ background: "none", border: "none", color: "#0A0A0A", fontSize: "12px", fontWeight: "600", cursor: "pointer", padding: 0, textDecoration: "underline" }}
+                >
+                  + Agregar datos del cliente (opcional)
+                </button>
+              ) : (
+                <div style={{ border: "1px solid #E8E8E8", borderRadius: "8px", padding: "12px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                    <label style={{ fontSize: "11px", color: "#A3A3A3", textTransform: "uppercase", letterSpacing: "0.06em" }}>Datos del cliente (opcional)</label>
+                    <button onClick={() => setShowCustomerFields(false)} style={{ background: "none", border: "none", color: "#737373", cursor: "pointer", fontSize: "14px" }}>×</button>
+                  </div>
+                  <input
+                    type="text"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Nombre y apellido"
+                    style={{ width: "100%", padding: "10px 12px", fontSize: "13px", border: "1px solid #E8E8E8", borderRadius: "8px", marginBottom: "8px", boxSizing: "border-box" }}
+                  />
+                  <input
+                    type="email"
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    placeholder="Email"
+                    style={{ width: "100%", padding: "10px 12px", fontSize: "13px", border: "1px solid #E8E8E8", borderRadius: "8px", marginBottom: "8px", boxSizing: "border-box" }}
+                  />
+                  <input
+                    type="tel"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    placeholder="Telefono"
+                    style={{ width: "100%", padding: "10px 12px", fontSize: "13px", border: "1px solid #E8E8E8", borderRadius: "8px", boxSizing: "border-box" }}
+                  />
+                </div>
+              )}
+            </div>
 
             {checkoutError && (
               <p style={{ color: "#DC2626", fontSize: "13px", marginBottom: "16px", padding: "10px", backgroundColor: "#FEE2E2", borderRadius: "8px" }}>

@@ -29,6 +29,14 @@ export async function POST(request: NextRequest) {
     const { items, paymentMethod, couponCode } = body;
     const manualDiscountInput = Math.max(0, Number(body.manualDiscount) || 0);
 
+    // Datos del cliente son opcionales en el POS (se guardan igual que en el checkout online)
+    const customerName = String(body.customerName || "").trim();
+    const customerEmail = String(body.customerEmail || "").trim();
+    const customerPhone = String(body.customerPhone || "").trim();
+    const nameParts = customerName.split(/\s+/).filter(Boolean);
+    const guestFirstName = nameParts[0] || null;
+    const guestLastName = nameParts.slice(1).join(" ") || null;
+
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "El carrito esta vacio" }, { status: 400 });
     }
@@ -129,6 +137,10 @@ export async function POST(request: NextRequest) {
           cashRegisterSessionId: cashSession.id,
           couponId: coupon?.id,
           couponCode: coupon?.code,
+          guestFirstName,
+          guestLastName,
+          guestEmail: customerEmail || null,
+          guestPhone: customerPhone || null,
           items: { create: orderItemsData },
         },
       });

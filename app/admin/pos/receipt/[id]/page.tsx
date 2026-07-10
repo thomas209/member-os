@@ -47,6 +47,11 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
           <p>Venta #{order.orderNumber}</p>
           <p>{dateStr}</p>
           <p>Pago: {PAYMENT_LABELS[order.paymentMethod || ""] || order.paymentMethod || "-"}</p>
+          {order.guestFirstName && (
+            <p>Cliente: {order.guestFirstName} {order.guestLastName}</p>
+          )}
+          {order.guestPhone && <p>Tel: {order.guestPhone}</p>}
+          {order.guestEmail && <p>Email: {order.guestEmail}</p>}
         </div>
 
         {order.items.map((item) => (
