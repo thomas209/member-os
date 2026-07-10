@@ -12,9 +12,12 @@ class StockError extends Error {
   }
 }
 
+class CheckoutError extends Error {}
+
 // Cobra el carrito del POS: crea la orden, descuenta stock de forma
 // atomica (evita vender de mas si dos cajas tocan la misma variante
-// al mismo tiempo) y registra el movimiento de stock.
+// al mismo tiempo) y registra el movimiento de stock. Acepta un cupon
+// (couponCode) y/o un descuento manual en pesos (manualDiscount).
 export async function POST(request: NextRequest) {
   try {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
@@ -23,7 +26,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { items, paymentMethod } = body;
+    const { items, paymentMethod, couponCode } = body;
+    const manualDiscountInput = Math.max(0, Number(body.manualDiscount) || 0);
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "El carrito esta vacio" }, { status: 400 });
@@ -95,19 +99,43 @@ export async function POST(request: NextRequest) {
         });
       }
 
+      // Cupon (opcional): misma validacion que el checkout online
+      let coupon = null;
+      let couponDiscount = 0;
+      if (couponCode && String(couponCode).trim()) {
+        coupon = await tx.coupon.findUnique({ where: { code: String(couponCode).trim().toUpperCase() } });
+        if (!coupon || !coupon.isActive) throw new CheckoutError("Cupon invalido");
+        if (coupon.validUntil && coupon.validUntil < new Date()) throw new CheckoutError("Cupon expirado");
+        if (coupon.maxUses && coupon.usedCount >= coupon.maxUses) throw new CheckoutError("Cupon sin usos disponibles");
+        if (coupon.minOrderAmount && subtotal < Number(coupon.minOrderAmount)) {
+          throw new CheckoutError("Monto minimo no alcanzado para el cupon");
+        }
+        couponDiscount = coupon.type === "PERCENTAGE" ? subtotal * (Number(coupon.value) / 100) : Number(coupon.value);
+      }
+
+      // El descuento manual se suma al del cupon, pero nunca puede superar el subtotal
+      const discountAmount = Math.min(subtotal, couponDiscount + manualDiscountInput);
+      const total = subtotal - discountAmount;
+
       const createdOrder = await tx.order.create({
         data: {
           status: "PAID",
           subtotal,
-          discountAmount: 0,
+          discountAmount,
           shippingCost: 0,
-          total: subtotal,
+          total,
           channel: "POS",
           paymentMethod,
           cashRegisterSessionId: cashSession.id,
+          couponId: coupon?.id,
+          couponCode: coupon?.code,
           items: { create: orderItemsData },
         },
       });
+
+      if (coupon) {
+        await tx.coupon.update({ where: { id: coupon.id }, data: { usedCount: { increment: 1 } } });
+      }
 
       for (const m of movementsData) {
         await tx.stockMovement.create({
@@ -134,6 +162,9 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     if (error instanceof StockError) {
       return NextResponse.json({ error: "Stock insuficiente", detail: error.detail }, { status: 409 });
+    }
+    if (error instanceof CheckoutError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
     console.error("Error en checkout POS:", error);
     return NextResponse.json({ error: "Error al procesar el cobro" }, { status: 500 });

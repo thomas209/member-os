@@ -81,9 +81,26 @@ export default function PosPage() {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
-  const [lastSale, setLastSale] = useState<{ orderNumber: number; total: number } | null>(null);
+  const [lastSale, setLastSale] = useState<{ orderId: string; orderNumber: number; total: number } | null>(null);
+
+  // --- Cupon y descuento manual (se cargan al momento de cobrar) ---
+  const [couponCodeInput, setCouponCodeInput] = useState("");
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountAmount: number } | null>(null);
+  const [manualDiscountInput, setManualDiscountInput] = useState("");
+
+  // --- Historial de ventas del turno ---
+  const [showSalesModal, setShowSalesModal] = useState(false);
+  const [salesList, setSalesList] = useState<
+    { id: string; orderNumber: number; createdAt: string; paymentMethod: string | null; total: number; itemCount: number }[] | null
+  >(null);
+  const [loadingSales, setLoadingSales] = useState(false);
 
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const manualDiscount = Math.max(0, Number(manualDiscountInput) || 0);
+  const discountAmount = Math.min(total, (appliedCoupon?.discountAmount || 0) + manualDiscount);
+  const totalToCharge = total - discountAmount;
 
   const fetchCashSession = async () => {
     try {
@@ -353,7 +370,40 @@ export default function PosPage() {
     }
     setSelectedMethod(null);
     setCheckoutError("");
+    setCouponCodeInput("");
+    setCouponError("");
+    setAppliedCoupon(null);
+    setManualDiscountInput("");
     setShowPaymentModal(true);
+  };
+
+  const applyCoupon = async () => {
+    if (!couponCodeInput.trim()) return;
+    setApplyingCoupon(true);
+    setCouponError("");
+    try {
+      const res = await fetch("/api/admin/pos/coupon/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCodeInput.trim(), subtotal: total }),
+      });
+      const data = await res.json();
+      if (!data.valid) {
+        setCouponError(data.error || "Cupon invalido");
+        setApplyingCoupon(false);
+        return;
+      }
+      setAppliedCoupon({ code: data.code, discountAmount: data.discountAmount });
+      setCouponCodeInput("");
+    } catch {
+      setCouponError("Error de conexion");
+    }
+    setApplyingCoupon(false);
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError("");
   };
 
   const confirmCheckout = async () => {
@@ -367,6 +417,8 @@ export default function PosPage() {
         body: JSON.stringify({
           items: cart.map((c) => ({ variantId: c.variantId, qty: c.qty })),
           paymentMethod: selectedMethod,
+          couponCode: appliedCoupon?.code,
+          manualDiscount,
         }),
       });
       const data = await res.json();
@@ -381,14 +433,29 @@ export default function PosPage() {
         setCheckingOut(false);
         return;
       }
-      setLastSale({ orderNumber: data.orderNumber, total: data.total });
+      setLastSale({ orderId: data.orderId, orderNumber: data.orderNumber, total: data.total });
       setCart([]);
       setLastScanned(null);
       setShowPaymentModal(false);
+      setAppliedCoupon(null);
+      setManualDiscountInput("");
     } catch {
       setCheckoutError("Error de conexion");
     }
     setCheckingOut(false);
+  };
+
+  const openSalesModal = async () => {
+    setShowSalesModal(true);
+    setLoadingSales(true);
+    try {
+      const res = await fetch("/api/admin/pos/cash-register/sales");
+      const data = await res.json();
+      setSalesList(data.orders || []);
+    } catch {
+      setSalesList([]);
+    }
+    setLoadingSales(false);
   };
 
   // --- PANTALLA DE CARGA INICIAL ---
@@ -420,12 +487,20 @@ export default function PosPage() {
             )}
           </div>
           {cashSession ? (
-            <button
-              onClick={openCloseModal}
-              style={{ padding: "8px 14px", fontSize: "12px", fontWeight: "600", backgroundColor: "white", color: "#0A0A0A", border: "1px solid #E8E8E8", borderRadius: "8px", cursor: "pointer" }}
-            >
-              Cerrar caja
-            </button>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={openSalesModal}
+                style={{ padding: "8px 14px", fontSize: "12px", fontWeight: "600", backgroundColor: "white", color: "#0A0A0A", border: "1px solid #E8E8E8", borderRadius: "8px", cursor: "pointer" }}
+              >
+                Ventas de hoy
+              </button>
+              <button
+                onClick={openCloseModal}
+                style={{ padding: "8px 14px", fontSize: "12px", fontWeight: "600", backgroundColor: "white", color: "#0A0A0A", border: "1px solid #E8E8E8", borderRadius: "8px", cursor: "pointer" }}
+              >
+                Cerrar caja
+              </button>
+            </div>
           ) : (
             <button
               onClick={() => { setOpenCashError(""); setShowOpenModal(true); }}
@@ -437,11 +512,21 @@ export default function PosPage() {
         </div>
 
         {lastSale && (
-          <div style={{ backgroundColor: "#DCFCE7", border: "1px solid #16A34A", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ backgroundColor: "#DCFCE7", border: "1px solid #16A34A", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
             <p style={{ fontSize: "13px", color: "#16A34A", fontWeight: "600" }}>
               Venta #{lastSale.orderNumber} cobrada · ${lastSale.total.toLocaleString("es-AR")}
             </p>
-            <button onClick={() => setLastSale(null)} style={{ background: "none", border: "none", color: "#16A34A", cursor: "pointer", fontSize: "16px" }}>×</button>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
+              <a
+                href={"/admin/pos/receipt/" + lastSale.orderId}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: "12px", fontWeight: "600", color: "#16A34A", textDecoration: "underline" }}
+              >
+                Ver comprobante
+              </a>
+              <button onClick={() => setLastSale(null)} style={{ background: "none", border: "none", color: "#16A34A", cursor: "pointer", fontSize: "16px" }}>×</button>
+            </div>
           </div>
         )}
 
@@ -654,7 +739,7 @@ export default function PosPage() {
       {showPaymentModal && (
         <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "16px" }}>
           <div style={{ backgroundColor: "white", borderRadius: "12px", padding: "24px", width: "100%", maxWidth: "380px" }}>
-            <h2 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "4px" }}>Cobrar ${total.toLocaleString("es-AR")}</h2>
+            <h2 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "4px" }}>Cobrar ${totalToCharge.toLocaleString("es-AR")}</h2>
             <p style={{ fontSize: "13px", color: "#737373", marginBottom: "16px" }}>Elegi el metodo de pago</p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
@@ -678,6 +763,65 @@ export default function PosPage() {
                 </button>
               ))}
             </div>
+
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ fontSize: "11px", color: "#A3A3A3", textTransform: "uppercase", letterSpacing: "0.06em" }}>Cupon (opcional)</label>
+              {appliedCoupon ? (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "6px", padding: "10px 12px", backgroundColor: "#DCFCE7", borderRadius: "8px" }}>
+                  <span style={{ fontSize: "13px", fontWeight: "600", color: "#16A34A" }}>
+                    {appliedCoupon.code} · -${appliedCoupon.discountAmount.toLocaleString("es-AR")}
+                  </span>
+                  <button onClick={removeCoupon} style={{ background: "none", border: "none", color: "#16A34A", cursor: "pointer", fontSize: "16px" }}>×</button>
+                </div>
+              ) : (
+                <div style={{ display: "flex", gap: "8px", marginTop: "6px" }}>
+                  <input
+                    type="text"
+                    value={couponCodeInput}
+                    onChange={(e) => setCouponCodeInput(e.target.value)}
+                    placeholder="CODIGO"
+                    style={{ flex: 1, padding: "10px 12px", fontSize: "13px", border: "1px solid #E8E8E8", borderRadius: "8px", textTransform: "uppercase", boxSizing: "border-box", minWidth: 0 }}
+                  />
+                  <button
+                    onClick={applyCoupon}
+                    disabled={applyingCoupon || !couponCodeInput.trim()}
+                    style={{ padding: "10px 14px", fontSize: "12px", fontWeight: "600", backgroundColor: "white", border: "1px solid #E8E8E8", borderRadius: "8px", cursor: applyingCoupon ? "default" : "pointer", flexShrink: 0 }}
+                  >
+                    {applyingCoupon ? "..." : "Aplicar"}
+                  </button>
+                </div>
+              )}
+              {couponError && <p style={{ color: "#DC2626", fontSize: "12px", marginTop: "6px" }}>{couponError}</p>}
+            </div>
+
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ fontSize: "11px", color: "#A3A3A3", textTransform: "uppercase", letterSpacing: "0.06em" }}>Descuento manual $ (opcional)</label>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={manualDiscountInput}
+                onChange={(e) => setManualDiscountInput(e.target.value)}
+                placeholder="0"
+                style={{ width: "100%", padding: "10px 12px", fontSize: "14px", border: "1px solid #E8E8E8", borderRadius: "8px", marginTop: "6px", boxSizing: "border-box" }}
+              />
+            </div>
+
+            {discountAmount > 0 && (
+              <div style={{ backgroundColor: "#F4F4F4", borderRadius: "8px", padding: "12px", marginBottom: "16px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "4px" }}>
+                  <span>Subtotal</span>
+                  <span>${total.toLocaleString("es-AR")}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "4px", color: "#DC2626" }}>
+                  <span>Descuento</span>
+                  <span>-${discountAmount.toLocaleString("es-AR")}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px", fontWeight: "700", paddingTop: "6px", borderTop: "1px solid #E8E8E8" }}>
+                  <span>Total a cobrar</span>
+                  <span>${totalToCharge.toLocaleString("es-AR")}</span>
+                </div>
+              </div>
+            )}
 
             {checkoutError && (
               <p style={{ color: "#DC2626", fontSize: "13px", marginBottom: "16px", padding: "10px", backgroundColor: "#FEE2E2", borderRadius: "8px" }}>
@@ -849,6 +993,59 @@ export default function PosPage() {
                   Listo
                 </button>
               </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE VENTAS DEL TURNO */}
+      {showSalesModal && (
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "16px" }}>
+          <div style={{ backgroundColor: "white", borderRadius: "12px", padding: "24px", width: "100%", maxWidth: "440px", maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <h2 style={{ fontSize: "18px", fontWeight: "700" }}>Ventas de hoy</h2>
+              <button onClick={() => setShowSalesModal(false)} style={{ background: "none", border: "none", color: "#737373", cursor: "pointer", fontSize: "18px" }}>×</button>
+            </div>
+
+            <div style={{ overflowY: "auto", flex: 1 }}>
+              {loadingSales ? (
+                <p style={{ fontSize: "13px", color: "#737373" }}>Cargando...</p>
+              ) : salesList && salesList.length > 0 ? (
+                salesList.map((s) => (
+                  <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #F4F4F4" }}>
+                    <div>
+                      <p style={{ fontSize: "13px", fontWeight: "600" }}>
+                        Venta #{s.orderNumber} · {s.itemCount} {s.itemCount === 1 ? "producto" : "productos"}
+                      </p>
+                      <p style={{ fontSize: "11px", color: "#737373" }}>
+                        {new Date(s.createdAt).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })} · {PAYMENT_LABELS[(s.paymentMethod as PaymentMethod) || "EFECTIVO"] || s.paymentMethod}
+                      </p>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <span style={{ fontSize: "13px", fontWeight: "700" }}>${s.total.toLocaleString("es-AR")}</span>
+                      <a
+                        href={"/admin/pos/receipt/" + s.id}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ fontSize: "11px", fontWeight: "600", color: "#0A0A0A", textDecoration: "underline" }}
+                      >
+                        Ver
+                      </a>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p style={{ fontSize: "13px", color: "#A3A3A3", textAlign: "center", marginTop: "20px" }}>Todavia no hay ventas en este turno</p>
+              )}
+            </div>
+
+            {salesList && salesList.length > 0 && (
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #E8E8E8" }}>
+                <span style={{ fontSize: "13px", fontWeight: "600" }}>Total del turno</span>
+                <span style={{ fontSize: "16px", fontWeight: "700" }}>
+                  ${salesList.reduce((sum, s) => sum + s.total, 0).toLocaleString("es-AR")}
+                </span>
+              </div>
             )}
           </div>
         </div>
