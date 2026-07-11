@@ -240,9 +240,10 @@ function SimpleFlipCard({ product, background }: { product: EncargoProduct; back
   const imageUrl = product.images[0]?.url;
 
   return (
+    <div style={{ flexShrink: 0, scrollSnapAlign: "start" }}>
     <div
       onClick={function() { setFlipped(!flipped); }}
-      style={{ width: "54vw", maxWidth: "240px", aspectRatio: "2.5/3.5", flexShrink: 0, perspective: "1000px", cursor: "pointer", scrollSnapAlign: "start" }}
+      style={{ width: "54vw", maxWidth: "240px", aspectRatio: "2.5/3.5", flexShrink: 0, perspective: "1000px", cursor: "pointer" }}
     >
       <div style={{
         width: "100%", height: "100%", position: "relative",
@@ -263,7 +264,6 @@ function SimpleFlipCard({ product, background }: { product: EncargoProduct; back
           <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>Exclusivo</p>
           <p style={{ fontSize: "20px", fontWeight: "800", color: "white", letterSpacing: "-0.02em" }}>ENCARGO</p>
           <PixelJetIcon size={40} />
-          <p style={{ fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.2)" }}>Tocar para ver</p>
         </div>
         <div style={{
           position: "absolute", inset: 0,
@@ -289,6 +289,10 @@ function SimpleFlipCard({ product, background }: { product: EncargoProduct; back
           </div>
         </div>
       </div>
+    </div>
+    <p style={{ fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", textAlign: "center", marginTop: "8px" }}>
+      {flipped ? "Tocar para volver" : "Tocar para ver"}
+    </p>
     </div>
   );
 }
