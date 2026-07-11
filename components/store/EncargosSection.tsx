@@ -194,9 +194,6 @@ function PokerCard({ product, rotation, background }: { product: EncargoProduct;
             <div style={{ textAlign: "center", zIndex: 1 }}>
               <p style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)", marginBottom: "12px" }}>Exclusivo</p>
               <p style={{ fontSize: "32px", fontWeight: "800", color: "white", letterSpacing: "-0.02em", lineHeight: 1 }}>ENCARGO</p>
-              <div style={{ display: "flex", justifyContent: "center", margin: "12px 0" }}>
-                <PixelJetIcon size={56} />
-              </div>
               <p style={{ fontSize: "36px", color: "rgba(255,255,255,0.05)", margin: "8px 0" }}>♠</p>
               <p style={{ fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.15)" }}>Member Club</p>
             </div>
@@ -265,7 +262,6 @@ function SimpleFlipCard({ product, background }: { product: EncargoProduct; back
           gap: "10px", padding: "16px",
         }}>
           <p style={{ fontSize: "20px", fontWeight: "800", color: "white", letterSpacing: "-0.02em" }}>ENCARGO</p>
-          <PixelJetIcon size={40} />
         </div>
         <div style={{
           position: "absolute", inset: 0,
@@ -331,7 +327,10 @@ export default function EncargosSection({ products }: Props) {
       <div style={{ maxWidth: "1440px", margin: "0 auto", position: "relative", zIndex: 1 }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "0 16px 16px 16px", marginBottom: "40px", borderBottom: "1px solid #2A2A2A" }}>
           <p style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: "6px" }}>Exclusivo</p>
-          <h2 style={{ fontSize: "24px", fontWeight: "400", color: "white", letterSpacing: "0.02em", fontFamily: "Georgia, serif" }}>Encargos</h2>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <h2 style={{ fontSize: "24px", fontWeight: "400", color: "white", letterSpacing: "0.02em", fontFamily: "Georgia, serif" }}>Encargos</h2>
+            <PixelJetIcon size={28} />
+          </div>
           <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.3)", marginTop: "6px" }}>Productos exclusivos traídos especialmente para vos.</p>
           <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)", marginTop: "4px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Tiempo de entrega estimado: 14 días</p>
           <span style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginTop: "12px" }}>Ver todo</span>
