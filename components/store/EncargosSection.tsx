@@ -241,6 +241,9 @@ function SimpleFlipCard({ product, background }: { product: EncargoProduct; back
 
   return (
     <div style={{ flexShrink: 0, scrollSnapAlign: "start" }}>
+    <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", textAlign: "center", marginBottom: "8px" }}>
+      Exclusivo
+    </p>
     <div
       onClick={function() { setFlipped(!flipped); }}
       style={{ width: "54vw", maxWidth: "240px", aspectRatio: "2.5/3.5", flexShrink: 0, perspective: "1000px", cursor: "pointer" }}
@@ -261,7 +264,6 @@ function SimpleFlipCard({ product, background }: { product: EncargoProduct; back
           display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
           gap: "10px", padding: "16px",
         }}>
-          <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>Exclusivo</p>
           <p style={{ fontSize: "20px", fontWeight: "800", color: "white", letterSpacing: "-0.02em" }}>ENCARGO</p>
           <PixelJetIcon size={40} />
         </div>
