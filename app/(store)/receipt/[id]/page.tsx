@@ -37,13 +37,39 @@ export default async function PublicReceiptPage({ params }: { params: Promise<{ 
   };
 
   return (
-    <div style={{ padding: "24px", backgroundColor: "#F4F4F4", minHeight: "100vh" }}>
-      <div className="no-print" style={{ maxWidth: "340px", margin: "0 auto 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: "13px", fontWeight: "700" }}>Member Club</span>
-        <PrintButton />
-      </div>
+    <div style={{ padding: "56px 24px", backgroundColor: "#FAFAFA", minHeight: "70vh" }}>
+      <div style={{ maxWidth: "380px", margin: "0 auto" }}>
+        <div className="no-print" style={{ textAlign: "center", marginBottom: "24px" }}>
+          <p style={{ fontSize: "12px", color: "#A3A3A3", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "6px" }}>
+            Comprobante de compra
+          </p>
+          <h1 style={{ fontFamily: "Georgia, serif", fontWeight: "400", fontSize: "26px", color: "#0A0A0A" }}>
+            ¡Gracias por tu compra!
+          </h1>
+        </div>
 
-      <ReceiptTicket order={ticketData} />
+        <ReceiptTicket order={ticketData} />
+
+        <div className="no-print" style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "20px" }}>
+          <PrintButton />
+          <a
+            href="/catalog"
+            style={{
+              textAlign: "center",
+              padding: "12px 14px",
+              fontSize: "13px",
+              fontWeight: "600",
+              letterSpacing: "0.04em",
+              backgroundColor: "#0A0A0A",
+              color: "white",
+              borderRadius: "6px",
+              textDecoration: "none",
+            }}
+          >
+            Seguir viendo el catálogo
+          </a>
+        </div>
+      </div>
 
       <style>{`
         @media print {
