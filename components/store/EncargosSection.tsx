@@ -16,6 +16,70 @@ type Props = {
 
 const ROTATIONS = [-3, 2, -2, 4, -1, 3];
 
+// Avioncito en pixel art para el dorso de las cartas de encargo. Cada fila
+// define hasta donde llega la silueta desde el centro (en "pixeles") y,
+// opcionalmente, un tramo con un color de acento (puntas rojas, llama).
+type JetRow = { d: number; accent?: [number, number]; accentColor?: string };
+const JET_PIXEL = 4;
+const JET_COLS = 16;
+const JET_BASE = "#9A9A9A";
+const JET_DARK = "#5A5A5A";
+const JET_BLACK = "#141414";
+const JET_RED = "#DC2626";
+const JET_ROWS: (JetRow | { flame: true; d: number; color: string })[] = [
+  { d: 0, accentColor: JET_BLACK, accent: [0, 0] },
+  { d: 1, accentColor: JET_DARK, accent: [0, 1] },
+  { d: 1, accentColor: JET_DARK, accent: [0, 1] },
+  { d: 2 },
+  { d: 2 },
+  { d: 2 },
+  { d: 3 },
+  { d: 5, accent: [4, 5], accentColor: JET_RED },
+  { d: 7, accent: [6, 7], accentColor: JET_RED },
+  { d: 7, accent: [6, 7], accentColor: JET_RED },
+  { d: 5, accent: [4, 5], accentColor: JET_RED },
+  { d: 3 },
+  { d: 2 },
+  { d: 2, accentColor: JET_DARK, accent: [0, 1] },
+  { d: 2 },
+  { d: 2 },
+  { d: 4, accent: [3, 4], accentColor: JET_RED },
+  { d: 5, accent: [4, 5], accentColor: JET_RED },
+  { d: 3, accent: [2, 3], accentColor: JET_RED },
+  { d: 1, accentColor: JET_BLACK, accent: [0, 1] },
+  { flame: true, d: 1, color: "#A855F7" },
+  { flame: true, d: 0, color: "#FCD34D" },
+];
+
+function PixelJetIcon({ size = 56, opacity = 1 }: { size?: number; opacity?: number }) {
+  const rects: React.ReactNode[] = [];
+  JET_ROWS.forEach((row, y) => {
+    if ("flame" in row) {
+      for (let d = 0; d <= row.d; d++) {
+        const color = row.color;
+        rects.push(<rect key={y + "-l-" + d} x={(JET_COLS / 2 - 1 - d) * JET_PIXEL} y={y * JET_PIXEL} width={JET_PIXEL} height={JET_PIXEL} fill={color} />);
+        rects.push(<rect key={y + "-r-" + d} x={(JET_COLS / 2 + d) * JET_PIXEL} y={y * JET_PIXEL} width={JET_PIXEL} height={JET_PIXEL} fill={color} />);
+      }
+      return;
+    }
+    for (let d = 0; d <= row.d; d++) {
+      const isAccent = row.accent && d >= row.accent[0] && d <= row.accent[1];
+      const color = isAccent ? row.accentColor! : JET_BASE;
+      rects.push(<rect key={y + "-l-" + d} x={(JET_COLS / 2 - 1 - d) * JET_PIXEL} y={y * JET_PIXEL} width={JET_PIXEL} height={JET_PIXEL} fill={color} />);
+      rects.push(<rect key={y + "-r-" + d} x={(JET_COLS / 2 + d) * JET_PIXEL} y={y * JET_PIXEL} width={JET_PIXEL} height={JET_PIXEL} fill={color} />);
+    }
+  });
+
+  const viewW = JET_COLS * JET_PIXEL;
+  const viewH = JET_ROWS.length * JET_PIXEL;
+
+  return (
+    <svg width={size} height={(size * viewH) / viewW} viewBox={"0 0 " + viewW + " " + viewH} style={{ opacity, shapeRendering: "crispEdges" }}>
+      {rects}
+    </svg>
+  );
+}
+
 function PokerCard({ product, rotation }: { product: EncargoProduct; rotation: number }) {
   const outerRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
@@ -97,6 +161,9 @@ function PokerCard({ product, rotation }: { product: EncargoProduct; rotation: n
             <div style={{ textAlign: "center", zIndex: 1 }}>
               <p style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)", marginBottom: "12px" }}>Exclusivo</p>
               <p style={{ fontSize: "32px", fontWeight: "800", color: "white", letterSpacing: "-0.02em", lineHeight: 1 }}>ENCARGO</p>
+              <div style={{ display: "flex", justifyContent: "center", margin: "12px 0" }}>
+                <PixelJetIcon size={56} />
+              </div>
               <p style={{ fontSize: "36px", color: "rgba(255,255,255,0.05)", margin: "8px 0" }}>♠</p>
               <p style={{ fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.15)" }}>Member Club</p>
             </div>
@@ -159,6 +226,7 @@ function SimpleFlipCard({ product }: { product: EncargoProduct }) {
         }}>
           <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>Exclusivo</p>
           <p style={{ fontSize: "20px", fontWeight: "800", color: "white", letterSpacing: "-0.02em" }}>ENCARGO</p>
+          <PixelJetIcon size={40} />
           <p style={{ fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.2)" }}>Tocar para ver</p>
         </div>
         <div style={{
