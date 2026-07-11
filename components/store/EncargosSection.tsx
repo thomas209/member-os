@@ -104,6 +104,7 @@ function PixelJetIcon({ size = 56, opacity = 1 }: { size?: number; opacity?: num
 const CARD_BACKGROUNDS: (string | null)[] = [
   "https://res.cloudinary.com/dklvmlzds/image/upload/v1783799025/7fc34fd804521ea5f6ffbd7d45ecdc2d_mcdgld.jpg",
   "https://res.cloudinary.com/dklvmlzds/image/upload/v1783799537/a4e393f685701f707e54d227e7a0762e_akul89.jpg",
+  "https://res.cloudinary.com/dklvmlzds/image/upload/v1783800262/bb0ea26684dd6b302ba7ea26b1c2cb8e_q8e5rc.jpg",
 ];
 
 function PokerCard({ product, rotation, background }: { product: EncargoProduct; rotation: number; background?: string | null }) {
