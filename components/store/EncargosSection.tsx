@@ -16,57 +16,75 @@ type Props = {
 
 const ROTATIONS = [-3, 2, -2, 4, -1, 3];
 
-// Avioncito en pixel art para el dorso de las cartas de encargo. Cada fila
-// define hasta donde llega la silueta desde el centro (en "pixeles") y,
-// opcionalmente, un tramo con un color de acento (puntas rojas, llama).
-type JetRow = { d: number; accent?: [number, number]; accentColor?: string };
+// Avioncito en pixel art (caza F-16 visto desde arriba) para el dorso de
+// las cartas de encargo. Calcado de la referencia que mando el cliente:
+// nariz angosta, dos pares de alas con puntas filosas en sierra (el detalle
+// que lo hace leerse como avion), fuselaje angosto entre medio, tobera
+// negra y llama de escape con degrade violeta/rosa/amarillo.
 const JET_PIXEL = 4;
-const JET_COLS = 16;
-const JET_BASE = "#9A9A9A";
-const JET_DARK = "#5A5A5A";
-const JET_BLACK = "#141414";
-const JET_RED = "#DC2626";
-const JET_ROWS: (JetRow | { flame: true; d: number; color: string })[] = [
-  { d: 0, accentColor: JET_BLACK, accent: [0, 0] },
-  { d: 1, accentColor: JET_DARK, accent: [0, 1] },
-  { d: 1, accentColor: JET_DARK, accent: [0, 1] },
-  { d: 2 },
-  { d: 2 },
-  { d: 2 },
-  { d: 3 },
-  { d: 5, accent: [4, 5], accentColor: JET_RED },
-  { d: 7, accent: [6, 7], accentColor: JET_RED },
-  { d: 7, accent: [6, 7], accentColor: JET_RED },
-  { d: 5, accent: [4, 5], accentColor: JET_RED },
-  { d: 3 },
-  { d: 2 },
-  { d: 2, accentColor: JET_DARK, accent: [0, 1] },
-  { d: 2 },
-  { d: 2 },
-  { d: 4, accent: [3, 4], accentColor: JET_RED },
-  { d: 5, accent: [4, 5], accentColor: JET_RED },
-  { d: 3, accent: [2, 3], accentColor: JET_RED },
-  { d: 1, accentColor: JET_BLACK, accent: [0, 1] },
-  { flame: true, d: 1, color: "#A855F7" },
-  { flame: true, d: 0, color: "#FCD34D" },
+const JET_COLS = 26; // centro entre las columnas 12 y 13
+const JET_K = "#1A1A1A";
+const JET_D = "#6E6E6E";
+const JET_G = "#9C9C9C";
+const JET_RUST = "#8B4A3A";
+
+type JetRow = { d: number; color?: string };
+const JET_ROWS: JetRow[] = [
+  { d: 0, color: JET_K },
+  { d: 0, color: JET_K },
+  { d: 1, color: JET_K },
+  { d: 1, color: JET_D },
+  { d: 1, color: JET_D },
+  { d: 2, color: JET_D },
+  { d: 2, color: JET_D },
+  { d: 2, color: JET_D },
+  { d: 2, color: JET_G },
+  { d: 2, color: JET_G },
+  { d: 3, color: JET_G },
+  { d: 3, color: JET_G },
+  { d: 6, color: JET_G }, // diente 1 (ala principal)
+  { d: 4, color: JET_G },
+  { d: 9, color: JET_G }, // diente 2
+  { d: 11, color: JET_G }, // punta del ala
+  { d: 9, color: JET_G },
+  { d: 6, color: JET_G },
+  { d: 3, color: JET_G },
+  { d: 2, color: JET_G }, // vuelve a la cintura
+  { d: 2, color: JET_G },
+  { d: 2, color: JET_G },
+  { d: 2, color: JET_G },
+  { d: 2, color: JET_G },
+  { d: 2, color: JET_G },
+  { d: 4, color: JET_G }, // diente 1 (cola)
+  { d: 3, color: JET_G },
+  { d: 6, color: JET_G }, // punta de cola
+  { d: 5, color: JET_G },
+  { d: 3, color: JET_G },
+  { d: 2, color: JET_G },
+  { d: 1, color: JET_K }, // tobera
+  { d: 1, color: JET_K },
+  { d: 1, color: "#9333EA" }, // llama
+  { d: 1, color: "#EC4899" },
+  { d: 0, color: "#FB923C" },
+  { d: 0, color: "#FDE047" },
+];
+
+// Marcas rojizas en la raiz de cada par de alas (igual que la referencia).
+const JET_ACCENTS = [
+  { row: 14, d: 8 },
+  { row: 26, d: 4 },
 ];
 
 function PixelJetIcon({ size = 56, opacity = 1 }: { size?: number; opacity?: number }) {
   const rects: React.ReactNode[] = [];
+  const cx = JET_COLS / 2;
+
   JET_ROWS.forEach((row, y) => {
-    if ("flame" in row) {
-      for (let d = 0; d <= row.d; d++) {
-        const color = row.color;
-        rects.push(<rect key={y + "-l-" + d} x={(JET_COLS / 2 - 1 - d) * JET_PIXEL} y={y * JET_PIXEL} width={JET_PIXEL} height={JET_PIXEL} fill={color} />);
-        rects.push(<rect key={y + "-r-" + d} x={(JET_COLS / 2 + d) * JET_PIXEL} y={y * JET_PIXEL} width={JET_PIXEL} height={JET_PIXEL} fill={color} />);
-      }
-      return;
-    }
     for (let d = 0; d <= row.d; d++) {
-      const isAccent = row.accent && d >= row.accent[0] && d <= row.accent[1];
-      const color = isAccent ? row.accentColor! : JET_BASE;
-      rects.push(<rect key={y + "-l-" + d} x={(JET_COLS / 2 - 1 - d) * JET_PIXEL} y={y * JET_PIXEL} width={JET_PIXEL} height={JET_PIXEL} fill={color} />);
-      rects.push(<rect key={y + "-r-" + d} x={(JET_COLS / 2 + d) * JET_PIXEL} y={y * JET_PIXEL} width={JET_PIXEL} height={JET_PIXEL} fill={color} />);
+      const accent = JET_ACCENTS.some((a) => a.row === y && a.d === d);
+      const color = accent ? JET_RUST : row.color;
+      rects.push(<rect key={y + "-l-" + d} x={(cx - 1 - d) * JET_PIXEL} y={y * JET_PIXEL} width={JET_PIXEL} height={JET_PIXEL} fill={color} />);
+      rects.push(<rect key={y + "-r-" + d} x={(cx + d) * JET_PIXEL} y={y * JET_PIXEL} width={JET_PIXEL} height={JET_PIXEL} fill={color} />);
     }
   });
 
