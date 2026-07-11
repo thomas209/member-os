@@ -22,6 +22,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
     paymentMethod: order.paymentMethod,
     subtotal: Number(order.subtotal),
     discountAmount: Number(order.discountAmount),
+    shippingCost: Number(order.shippingCost),
     total: Number(order.total),
     couponCode: order.couponCode,
     status: order.status,

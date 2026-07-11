@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { preference } from "@/lib/mercadopago";
+import { calculateShippingCost } from "@/lib/shipping";
 
 export async function POST(request: Request) {
   try {
@@ -78,7 +79,8 @@ export async function POST(request: Request) {
       }
     }
 
-    const total = subtotal - discountAmount;
+    const shippingCost = calculateShippingCost(subtotal);
+    const total = subtotal - discountAmount + shippingCost;
 
     // Crear orden en DB
     const order = await prisma.order.create({
@@ -90,7 +92,7 @@ export async function POST(request: Request) {
         status: "PENDING",
         subtotal,
         discountAmount,
-        shippingCost: 0,
+        shippingCost,
         total,
         couponId: coupon?.id,
         couponCode: couponCode?.toUpperCase(),
@@ -104,15 +106,27 @@ export async function POST(request: Request) {
     // Crear preferencia en MP
     const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
 
+    const mpItems = orderItems.map((item) => ({
+      id: item.variantId,
+      title: item.productName + " - Talle " + item.size,
+      quantity: item.quantity,
+      unit_price: Number(item.unitPrice),
+      currency_id: "ARS",
+    }));
+
+    if (shippingCost > 0) {
+      mpItems.push({
+        id: "shipping",
+        title: "Envío",
+        quantity: 1,
+        unit_price: shippingCost,
+        currency_id: "ARS",
+      });
+    }
+
     const mpPreference = await preference.create({
       body: {
-        items: orderItems.map((item) => ({
-          id: item.variantId,
-          title: item.productName + " - Talle " + item.size,
-          quantity: item.quantity,
-          unit_price: Number(item.unitPrice),
-          currency_id: "ARS",
-        })),
+        items: mpItems,
         payer: {
           email: shippingAddress.email,
           name: shippingAddress.firstName,

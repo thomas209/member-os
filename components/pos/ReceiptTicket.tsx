@@ -10,6 +10,7 @@ export type ReceiptOrderData = {
   paymentMethod: string | null;
   subtotal: number;
   discountAmount: number;
+  shippingCost?: number;
   total: number;
   couponCode: string | null;
   status: string;
@@ -81,6 +82,12 @@ export default function ReceiptTicket({ order }: { order: ReceiptOrderData }) {
               Descuento{order.couponCode ? " (" + order.couponCode + ")" : ""} -{discountPercent}%
             </span>
             <span>-${order.discountAmount.toLocaleString("es-AR")}</span>
+          </div>
+        )}
+        {!!order.shippingCost && (
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span>Envío</span>
+            <span>${order.shippingCost.toLocaleString("es-AR")}</span>
           </div>
         )}
         <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "700", fontSize: "14px", marginTop: "4px" }}>

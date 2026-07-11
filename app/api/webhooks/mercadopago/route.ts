@@ -169,6 +169,7 @@ export async function POST(request: Request) {
             })),
             subtotal: Number(order.subtotal),
             discountAmount: Number(order.discountAmount),
+            shippingCost: Number(order.shippingCost),
             total: Number(order.total),
             receiptUrl: baseUrl + "/receipt/" + order.id,
           });

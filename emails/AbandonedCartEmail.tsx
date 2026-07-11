@@ -12,31 +12,25 @@ type OrderItem = {
   image?: string | null;
 };
 
-type OrderConfirmationEmailProps = {
+type AbandonedCartEmailProps = {
   firstName: string;
   orderNumber: number;
   items: OrderItem[];
-  subtotal: number;
-  discountAmount: number;
-  shippingCost: number;
   total: number;
-  receiptUrl: string;
+  checkoutUrl: string;
 };
 
-export default function OrderConfirmationEmail({
+export default function AbandonedCartEmail({
   firstName,
   orderNumber,
   items,
-  subtotal,
-  discountAmount,
-  shippingCost,
   total,
-  receiptUrl,
-}: OrderConfirmationEmailProps) {
+  checkoutUrl,
+}: AbandonedCartEmailProps) {
   return (
     <Html>
       <Head />
-      <Preview>Confirmamos tu pedido #{String(orderNumber).padStart(4, "0")}</Preview>
+      <Preview>Tu pedido #{String(orderNumber).padStart(4, "0")} todavía te espera</Preview>
       <Body style={{backgroundColor:"#F4F4F4",fontFamily:"Georgia,serif",margin:0,padding:0}}>
         <Container style={{maxWidth:"600px",margin:"0 auto",backgroundColor:"white"}}>
 
@@ -50,16 +44,13 @@ export default function OrderConfirmationEmail({
           {/* Body */}
           <Section style={{padding:"48px"}}>
             <Heading style={{fontSize:"24px",fontWeight:"700",color:"#0A0A0A",marginBottom:"8px"}}>
-              ¡Gracias por tu compra!
+              Todavía podés completar tu compra
             </Heading>
             <Text style={{fontSize:"15px",color:"#525252",marginBottom:"32px"}}>
-              Hola {firstName}, confirmamos tu pago y ya estamos preparando el pedido #{String(orderNumber).padStart(4, "0")}. Te avisamos por email apenas lo despachemos.
+              Hola {firstName}, notamos que iniciaste el pedido #{String(orderNumber).padStart(4, "0")} pero no llegaste a pagarlo. Te separamos los productos, pero el stock no queda reservado — completá el pago cuando quieras para asegurarlo.
             </Text>
 
             {/* Productos */}
-            <Text style={{fontSize:"11px",letterSpacing:"0.15em",textTransform:"uppercase",color:"#737373",marginBottom:"16px"}}>
-              Productos
-            </Text>
             {items.map((item, i) => (
               <Row key={i} style={{marginBottom:"16px",borderBottom:"1px solid #E8E8E8",paddingBottom:"16px"}}>
                 <Column style={{width:"80px"}}>
@@ -83,30 +74,16 @@ export default function OrderConfirmationEmail({
             <Hr style={{borderColor:"#E8E8E8",margin:"24px 0"}} />
 
             <Row>
-              <Column><Text style={{fontSize:"14px",color:"#737373",margin:0}}>Subtotal</Text></Column>
-              <Column style={{textAlign:"right"}}><Text style={{fontSize:"14px",color:"#737373",margin:0}}>${subtotal.toLocaleString("es-AR")}</Text></Column>
-            </Row>
-            {discountAmount > 0 && (
-              <Row>
-                <Column><Text style={{fontSize:"14px",color:"#737373",margin:"4px 0 0 0"}}>Descuento</Text></Column>
-                <Column style={{textAlign:"right"}}><Text style={{fontSize:"14px",color:"#737373",margin:"4px 0 0 0"}}>-${discountAmount.toLocaleString("es-AR")}</Text></Column>
-              </Row>
-            )}
-            <Row>
-              <Column><Text style={{fontSize:"14px",color:"#737373",margin:"4px 0 0 0"}}>Envío</Text></Column>
-              <Column style={{textAlign:"right"}}><Text style={{fontSize:"14px",color:"#737373",margin:"4px 0 0 0"}}>{shippingCost === 0 ? "Gratis" : "$" + shippingCost.toLocaleString("es-AR")}</Text></Column>
-            </Row>
-            <Row>
-              <Column><Text style={{fontSize:"18px",fontWeight:"700",color:"#0A0A0A",margin:"12px 0 0 0"}}>Total pagado</Text></Column>
-              <Column style={{textAlign:"right"}}><Text style={{fontSize:"18px",fontWeight:"700",color:"#0A0A0A",margin:"12px 0 0 0"}}>${total.toLocaleString("es-AR")}</Text></Column>
+              <Column><Text style={{fontSize:"14px",color:"#737373",margin:0}}>Total</Text></Column>
+              <Column style={{textAlign:"right"}}><Text style={{fontSize:"18px",fontWeight:"700",color:"#0A0A0A",margin:0}}>${total.toLocaleString("es-AR")}</Text></Column>
             </Row>
 
             <Section style={{textAlign:"center",marginTop:"32px"}}>
               <Button
-                href={receiptUrl}
+                href={checkoutUrl}
                 style={{backgroundColor:"#0A0A0A",color:"white",padding:"14px 32px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",textDecoration:"none",display:"inline-block"}}
               >
-                Ver comprobante
+                Completar mi pago
               </Button>
             </Section>
           </Section>

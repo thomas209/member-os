@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useCartStore } from "@/store/cart";
+import { calculateShippingCost, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const POSTAL_CODE_REGEX = /^(\d{4}|[A-Za-z]\d{4}[A-Za-z]{3})$/;
@@ -60,7 +61,9 @@ export default function CheckoutPage() {
     }
   };
 
-  const finalTotal = totalPrice() - (couponStatus === "valid" ? couponDiscount : 0);
+  const shippingCost = calculateShippingCost(totalPrice());
+  const missingForFreeShipping = FREE_SHIPPING_THRESHOLD - totalPrice();
+  const finalTotal = totalPrice() - (couponStatus === "valid" ? couponDiscount : 0) + shippingCost;
 
   const handleSubmit = async () => {
     if (!form.firstName || !form.lastName || !form.email || !form.street || !form.city) {
@@ -227,6 +230,17 @@ export default function CheckoutPage() {
             <p style={{fontSize:"14px",color:"#737373"}}>Descuento</p>
             <p style={{fontSize:"14px",color:"#737373"}}>-${couponDiscount.toLocaleString("es-AR")}</p>
           </div>
+        )}
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:"4px"}}>
+          <p style={{fontSize:"14px",color:"#737373"}}>Envío</p>
+          <p style={{fontSize:"14px",color:shippingCost===0?"#16A34A":"#737373",fontWeight:shippingCost===0?"600":"400"}}>
+            {shippingCost === 0 ? "Gratis" : "$" + shippingCost.toLocaleString("es-AR")}
+          </p>
+        </div>
+        {shippingCost > 0 && missingForFreeShipping > 0 && (
+          <p style={{fontSize:"11px",color:"#A3A3A3",marginBottom:"4px"}}>
+            Te faltan ${missingForFreeShipping.toLocaleString("es-AR")} para envío gratis
+          </p>
         )}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:"8px"}}>
           <p style={{fontSize:"14px",color:"#737373"}}>Total</p>

@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import ShippingEmail from "@/emails/ShippingEmail";
 import OrderConfirmationEmail from "@/emails/OrderConfirmationEmail";
+import AbandonedCartEmail from "@/emails/AbandonedCartEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -52,23 +53,58 @@ type SendOrderConfirmationEmailParams = {
   }[];
   subtotal: number;
   discountAmount: number;
+  shippingCost: number;
   total: number;
   receiptUrl: string;
 };
 
 export async function sendOrderConfirmationEmail(params: SendOrderConfirmationEmailParams) {
-  const { to, firstName, orderNumber, items, subtotal, discountAmount, total, receiptUrl } = params;
+  const { to, firstName, orderNumber, items, subtotal, discountAmount, shippingCost, total, receiptUrl } = params;
 
   const { data, error } = await resend.emails.send({
     from: "Member Club <onboarding@resend.dev>",
     to,
     subject: "Confirmamos tu pedido #" + String(orderNumber).padStart(4, "0"),
-    react: OrderConfirmationEmail({ firstName, orderNumber, items, subtotal, discountAmount, total, receiptUrl }),
+    react: OrderConfirmationEmail({ firstName, orderNumber, items, subtotal, discountAmount, shippingCost, total, receiptUrl }),
   });
 
   if (error) {
     console.error("Error enviando email de confirmacion:", error);
     throw new Error("Error al enviar email de confirmacion");
+  }
+
+  return data;
+}
+
+type SendAbandonedCartEmailParams = {
+  to: string;
+  firstName: string;
+  orderNumber: number;
+  items: {
+    productName: string;
+    productBrand: string;
+    size: string;
+    quantity: number;
+    unitPrice: number;
+    image?: string | null;
+  }[];
+  total: number;
+  checkoutUrl: string;
+};
+
+export async function sendAbandonedCartEmail(params: SendAbandonedCartEmailParams) {
+  const { to, firstName, orderNumber, items, total, checkoutUrl } = params;
+
+  const { data, error } = await resend.emails.send({
+    from: "Member Club <onboarding@resend.dev>",
+    to,
+    subject: "Tu pedido #" + String(orderNumber).padStart(4, "0") + " todavía te espera",
+    react: AbandonedCartEmail({ firstName, orderNumber, items, total, checkoutUrl }),
+  });
+
+  if (error) {
+    console.error("Error enviando email de carrito abandonado:", error);
+    throw new Error("Error al enviar email de carrito abandonado");
   }
 
   return data;

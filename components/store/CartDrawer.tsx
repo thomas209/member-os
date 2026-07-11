@@ -1,5 +1,6 @@
 "use client";
 import { useCartStore } from "@/store/cart";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, totalPrice } = useCartStore();
@@ -65,6 +66,11 @@ export default function CartDrawer() {
         </div>
         {items.length > 0 && (
           <div style={{padding:"24px",borderTop:"1px solid #E8E8E8"}}>
+            {totalPrice() < FREE_SHIPPING_THRESHOLD && (
+              <p style={{fontSize:"11px",color:"#A3A3A3",marginBottom:"12px"}}>
+                Te faltan ${(FREE_SHIPPING_THRESHOLD - totalPrice()).toLocaleString("es-AR")} para envío gratis
+              </p>
+            )}
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:"16px"}}>
               <p style={{fontSize:"13px",color:"#737373"}}>Total</p>
               <p style={{fontSize:"16px",fontWeight:"700"}}>${totalPrice().toLocaleString("es-AR")}</p>
