@@ -98,6 +98,61 @@ function PixelJetIcon({ size = 56, opacity = 1 }: { size?: number; opacity?: num
   );
 }
 
+// El avioncito entra "en picada": cae desde arriba con perspectiva 3D,
+// nariz abajo y banqueando, se endereza al llegar junto al titulo y
+// despues queda con un leve balanceo de vuelo continuo. Se dispara una
+// sola vez, la primera vez que el titulo entra en pantalla.
+function AnimatedJetIcon({ size = 28 }: { size?: number }) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [entered, setEntered] = useState(false);
+
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setEntered(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.4 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={wrapperRef} style={{ display: "inline-block", perspective: "400px" }}>
+      <div
+        className={entered ? "jet-title-icon jet-title-icon-landed" : "jet-title-icon"}
+        style={{
+          display: "inline-block",
+          opacity: entered ? 1 : 0,
+          transform: entered
+            ? undefined
+            : "translateY(-34px) translateZ(-60px) rotateX(65deg) rotateZ(-18deg) scale(0.6)",
+          transition: "transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease",
+        }}
+      >
+        <PixelJetIcon size={size} />
+      </div>
+      <style>{`
+        .jet-title-icon-landed {
+          animation: jet-idle-bank 3.2s ease-in-out 1.1s infinite;
+        }
+        @keyframes jet-idle-bank {
+          0%, 100% { transform: rotateX(0deg) rotateZ(-4deg) translateY(0); }
+          50% { transform: rotateX(0deg) rotateZ(4deg) translateY(-2px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .jet-title-icon-landed { animation: none; transform: none; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 // Fondos de prueba para las primeras cartas del carrusel (por posicion,
 // no por producto). El resto de las cartas queda con el dorso negro de
 // siempre.
@@ -329,7 +384,7 @@ export default function EncargosSection({ products }: Props) {
           <p style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: "6px" }}>Exclusivo</p>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <h2 style={{ fontSize: "24px", fontWeight: "400", color: "white", letterSpacing: "0.02em", fontFamily: "Georgia, serif" }}>Encargos</h2>
-            <PixelJetIcon size={28} />
+            <AnimatedJetIcon size={28} />
           </div>
           <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.3)", marginTop: "6px" }}>Productos exclusivos traídos especialmente para vos.</p>
           <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)", marginTop: "4px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Tiempo de entrega estimado: 14 días</p>
