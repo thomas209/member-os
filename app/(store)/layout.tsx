@@ -2,12 +2,14 @@
 import { useState } from "react";
 import CartDrawer from "@/components/store/CartDrawer";
 import CartButton from "@/components/store/CartButton";
+import PromoMarquee from "@/components/store/PromoMarquee";
 
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div style={{minHeight: "100vh", display: "flex", flexDirection: "column"}}>
+      <PromoMarquee />
       <header style={{position: "sticky", top: 0, zIndex: 50, backgroundColor: "white", borderBottom: "1px solid #E8E8E8"}}>
 
         {/* DESKTOP */}
