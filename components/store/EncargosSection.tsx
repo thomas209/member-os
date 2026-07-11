@@ -235,7 +235,7 @@ function PokerCard({ product, rotation, background }: { product: EncargoProduct;
   );
 }
 
-function SimpleFlipCard({ product }: { product: EncargoProduct }) {
+function SimpleFlipCard({ product, background }: { product: EncargoProduct; background?: string | null }) {
   const [flipped, setFlipped] = useState(false);
   const imageUrl = product.images[0]?.url;
 
@@ -253,7 +253,10 @@ function SimpleFlipCard({ product }: { product: EncargoProduct }) {
         <div style={{
           position: "absolute", inset: 0,
           backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
-          backgroundColor: "#111111", border: "1px solid #2A2A2A", borderRadius: "10px",
+          backgroundColor: "#111111",
+          backgroundImage: background ? "linear-gradient(rgba(10,10,10,0.55), rgba(10,10,10,0.8)), url('" + background + "')" : undefined,
+          backgroundSize: "cover", backgroundPosition: "center",
+          border: "1px solid #2A2A2A", borderRadius: "10px",
           display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
           gap: "10px", padding: "16px",
         }}>
@@ -337,8 +340,8 @@ export default function EncargosSection({ products }: Props) {
         </div>
 
         <div className="encargos-mobile" style={{ display: "none", gap: "12px", overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", padding: "0 16px" }}>
-          {products.map((p) => (
-            <SimpleFlipCard key={p.id} product={p} />
+          {products.map((p, i) => (
+            <SimpleFlipCard key={p.id} product={p} background={CARD_BACKGROUNDS[i % products.length]} />
           ))}
         </div>
       </div>
