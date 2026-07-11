@@ -9,7 +9,7 @@ const MESSAGES = [
 // para que el loop sea continuo sin ningun salto ni corte.
 export default function PromoMarquee() {
   return (
-    <div style={{ backgroundColor: "#0A0A0A", overflow: "hidden" }}>
+    <div style={{ backgroundColor: "white", borderBottom: "1px solid #E8E8E8", overflow: "hidden" }}>
       <div className="promo-marquee-track">
         {[0, 1].map((copy) => (
           <div key={copy} className="promo-marquee-group" aria-hidden={copy === 1}>
@@ -42,7 +42,7 @@ export default function PromoMarquee() {
           font-weight: 600;
           letter-spacing: 0.08em;
           text-transform: uppercase;
-          color: white;
+          color: #0A0A0A;
         }
         .promo-marquee-item::after {
           content: "🌟";
