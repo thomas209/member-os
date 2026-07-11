@@ -165,7 +165,13 @@ function PokerCard({ product, rotation }: { product: EncargoProduct; rotation: n
     >
       <div ref={outerRef} style={{ width: "100%", height: "100%", transform: "rotate(" + rotation + "deg)", willChange: "transform", transition: flipped ? "transform 0.4s ease" : "filter 0.3s ease" }}>
         <div style={{ width: "100%", height: "100%", position: "relative", transformStyle: "preserve-3d", transition: "transform 0.7s cubic-bezier(0.76, 0, 0.24, 1)", transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)" }}>
-          <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", backgroundColor: "#0A0A0A", border: "1px solid #2A2A2A", borderRadius: "12px", overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+          <div style={{
+            position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
+            backgroundColor: "#0A0A0A",
+            backgroundImage: "linear-gradient(rgba(10,10,10,0.55), rgba(10,10,10,0.8)), url('https://res.cloudinary.com/dklvmlzds/image/upload/v1783799025/7fc34fd804521ea5f6ffbd7d45ecdc2d_mcdgld.jpg')",
+            backgroundSize: "cover", backgroundPosition: "center",
+            border: "1px solid #2A2A2A", borderRadius: "12px", overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px",
+          }}>
             <div style={{ position: "absolute", inset: "10px", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "6px" }} />
             <div style={{ position: "absolute", inset: "16px", backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 10px)" }} />
             <div style={{ position: "absolute", top: "14px", left: "16px", textAlign: "center" }}>
