@@ -1,7 +1,21 @@
-const MESSAGES = [
-  "ENVÍOS GRATIS superando los $180.000",
-  "10% OFF pagando por TRANSFERENCIA",
-  "PAGÁ HASTA EN 3 CUOTAS SIN INTERÉS con Visa, Mastercard y Amex",
+// Icono de camion de reparto (linea, mismo lenguaje visual que los demas
+// iconos del sitio) para el mensaje de envio gratis.
+function TruckIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: "8px", flexShrink: 0 }}>
+      <path d="M3 16V6a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v10" />
+      <path d="M14 9h4l3 3.5V16h-7" />
+      <circle cx="7" cy="18" r="1.8" />
+      <circle cx="17.5" cy="18" r="1.8" />
+      <path d="M3 16h2.2M9.3 16h6" />
+    </svg>
+  );
+}
+
+const MESSAGES: { text: string; icon?: React.ReactNode }[] = [
+  { text: "ENVÍOS GRATIS superando los $180.000", icon: <TruckIcon /> },
+  { text: "10% OFF pagando por TRANSFERENCIA" },
+  { text: "PAGÁ HASTA EN 3 CUOTAS SIN INTERÉS con Visa, Mastercard y Amex" },
 ];
 
 // Carrusel infinito de mensajes promocionales, arriba de todo el sitio.
@@ -15,7 +29,8 @@ export default function PromoMarquee() {
           <div key={copy} className="promo-marquee-group" aria-hidden={copy === 1}>
             {MESSAGES.map((msg, i) => (
               <span key={i} className="promo-marquee-item">
-                {msg}
+                {msg.text}
+                {msg.icon}
               </span>
             ))}
           </div>
