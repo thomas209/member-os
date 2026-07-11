@@ -61,6 +61,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           }}>
             {STATUS_LABELS[order.status]}
           </span>
+          {order.paymentMethod === "TRANSFERENCIA" && order.status === "PENDING" && (
+            <span style={{
+              fontSize:"11px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",
+              color:"#92400E", backgroundColor:"#FEF3C7", padding:"4px 10px", marginLeft:"8px",
+            }}>
+              Transferencia pendiente
+            </span>
+          )}
         </div>
         <p style={{fontSize:"12px",color:"#737373"}}>
           {new Date(order.createdAt).toLocaleDateString("es-AR", {day:"numeric",month:"long",year:"numeric"})}
@@ -99,7 +107,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </div>
 
           {/* Acciones */}
-          <OrderActions orderId={order.id} currentStatus={order.status} trackingNumber={order.trackingNumber} />
+          <OrderActions orderId={order.id} currentStatus={order.status} trackingNumber={order.trackingNumber} paymentMethod={order.paymentMethod} />
 
         </div>
 

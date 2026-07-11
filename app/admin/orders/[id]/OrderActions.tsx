@@ -21,14 +21,35 @@ const STATUS_LABELS: Record<string, string> = {
   REFUNDED: "Reembolsado",
 };
 
-export default function OrderActions({ orderId, currentStatus, trackingNumber }: { orderId: string; currentStatus: string; trackingNumber: string | null }) {
+export default function OrderActions({ orderId, currentStatus, trackingNumber, paymentMethod }: { orderId: string; currentStatus: string; trackingNumber: string | null; paymentMethod?: string | null }) {
   const [status, setStatus] = useState(currentStatus);
   const [tracking, setTracking] = useState(trackingNumber || "");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const [confirmingTransfer, setConfirmingTransfer] = useState(false);
 
-  const nextStatuses = VALID_TRANSITIONS[status] || [];
+  const isPendingTransfer = paymentMethod === "TRANSFERENCIA" && status === "PENDING";
+  // El pase a PAID por transferencia tiene su propio boton (descuenta
+  // stock y manda el email); se lo saco de las transiciones genericas
+  // para que no se use por error sin esos efectos.
+  const nextStatuses = (VALID_TRANSITIONS[status] || []).filter((s) => !(isPendingTransfer && s === "PAID"));
+
+  const handleConfirmTransfer = async () => {
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch("/api/admin/orders/" + orderId + "/confirm-transfer", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || "Error"); setLoading(false); return; }
+      setStatus("PAID");
+      setSuccess(data.oversold?.length ? "Confirmado (ojo: sin stock suficiente, revisar)" : "Transferencia confirmada");
+    } catch {
+      setError("Error de conexion");
+    }
+    setLoading(false);
+  };
 
   const updateOrder = async (newStatus?: string) => {
     setLoading(true);
@@ -57,6 +78,40 @@ export default function OrderActions({ orderId, currentStatus, trackingNumber }:
   return (
     <div style={{backgroundColor:"white",border:"1px solid #E8E8E8",padding:"24px"}}>
       <h2 style={{fontSize:"12px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",color:"#737373",marginBottom:"20px"}}>Acciones</h2>
+
+      {isPendingTransfer && (
+        <div style={{marginBottom:"20px",padding:"16px",backgroundColor:"#FFFBEB",border:"1px solid #FDE68A"}}>
+          <p style={{fontSize:"12px",color:"#92400E",marginBottom:"12px"}}>
+            Este pedido es por transferencia bancaria. Confirmalo recien cuando veas la plata acreditada — ahi se descuenta el stock y se le manda el email al cliente.
+          </p>
+          {!confirmingTransfer ? (
+            <button
+              onClick={() => setConfirmingTransfer(true)}
+              disabled={loading}
+              style={{padding:"8px 16px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",border:"1px solid #16A34A",backgroundColor:"white",color:"#16A34A",cursor:"pointer"}}
+            >
+              Confirmar transferencia recibida
+            </button>
+          ) : (
+            <div style={{display:"flex",gap:"8px"}}>
+              <button
+                onClick={() => setConfirmingTransfer(false)}
+                disabled={loading}
+                style={{padding:"8px 16px",fontSize:"12px",fontWeight:"600",border:"1px solid #D1D1D1",backgroundColor:"white",color:"#525252",cursor:"pointer"}}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmTransfer}
+                disabled={loading}
+                style={{padding:"8px 16px",fontSize:"12px",fontWeight:"700",border:"none",backgroundColor:"#16A34A",color:"white",cursor:loading?"default":"pointer",opacity:loading?0.6:1}}
+              >
+                {loading ? "Confirmando..." : "Si, ya la vi acreditada"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {nextStatuses.length > 0 && (
         <div style={{marginBottom:"20px"}}>

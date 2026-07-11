@@ -87,6 +87,14 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
               }}>
                 {STATUS_LABELS[order.status]}
               </span>
+              {order.paymentMethod === "TRANSFERENCIA" && order.status === "PENDING" && (
+                <span style={{
+                  fontSize:"11px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",
+                  color:"#92400E", backgroundColor:"#FEF3C7", padding:"4px 10px",flexShrink:0,
+                }}>
+                  Transferencia
+                </span>
+              )}
               <p style={{fontSize:"12px",color:"#737373",flexShrink:0}}>
                 {new Date(order.createdAt).toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })}
               </p>

@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { preference } from "@/lib/mercadopago";
 import { calculateShippingCost } from "@/lib/shipping";
+import { calculateTransferDiscount, BANK_CBU, BANK_HOLDER } from "@/lib/bankDetails";
+import { sendTransferInstructionsEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { items, shippingAddress, couponCode } = body;
+    const paymentMethod = body.paymentMethod === "TRANSFERENCIA" ? "TRANSFERENCIA" : "MERCADOPAGO";
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "El carrito esta vacio" }, { status: 400 });
@@ -47,11 +50,11 @@ export async function POST(request: Request) {
       });
     }
 
-    // Validar cupon
+    // Validar cupon (no se combina con el descuento por transferencia)
     let discountAmount = 0;
     let coupon = null;
 
-    if (couponCode) {
+    if (couponCode && paymentMethod !== "TRANSFERENCIA") {
       coupon = await prisma.coupon.findUnique({
         where: { code: couponCode.toUpperCase() },
       });
@@ -79,6 +82,10 @@ export async function POST(request: Request) {
       }
     }
 
+    if (paymentMethod === "TRANSFERENCIA") {
+      discountAmount = calculateTransferDiscount(subtotal);
+    }
+
     const shippingCost = calculateShippingCost(subtotal);
     const total = subtotal - discountAmount + shippingCost;
 
@@ -90,12 +97,13 @@ export async function POST(request: Request) {
         guestLastName: shippingAddress.lastName,
         guestPhone: shippingAddress.phone,
         status: "PENDING",
+        paymentMethod,
         subtotal,
         discountAmount,
         shippingCost,
         total,
         couponId: coupon?.id,
-        couponCode: couponCode?.toUpperCase(),
+        couponCode: paymentMethod === "TRANSFERENCIA" ? null : couponCode?.toUpperCase(),
         shippingAddress,
         items: {
           create: orderItems,
@@ -103,9 +111,39 @@ export async function POST(request: Request) {
       },
     });
 
-    // Crear preferencia en MP
     const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
 
+    // Transferencia bancaria directa: no pasa por Mercado Pago, no hay
+    // confirmacion automatica. Se manda a una pantalla con los datos
+    // bancarios y el pedido queda PENDING hasta que se confirme a mano
+    // desde el admin.
+    if (paymentMethod === "TRANSFERENCIA") {
+      const transferUrl = baseUrl + "/checkout/transfer/" + order.id;
+
+      if (shippingAddress.email) {
+        try {
+          await sendTransferInstructionsEmail({
+            to: shippingAddress.email,
+            firstName: shippingAddress.firstName || "",
+            orderNumber: order.orderNumber,
+            total,
+            cbu: BANK_CBU,
+            holder: BANK_HOLDER,
+            transferUrl,
+          });
+        } catch (emailError) {
+          console.error("No se pudo enviar el email de instrucciones de transferencia:", emailError);
+        }
+      }
+
+      return NextResponse.json({
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        redirectUrl: transferUrl,
+      });
+    }
+
+    // Crear preferencia en MP
     const mpItems = orderItems.map((item) => ({
       id: item.variantId,
       title: item.productName + " - Talle " + item.size,

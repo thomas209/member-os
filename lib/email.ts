@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import ShippingEmail from "@/emails/ShippingEmail";
 import OrderConfirmationEmail from "@/emails/OrderConfirmationEmail";
 import AbandonedCartEmail from "@/emails/AbandonedCartEmail";
+import TransferInstructionsEmail from "@/emails/TransferInstructionsEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -105,6 +106,37 @@ export async function sendAbandonedCartEmail(params: SendAbandonedCartEmailParam
   if (error) {
     console.error("Error enviando email de carrito abandonado:", error);
     throw new Error("Error al enviar email de carrito abandonado");
+  }
+
+  return data;
+}
+
+type SendTransferInstructionsEmailParams = {
+  to: string;
+  firstName: string;
+  orderNumber: number;
+  total: number;
+  cbu: string;
+  holder: string;
+  transferUrl: string;
+  isReminder?: boolean;
+};
+
+export async function sendTransferInstructionsEmail(params: SendTransferInstructionsEmailParams) {
+  const { to, firstName, orderNumber, total, cbu, holder, transferUrl, isReminder } = params;
+
+  const { data, error } = await resend.emails.send({
+    from: "Member Club <onboarding@resend.dev>",
+    to,
+    subject: isReminder
+      ? "Todavía no vimos tu transferencia del pedido #" + String(orderNumber).padStart(4, "0")
+      : "Instrucciones para transferir — pedido #" + String(orderNumber).padStart(4, "0"),
+    react: TransferInstructionsEmail({ firstName, orderNumber, total, cbu, holder, transferUrl, isReminder }),
+  });
+
+  if (error) {
+    console.error("Error enviando email de instrucciones de transferencia:", error);
+    throw new Error("Error al enviar email de instrucciones de transferencia");
   }
 
   return data;

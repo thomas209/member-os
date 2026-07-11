@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useCartStore } from "@/store/cart";
 import { calculateShippingCost, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
+import { calculateTransferDiscount, TRANSFER_DISCOUNT_PERCENT } from "@/lib/bankDetails";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const POSTAL_CODE_REGEX = /^(\d{4}|[A-Za-z]\d{4}[A-Za-z]{3})$/;
@@ -10,6 +11,7 @@ export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"MERCADOPAGO" | "TRANSFERENCIA">("MERCADOPAGO");
   const [couponCode, setCouponCode] = useState("");
   const [couponStatus, setCouponStatus] = useState<"idle" | "checking" | "valid" | "invalid">("idle");
   const [couponMessage, setCouponMessage] = useState("");
@@ -63,7 +65,9 @@ export default function CheckoutPage() {
 
   const shippingCost = calculateShippingCost(totalPrice());
   const missingForFreeShipping = FREE_SHIPPING_THRESHOLD - totalPrice();
-  const finalTotal = totalPrice() - (couponStatus === "valid" ? couponDiscount : 0) + shippingCost;
+  const transferDiscount = calculateTransferDiscount(totalPrice());
+  const appliedDiscount = paymentMethod === "TRANSFERENCIA" ? transferDiscount : (couponStatus === "valid" ? couponDiscount : 0);
+  const finalTotal = totalPrice() - appliedDiscount + shippingCost;
 
   const handleSubmit = async () => {
     if (!form.firstName || !form.lastName || !form.email || !form.street || !form.city) {
@@ -91,13 +95,14 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           items: items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
           shippingAddress: form,
-          couponCode: couponStatus === "valid" ? couponCode : null,
+          paymentMethod,
+          couponCode: paymentMethod === "MERCADOPAGO" && couponStatus === "valid" ? couponCode : null,
         }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Error al procesar"); setLoading(false); return; }
       clearCart();
-      window.location.href = data.checkoutUrl;
+      window.location.href = data.redirectUrl || data.checkoutUrl;
     } catch (e) {
       setError("Error de conexion");
       setLoading(false);
@@ -163,9 +168,30 @@ export default function CheckoutPage() {
             <input name="postalCode" value={form.postalCode} onChange={handleChange} placeholder="1043" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none"}} />
           </div>
         </div>
+        <h2 style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"16px",paddingBottom:"16px",borderBottom:"1px solid #E8E8E8"}}>Método de pago</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
+          <div
+            onClick={() => setPaymentMethod("MERCADOPAGO")}
+            style={{
+              cursor:"pointer",padding:"16px",border: paymentMethod === "MERCADOPAGO" ? "2px solid #0A0A0A" : "1px solid #D1D1D1",
+            }}
+          >
+            <p style={{fontSize:"13px",fontWeight:"600",marginBottom:"4px"}}>Mercado Pago</p>
+            <p style={{fontSize:"11px",color:"#737373"}}>Tarjeta, dinero en cuenta y más</p>
+          </div>
+          <div
+            onClick={() => setPaymentMethod("TRANSFERENCIA")}
+            style={{
+              cursor:"pointer",padding:"16px",border: paymentMethod === "TRANSFERENCIA" ? "2px solid #0A0A0A" : "1px solid #D1D1D1",
+            }}
+          >
+            <p style={{fontSize:"13px",fontWeight:"600",marginBottom:"4px"}}>Transferencia bancaria</p>
+            <p style={{fontSize:"11px",color:"#16A34A",fontWeight:"600"}}>{TRANSFER_DISCOUNT_PERCENT}% de descuento</p>
+          </div>
+        </div>
         {error && <p style={{fontSize:"13px",color:"#DC2626",marginBottom:"16px"}}>{error}</p>}
         <button onClick={handleSubmit} disabled={loading} style={{width:"100%",padding:"18px",backgroundColor:loading?"#E8E8E8":"#0A0A0A",color:loading?"#A3A3A3":"white",fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",border:"none",cursor:loading?"not-allowed":"pointer"}}>
-          {loading ? "Procesando..." : "Pagar con Mercado Pago"}
+          {loading ? "Procesando..." : paymentMethod === "TRANSFERENCIA" ? "Continuar con transferencia" : "Pagar con Mercado Pago"}
         </button>
       </div>
       <div>
@@ -190,45 +216,53 @@ export default function CheckoutPage() {
         </div>
         <div style={{marginBottom:"16px",paddingBottom:"16px",borderBottom:"1px solid #E8E8E8"}}>
           <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Cupon</label>
-          <div style={{display:"flex",gap:"8px"}}>
-            <input
-              value={couponCode}
-              onChange={(e) => handleCouponChange(e.target.value)}
-              placeholder="WELCOME10"
-              disabled={couponStatus === "valid"}
-              style={{flex:1,padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none",textTransform:"uppercase",backgroundColor:couponStatus==="valid"?"#F4F4F4":"white"}}
-            />
-            {couponStatus === "valid" ? (
-              <button
-                onClick={() => { setCouponStatus("idle"); setCouponCode(""); setCouponDiscount(0); setCouponMessage(""); }}
-                style={{padding:"12px 16px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",border:"1px solid #0A0A0A",backgroundColor:"white",color:"#0A0A0A",cursor:"pointer"}}
-              >
-                Quitar
-              </button>
-            ) : (
-              <button
-                onClick={handleApplyCoupon}
-                disabled={couponStatus === "checking" || !couponCode.trim()}
-                style={{padding:"12px 16px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",border:"1px solid #0A0A0A",backgroundColor: !couponCode.trim() ? "#F4F4F4" : "#0A0A0A",color: !couponCode.trim() ? "#A3A3A3" : "white",cursor: !couponCode.trim() ? "not-allowed":"pointer"}}
-              >
-                {couponStatus === "checking" ? "..." : "Aplicar"}
-              </button>
-            )}
-          </div>
-          {couponMessage && (
-            <p style={{fontSize:"12px",marginTop:"8px",color: couponStatus === "valid" ? "#16A34A" : "#DC2626"}}>
-              {couponStatus === "valid" ? "Cupon aplicado: -$" + couponDiscount.toLocaleString("es-AR") : couponMessage}
-            </p>
+          {paymentMethod === "TRANSFERENCIA" ? (
+            <p style={{fontSize:"12px",color:"#A3A3A3"}}>No se puede combinar con el descuento por transferencia</p>
+          ) : (
+            <>
+              <div style={{display:"flex",gap:"8px"}}>
+                <input
+                  value={couponCode}
+                  onChange={(e) => handleCouponChange(e.target.value)}
+                  placeholder="WELCOME10"
+                  disabled={couponStatus === "valid"}
+                  style={{flex:1,padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none",textTransform:"uppercase",backgroundColor:couponStatus==="valid"?"#F4F4F4":"white"}}
+                />
+                {couponStatus === "valid" ? (
+                  <button
+                    onClick={() => { setCouponStatus("idle"); setCouponCode(""); setCouponDiscount(0); setCouponMessage(""); }}
+                    style={{padding:"12px 16px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",border:"1px solid #0A0A0A",backgroundColor:"white",color:"#0A0A0A",cursor:"pointer"}}
+                  >
+                    Quitar
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleApplyCoupon}
+                    disabled={couponStatus === "checking" || !couponCode.trim()}
+                    style={{padding:"12px 16px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",border:"1px solid #0A0A0A",backgroundColor: !couponCode.trim() ? "#F4F4F4" : "#0A0A0A",color: !couponCode.trim() ? "#A3A3A3" : "white",cursor: !couponCode.trim() ? "not-allowed":"pointer"}}
+                  >
+                    {couponStatus === "checking" ? "..." : "Aplicar"}
+                  </button>
+                )}
+              </div>
+              {couponMessage && (
+                <p style={{fontSize:"12px",marginTop:"8px",color: couponStatus === "valid" ? "#16A34A" : "#DC2626"}}>
+                  {couponStatus === "valid" ? "Cupon aplicado: -$" + couponDiscount.toLocaleString("es-AR") : couponMessage}
+                </p>
+              )}
+            </>
           )}
         </div>
         <div style={{display:"flex",justifyContent:"space-between",marginBottom:"4px"}}>
           <p style={{fontSize:"14px",color:"#737373"}}>Subtotal</p>
           <p style={{fontSize:"14px",color:"#737373"}}>${totalPrice().toLocaleString("es-AR")}</p>
         </div>
-        {couponStatus === "valid" && (
+        {appliedDiscount > 0 && (
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:"4px"}}>
-            <p style={{fontSize:"14px",color:"#737373"}}>Descuento</p>
-            <p style={{fontSize:"14px",color:"#737373"}}>-${couponDiscount.toLocaleString("es-AR")}</p>
+            <p style={{fontSize:"14px",color:"#737373"}}>
+              Descuento{paymentMethod === "TRANSFERENCIA" ? " (transferencia)" : ""}
+            </p>
+            <p style={{fontSize:"14px",color:"#737373"}}>-${appliedDiscount.toLocaleString("es-AR")}</p>
           </div>
         )}
         <div style={{display:"flex",justifyContent:"space-between",marginBottom:"4px"}}>
