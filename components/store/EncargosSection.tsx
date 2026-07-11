@@ -98,7 +98,15 @@ function PixelJetIcon({ size = 56, opacity = 1 }: { size?: number; opacity?: num
   );
 }
 
-function PokerCard({ product, rotation }: { product: EncargoProduct; rotation: number }) {
+// Fondos de prueba para las primeras cartas del carrusel (por posicion,
+// no por producto). El resto de las cartas queda con el dorso negro de
+// siempre.
+const CARD_BACKGROUNDS: (string | null)[] = [
+  "https://res.cloudinary.com/dklvmlzds/image/upload/v1783799025/7fc34fd804521ea5f6ffbd7d45ecdc2d_mcdgld.jpg",
+  "https://res.cloudinary.com/dklvmlzds/image/upload/v1783799537/a4e393f685701f707e54d227e7a0762e_akul89.jpg",
+];
+
+function PokerCard({ product, rotation, background }: { product: EncargoProduct; rotation: number; background?: string | null }) {
   const outerRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
@@ -168,7 +176,7 @@ function PokerCard({ product, rotation }: { product: EncargoProduct; rotation: n
           <div style={{
             position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
             backgroundColor: "#0A0A0A",
-            backgroundImage: "linear-gradient(rgba(10,10,10,0.55), rgba(10,10,10,0.8)), url('https://res.cloudinary.com/dklvmlzds/image/upload/v1783799025/7fc34fd804521ea5f6ffbd7d45ecdc2d_mcdgld.jpg')",
+            backgroundImage: background ? "linear-gradient(rgba(10,10,10,0.55), rgba(10,10,10,0.8)), url('" + background + "')" : undefined,
             backgroundSize: "cover", backgroundPosition: "center",
             border: "1px solid #2A2A2A", borderRadius: "12px", overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px",
           }}>
@@ -322,7 +330,7 @@ export default function EncargosSection({ products }: Props) {
         <div className="encargos-desktop" style={{ overflow: "hidden", width: "100%", padding: "60px 0" }}>
           <div ref={trackRef} onMouseEnter={() => { pausedRef.current = true; }} onMouseLeave={() => { pausedRef.current = false; }} style={{ display: "flex", alignItems: "center", willChange: "transform", paddingLeft: "80px" }}>
             {items.map((p, i) => (
-              <PokerCard key={p.id + "-" + i} product={p} rotation={ROTATIONS[i % ROTATIONS.length]} />
+              <PokerCard key={p.id + "-" + i} product={p} rotation={ROTATIONS[i % ROTATIONS.length]} background={CARD_BACKGROUNDS[i % products.length]} />
             ))}
           </div>
         </div>
