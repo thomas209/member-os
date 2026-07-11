@@ -51,23 +51,27 @@ export default async function PublicReceiptPage({ params }: { params: Promise<{ 
         <ReceiptTicket order={ticketData} />
 
         <div className="no-print" style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "20px" }}>
-          <PrintButton />
           <a
             href="/catalog"
             style={{
+              display: "block",
+              width: "100%",
+              boxSizing: "border-box",
               textAlign: "center",
-              padding: "12px 14px",
+              padding: "16px",
               fontSize: "13px",
-              fontWeight: "600",
-              letterSpacing: "0.04em",
+              fontWeight: 600,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
               backgroundColor: "#0A0A0A",
               color: "white",
-              borderRadius: "6px",
+              borderRadius: 0,
               textDecoration: "none",
             }}
           >
             Seguir viendo el catálogo
           </a>
+          <PrintButton variant="store" />
         </div>
       </div>
 
