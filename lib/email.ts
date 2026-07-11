@@ -3,6 +3,7 @@ import ShippingEmail from "@/emails/ShippingEmail";
 import OrderConfirmationEmail from "@/emails/OrderConfirmationEmail";
 import AbandonedCartEmail from "@/emails/AbandonedCartEmail";
 import TransferInstructionsEmail from "@/emails/TransferInstructionsEmail";
+import LoginLinkEmail from "@/emails/LoginLinkEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -137,6 +138,29 @@ export async function sendTransferInstructionsEmail(params: SendTransferInstruct
   if (error) {
     console.error("Error enviando email de instrucciones de transferencia:", error);
     throw new Error("Error al enviar email de instrucciones de transferencia");
+  }
+
+  return data;
+}
+
+type SendLoginLinkEmailParams = {
+  to: string;
+  loginUrl: string;
+};
+
+export async function sendLoginLinkEmail(params: SendLoginLinkEmailParams) {
+  const { to, loginUrl } = params;
+
+  const { data, error } = await resend.emails.send({
+    from: "Member Club <onboarding@resend.dev>",
+    to,
+    subject: "Tu link para entrar a tu cuenta",
+    react: LoginLinkEmail({ loginUrl }),
+  });
+
+  if (error) {
+    console.error("Error enviando email de login:", error);
+    throw new Error("Error al enviar email de login");
   }
 
   return data;

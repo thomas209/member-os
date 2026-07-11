@@ -4,6 +4,7 @@ import { preference } from "@/lib/mercadopago";
 import { calculateShippingCost } from "@/lib/shipping";
 import { calculateTransferDiscount, BANK_CBU, BANK_HOLDER } from "@/lib/bankDetails";
 import { sendTransferInstructionsEmail } from "@/lib/email";
+import { getCurrentCustomerId } from "@/lib/customerAuth";
 
 export async function POST(request: Request) {
   try {
@@ -89,9 +90,30 @@ export async function POST(request: Request) {
     const shippingCost = calculateShippingCost(subtotal);
     const total = subtotal - discountAmount + shippingCost;
 
+    // Si hay sesion de cliente, la orden queda vinculada a la cuenta y
+    // se actualiza su direccion guardada (la ultima usada). No es
+    // obligatorio estar logueado: el checkout de invitado sigue igual.
+    const customerId = await getCurrentCustomerId();
+    if (customerId) {
+      try {
+        await prisma.customer.update({
+          where: { id: customerId },
+          data: {
+            firstName: shippingAddress.firstName || undefined,
+            lastName: shippingAddress.lastName || undefined,
+            phone: shippingAddress.phone || undefined,
+            defaultAddress: shippingAddress,
+          },
+        });
+      } catch (err) {
+        console.error("No se pudo actualizar los datos del cliente:", err);
+      }
+    }
+
     // Crear orden en DB
     const order = await prisma.order.create({
       data: {
+        customerId: customerId || undefined,
         guestEmail: shippingAddress.email,
         guestFirstName: shippingAddress.firstName,
         guestLastName: shippingAddress.lastName,

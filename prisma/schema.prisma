@@ -199,6 +199,11 @@ model Customer {
   updatedAt   DateTime @updatedAt
   orders      Order[]
 
+  // Login por link magico (sin contraseña). Un solo token activo a la vez:
+  // se pisa cada vez que se pide uno nuevo y se borra al usarse.
+  loginToken          String?   @unique
+  loginTokenExpiresAt DateTime?
+
   @@index([email])
 }
 

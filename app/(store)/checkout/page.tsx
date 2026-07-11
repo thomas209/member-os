@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCartStore } from "@/store/cart";
 import { calculateShippingCost, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 import { calculateTransferDiscount, TRANSFER_DISCOUNT_PERCENT } from "@/lib/bankDetails";
@@ -20,6 +20,33 @@ export default function CheckoutPage() {
     firstName: "", lastName: "", email: "", phone: "",
     street: "", number: "", floor: "", city: "", province: "", postalCode: "",
   });
+  const [loggedInEmail, setLoggedInEmail] = useState<string | null>(null);
+
+  // Si hay sesion de cliente, precarga el formulario con los datos y la
+  // direccion guardada. El checkout sigue funcionando igual sin sesion.
+  useEffect(() => {
+    fetch("/api/auth/customer/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.customer) return;
+        setLoggedInEmail(data.customer.email);
+        const addr = (data.customer.defaultAddress || {}) as Record<string, string>;
+        setForm((prev) => ({
+          ...prev,
+          firstName: data.customer.firstName || prev.firstName,
+          lastName: data.customer.lastName || prev.lastName,
+          email: data.customer.email || prev.email,
+          phone: data.customer.phone || prev.phone,
+          street: addr.street || prev.street,
+          number: addr.number || prev.number,
+          floor: addr.floor || prev.floor,
+          city: addr.city || prev.city,
+          province: addr.province || prev.province,
+          postalCode: addr.postalCode || prev.postalCode,
+        }));
+      })
+      .catch(() => {});
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -121,7 +148,13 @@ export default function CheckoutPage() {
   return (
     <div className="max-w-[1200px] mx-auto px-4 py-8 md:px-12 md:py-12 flex flex-col-reverse md:grid md:grid-cols-[1fr_400px] gap-8 md:gap-20">
       <div>
-        <h1 style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"48px",paddingBottom:"16px",borderBottom:"1px solid #E8E8E8"}}>Datos de envio</h1>
+        <h1 style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"8px",paddingBottom:"16px",borderBottom:"1px solid #E8E8E8"}}>Datos de envio</h1>
+        {loggedInEmail && (
+          <p style={{fontSize:"12px",color:"#737373",marginBottom:"40px"}}>
+            Ingresaste como <strong style={{color:"#0A0A0A"}}>{loggedInEmail}</strong> · usamos tus datos guardados
+          </p>
+        )}
+        {!loggedInEmail && <div style={{marginBottom:"40px"}} />}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Nombre *</label>
