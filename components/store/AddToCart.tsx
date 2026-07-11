@@ -31,7 +31,7 @@ export default function AddToCart({ variants, product }: Props) {
       setError("Seleccioná un talle antes de continuar");
       return;
     }
-    addItem({
+    const wasAdded = addItem({
       variantId: selectedVariant.id,
       productId: product.id,
       slug: product.slug,
@@ -40,8 +40,12 @@ export default function AddToCart({ variants, product }: Props) {
       size: selectedVariant.size,
       price: product.price,
       image: product.image,
-      quantity: 1,
+      maxStock: selectedVariant.stock,
     });
+    if (!wasAdded) {
+      setError("Ya tenés en el carrito todo el stock disponible de este talle (" + selectedVariant.stock + ")");
+      return;
+    }
     setError("");
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);

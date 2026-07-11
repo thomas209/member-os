@@ -112,6 +112,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
               name={product.name}
               price={product.price.toString()}
               comparePrice={product.comparePrice?.toString()}
+              inStock={product.variants.some((v) => v.stock > 0)}
             />
           ))}
         </div>

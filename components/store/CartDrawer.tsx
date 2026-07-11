@@ -40,10 +40,22 @@ export default function CartDrawer() {
                       <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
                         <button onClick={() => updateQuantity(item.variantId, item.quantity - 1)} style={{width:"28px",height:"28px",border:"1px solid #E8E8E8",backgroundColor:"white",cursor:"pointer"}}>-</button>
                         <span style={{fontSize:"13px"}}>{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.variantId, item.quantity + 1)} style={{width:"28px",height:"28px",border:"1px solid #E8E8E8",backgroundColor:"white",cursor:"pointer"}}>+</button>
+                        <button
+                          onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
+                          disabled={item.quantity >= item.maxStock}
+                          style={{
+                            width:"28px",height:"28px",border:"1px solid #E8E8E8",
+                            backgroundColor: item.quantity >= item.maxStock ? "#F4F4F4" : "white",
+                            color: item.quantity >= item.maxStock ? "#D1D1D1" : "#0A0A0A",
+                            cursor: item.quantity >= item.maxStock ? "not-allowed" : "pointer",
+                          }}
+                        >+</button>
                       </div>
                       <p style={{fontSize:"14px",fontWeight:"700"}}>${(item.price * item.quantity).toLocaleString("es-AR")}</p>
                     </div>
+                    {item.quantity >= item.maxStock && (
+                      <p style={{fontSize:"11px",color:"#A3A3A3",marginTop:"6px"}}>No hay mas stock disponible de este talle</p>
+                    )}
                   </div>
                   <button onClick={() => removeItem(item.variantId)} style={{background:"none",border:"none",cursor:"pointer",color:"#A3A3A3",fontSize:"18px",alignSelf:"flex-start"}}>x</button>
                 </div>

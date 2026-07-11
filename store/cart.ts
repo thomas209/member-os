@@ -11,12 +11,17 @@ export type CartItem = {
   price: number;
   image: string | null;
   quantity: number;
+  // Stock disponible al momento de agregarlo (puede quedar desactualizado
+  // si cambia mientras el carrito sigue abierto; el checkout siempre
+  // revalida el stock real igual, esto solo evita que el carrito deje
+  // sumar de mas a simple vista).
+  maxStock: number;
 };
 
 type CartStore = {
   items: CartItem[];
   isOpen: boolean;
-  addItem: (item: CartItem) => void;
+  addItem: (item: Omit<CartItem, "quantity">) => boolean;
   removeItem: (variantId: string) => void;
   updateQuantity: (variantId: string, quantity: number) => void;
   clearCart: () => void;
@@ -32,14 +37,20 @@ export const useCartStore = create<CartStore>()(
       items: [],
       isOpen: false,
 
+      // Devuelve false si ya estaba en el tope de stock (no se agrego nada
+      // nuevo), para que el que llama pueda avisar al usuario.
       addItem: (item) => {
         const items = get().items;
         const existing = items.find((i) => i.variantId === item.variantId);
         if (existing) {
+          if (existing.quantity >= existing.maxStock) {
+            set({ isOpen: true });
+            return false;
+          }
           set({
             items: items.map((i) =>
               i.variantId === item.variantId
-                ? { ...i, quantity: i.quantity + 1 }
+                ? { ...i, quantity: i.quantity + 1, maxStock: item.maxStock }
                 : i
             ),
             isOpen: true,
@@ -47,6 +58,7 @@ export const useCartStore = create<CartStore>()(
         } else {
           set({ items: [...items, { ...item, quantity: 1 }], isOpen: true });
         }
+        return true;
       },
 
       removeItem: (variantId) =>
@@ -59,7 +71,9 @@ export const useCartStore = create<CartStore>()(
         }
         set({
           items: get().items.map((i) =>
-            i.variantId === variantId ? { ...i, quantity } : i
+            i.variantId === variantId
+              ? { ...i, quantity: i.maxStock ? Math.min(quantity, i.maxStock) : quantity }
+              : i
           ),
         });
       },

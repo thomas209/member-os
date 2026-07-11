@@ -2,11 +2,17 @@
 import { useState } from "react";
 import { useCartStore } from "@/store/cart";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const POSTAL_CODE_REGEX = /^(\d{4}|[A-Za-z]\d{4}[A-Za-z]{3})$/;
+
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [couponCode, setCouponCode] = useState("");
+  const [couponStatus, setCouponStatus] = useState<"idle" | "checking" | "valid" | "invalid">("idle");
+  const [couponMessage, setCouponMessage] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
   const [form, setForm] = useState({
     firstName: "", lastName: "", email: "", phone: "",
     street: "", number: "", floor: "", city: "", province: "", postalCode: "",
@@ -16,9 +22,61 @@ export default function CheckoutPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleCouponChange = (value: string) => {
+    setCouponCode(value);
+    // si ya se habia aplicado uno, al tocar el campo hay que volver a
+    // aplicarlo para que el total refleje el codigo nuevo
+    if (couponStatus !== "idle") {
+      setCouponStatus("idle");
+      setCouponMessage("");
+      setCouponDiscount(0);
+    }
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponStatus("checking");
+    setCouponMessage("");
+    try {
+      const res = await fetch("/api/checkout/coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCode, subtotal: totalPrice() }),
+      });
+      const data = await res.json();
+      if (!data.valid) {
+        setCouponStatus("invalid");
+        setCouponMessage(data.error || "Cupon invalido");
+        setCouponDiscount(0);
+        return;
+      }
+      setCouponStatus("valid");
+      setCouponDiscount(data.discountAmount);
+      setCouponMessage("Cupon aplicado");
+    } catch {
+      setCouponStatus("invalid");
+      setCouponMessage("Error al validar el cupon");
+      setCouponDiscount(0);
+    }
+  };
+
+  const finalTotal = totalPrice() - (couponStatus === "valid" ? couponDiscount : 0);
+
   const handleSubmit = async () => {
     if (!form.firstName || !form.lastName || !form.email || !form.street || !form.city) {
       setError("Completa los campos obligatorios");
+      return;
+    }
+    if (!EMAIL_REGEX.test(form.email)) {
+      setError("Ingresa un email valido");
+      return;
+    }
+    if (form.phone && form.phone.replace(/\D/g, "").length < 8) {
+      setError("Ingresa un telefono valido (con codigo de area)");
+      return;
+    }
+    if (!POSTAL_CODE_REGEX.test(form.postalCode.trim())) {
+      setError("Ingresa un codigo postal valido (ej: 1043 o C1043AAZ)");
       return;
     }
     setLoading(true);
@@ -30,7 +88,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           items: items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
           shippingAddress: form,
-          couponCode: couponCode || null,
+          couponCode: couponStatus === "valid" ? couponCode : null,
         }),
       });
       const data = await res.json();
@@ -129,11 +187,50 @@ export default function CheckoutPage() {
         </div>
         <div style={{marginBottom:"16px",paddingBottom:"16px",borderBottom:"1px solid #E8E8E8"}}>
           <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Cupon</label>
-          <input value={couponCode} onChange={(e) => setCouponCode(e.target.value)} placeholder="WELCOME10" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none",textTransform:"uppercase"}} />
+          <div style={{display:"flex",gap:"8px"}}>
+            <input
+              value={couponCode}
+              onChange={(e) => handleCouponChange(e.target.value)}
+              placeholder="WELCOME10"
+              disabled={couponStatus === "valid"}
+              style={{flex:1,padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none",textTransform:"uppercase",backgroundColor:couponStatus==="valid"?"#F4F4F4":"white"}}
+            />
+            {couponStatus === "valid" ? (
+              <button
+                onClick={() => { setCouponStatus("idle"); setCouponCode(""); setCouponDiscount(0); setCouponMessage(""); }}
+                style={{padding:"12px 16px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",border:"1px solid #0A0A0A",backgroundColor:"white",color:"#0A0A0A",cursor:"pointer"}}
+              >
+                Quitar
+              </button>
+            ) : (
+              <button
+                onClick={handleApplyCoupon}
+                disabled={couponStatus === "checking" || !couponCode.trim()}
+                style={{padding:"12px 16px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",border:"1px solid #0A0A0A",backgroundColor: !couponCode.trim() ? "#F4F4F4" : "#0A0A0A",color: !couponCode.trim() ? "#A3A3A3" : "white",cursor: !couponCode.trim() ? "not-allowed":"pointer"}}
+              >
+                {couponStatus === "checking" ? "..." : "Aplicar"}
+              </button>
+            )}
+          </div>
+          {couponMessage && (
+            <p style={{fontSize:"12px",marginTop:"8px",color: couponStatus === "valid" ? "#16A34A" : "#DC2626"}}>
+              {couponStatus === "valid" ? "Cupon aplicado: -$" + couponDiscount.toLocaleString("es-AR") : couponMessage}
+            </p>
+          )}
         </div>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:"4px"}}>
+          <p style={{fontSize:"14px",color:"#737373"}}>Subtotal</p>
+          <p style={{fontSize:"14px",color:"#737373"}}>${totalPrice().toLocaleString("es-AR")}</p>
+        </div>
+        {couponStatus === "valid" && (
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:"4px"}}>
+            <p style={{fontSize:"14px",color:"#737373"}}>Descuento</p>
+            <p style={{fontSize:"14px",color:"#737373"}}>-${couponDiscount.toLocaleString("es-AR")}</p>
+          </div>
+        )}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:"8px"}}>
           <p style={{fontSize:"14px",color:"#737373"}}>Total</p>
-          <p style={{fontSize:"20px",fontWeight:"700"}}>${totalPrice().toLocaleString("es-AR")}</p>
+          <p style={{fontSize:"20px",fontWeight:"700"}}>${finalTotal.toLocaleString("es-AR")}</p>
         </div>
       </div>
     </div>
