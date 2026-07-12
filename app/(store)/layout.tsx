@@ -23,7 +23,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
           </nav>
           <div style={{display: "flex", alignItems: "center", gap: "24px"}}>
             <a href="/cuenta" aria-label="Mi cuenta" style={{display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#737373", textDecoration: "none", letterSpacing: "0.04em"}}>
-              <img src="https://res.cloudinary.com/dklvmlzds/image/upload/v1783878509/people-icon-8013987-512_ipitid.png" alt="" width={18} height={18} style={{ objectFit: "contain" }} />
+              <img src="https://res.cloudinary.com/dklvmlzds/image/upload/v1783879145/people-icon-4777671-512_unddlt.png" alt="" width={18} height={18} style={{ objectFit: "contain" }} />
               Mi cuenta
             </a>
             <CartButton />
@@ -71,7 +71,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
           <a href="/catalog?gender=MUJER" onClick={() => setMenuOpen(false)} style={{padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#0A0A0A", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>Mujer</a>
           <a href="/catalog?category=arte" onClick={() => setMenuOpen(false)} style={{padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#DC2626", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>Arte</a>
           <a href="/cuenta" onClick={() => setMenuOpen(false)} style={{display: "flex", alignItems: "center", gap: "12px", padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#0A0A0A", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>
-            <img src="https://res.cloudinary.com/dklvmlzds/image/upload/v1783878509/people-icon-8013987-512_ipitid.png" alt="" width={20} height={20} style={{ objectFit: "contain" }} />
+            <img src="https://res.cloudinary.com/dklvmlzds/image/upload/v1783879145/people-icon-4777671-512_unddlt.png" alt="" width={20} height={20} style={{ objectFit: "contain" }} />
             Mi cuenta
           </a>
         </div>
