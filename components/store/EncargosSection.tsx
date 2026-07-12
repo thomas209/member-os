@@ -344,7 +344,7 @@ function SimpleFlipCard({ product, background }: { product: EncargoProduct; back
       </div>
     </div>
     <p style={{ fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", textAlign: "center", marginTop: "8px" }}>
-      {flipped ? "Tocar para volver" : "Tocar para ver"}
+      {flipped ? "Deslizá para volver" : "Deslizá para ver"}
     </p>
     </div>
   );
