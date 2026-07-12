@@ -75,7 +75,7 @@ export default function CartDrawer() {
               <p style={{fontSize:"13px",color:"#737373"}}>Total</p>
               <p style={{fontSize:"16px",fontWeight:"700"}}>${totalPrice().toLocaleString("es-AR")}</p>
             </div>
-            <a href="/checkout" style={{display:"block",width:"100%",padding:"16px",backgroundColor:"#0A0A0A",color:"white",textAlign:"center",fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",textDecoration:"none"}}>
+            <a href="/checkout" onClick={closeCart} style={{display:"block",width:"100%",padding:"16px",backgroundColor:"#0A0A0A",color:"white",textAlign:"center",fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",textDecoration:"none"}}>
               Ir al checkout
             </a>
           </div>

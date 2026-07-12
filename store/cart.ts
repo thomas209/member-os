@@ -86,6 +86,12 @@ export const useCartStore = create<CartStore>()(
       totalPrice: () =>
         get().items.reduce((acc, i) => acc + i.price * i.quantity, 0),
     }),
-    { name: "member-cart" }
+    {
+      name: "member-cart",
+      // El carrito abierto/cerrado no debe persistir: si no, al navegar o
+      // recargar la pagina (por ejemplo yendo al checkout) el drawer se
+      // vuelve a abrir solo por encima de la pantalla nueva.
+      partialize: (state) => ({ items: state.items }),
+    }
   )
 );
