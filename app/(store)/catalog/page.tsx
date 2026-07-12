@@ -11,14 +11,15 @@ const SORT_OPTIONS: Record<string, { createdAt?: "asc" | "desc"; price?: "asc" |
   price_desc: { price: "desc" },
 };
 
-export default async function CatalogPage({ searchParams }: { searchParams: Promise<{ category?: string; brand?: string; gender?: string; q?: string; sort?: string; page?: string }> }) {
-  const { category, brand, gender, q, sort, page: pageParam } = await searchParams;
+export default async function CatalogPage({ searchParams }: { searchParams: Promise<{ category?: string; brand?: string; gender?: string; q?: string; sort?: string; page?: string; encargo?: string }> }) {
+  const { category, brand, gender, q, sort, page: pageParam, encargo } = await searchParams;
   const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
   const orderBy = SORT_OPTIONS[sort || "newest"] || SORT_OPTIONS.newest;
 
   const where = {
     isActive: true,
     deletedAt: null,
+    ...(encargo === "1" && { isEncargo: true }),
     ...(category && { category: { slug: category } }),
     ...(brand && { brand: { slug: brand } }),
     ...(gender && { gender: gender as any }),
@@ -66,6 +67,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
     if (params.q) p.set("q", String(params.q));
     if (params.sort && params.sort !== "newest") p.set("sort", String(params.sort));
     if (params.page && Number(params.page) > 1) p.set("page", String(params.page));
+    if (params.encargo) p.set("encargo", String(params.encargo));
     return "/catalog" + (p.toString() ? "?" + p.toString() : "");
   };
 
@@ -90,25 +92,25 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
       <div style={{marginBottom:"48px",paddingBottom:"24px",borderBottom:"1px solid #E8E8E8"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:"24px"}}>
           <h1 style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.12em",textTransform:"uppercase"}}>
-            Catalogo <span style={{color:"#A3A3A3",fontWeight:"400"}}>({totalCount})</span>
+            {encargo === "1" ? "Encargos" : "Catalogo"} <span style={{color:"#A3A3A3",fontWeight:"400"}}>({totalCount})</span>
           </h1>
         </div>
 
-        <CatalogToolbar category={category} brand={brand} gender={gender} q={q} sort={sort} />
+        <CatalogToolbar category={category} brand={brand} gender={gender} q={q} sort={sort} encargo={encargo} />
 
         {/* Filtros genero */}
         <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"12px"}}>
-          <a href={buildUrl({ category, brand, q, sort })} style={!gender ? activeStyle : inactiveStyle}>Todos</a>
-          <a href={buildUrl({ category, brand, q, sort, gender: "HOMBRE" })} style={gender === "HOMBRE" ? activeStyle : inactiveStyle}>Hombre</a>
-          <a href={buildUrl({ category, brand, q, sort, gender: "MUJER" })} style={gender === "MUJER" ? activeStyle : inactiveStyle}>Mujer</a>
-          <a href={buildUrl({ category, brand, q, sort, gender: "UNISEX" })} style={gender === "UNISEX" ? activeStyle : inactiveStyle}>Unisex</a>
+          <a href={buildUrl({ category, brand, q, sort, encargo })} style={!gender ? activeStyle : inactiveStyle}>Todos</a>
+          <a href={buildUrl({ category, brand, q, sort, encargo, gender: "HOMBRE" })} style={gender === "HOMBRE" ? activeStyle : inactiveStyle}>Hombre</a>
+          <a href={buildUrl({ category, brand, q, sort, encargo, gender: "MUJER" })} style={gender === "MUJER" ? activeStyle : inactiveStyle}>Mujer</a>
+          <a href={buildUrl({ category, brand, q, sort, encargo, gender: "UNISEX" })} style={gender === "UNISEX" ? activeStyle : inactiveStyle}>Unisex</a>
         </div>
 
         {/* Filtros categoria */}
         <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"12px"}}>
-          <a href={buildUrl({ brand, gender, q, sort })} style={!category ? activeStyle : inactiveStyle}>Todas las categorias</a>
+          <a href={buildUrl({ brand, gender, q, sort, encargo })} style={!category ? activeStyle : inactiveStyle}>Todas las categorias</a>
           {categories.map((cat) => (
-            <a key={cat.id} href={buildUrl({ category: cat.slug, brand, gender, q, sort })} style={category === cat.slug ? activeStyle : inactiveStyle}>
+            <a key={cat.id} href={buildUrl({ category: cat.slug, brand, gender, q, sort, encargo })} style={category === cat.slug ? activeStyle : inactiveStyle}>
               {cat.name}
             </a>
           ))}
@@ -116,9 +118,9 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
 
         {/* Filtros marca */}
         <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
-          <a href={buildUrl({ category, gender, q, sort })} style={!brand ? activeStyle : inactiveStyle}>Todas las marcas</a>
+          <a href={buildUrl({ category, gender, q, sort, encargo })} style={!brand ? activeStyle : inactiveStyle}>Todas las marcas</a>
           {brands.map((b) => (
-            <a key={b.id} href={buildUrl({ category, brand: b.slug, gender, q, sort })} style={brand === b.slug ? activeStyle : inactiveStyle}>
+            <a key={b.id} href={buildUrl({ category, brand: b.slug, gender, q, sort, encargo })} style={brand === b.slug ? activeStyle : inactiveStyle}>
               {b.name}
             </a>
           ))}
@@ -153,7 +155,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
       {totalPages > 1 && (
         <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:"8px",marginTop:"48px"}}>
           <a
-            href={page > 1 ? buildUrl({ category, brand, gender, q, sort, page: page - 1 }) : undefined}
+            href={page > 1 ? buildUrl({ category, brand, gender, q, sort, encargo, page: page - 1 }) : undefined}
             aria-disabled={page <= 1}
             style={{...inactiveStyle, opacity: page <= 1 ? 0.4 : 1, pointerEvents: page <= 1 ? "none" : "auto"}}
           >
@@ -163,7 +165,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
             Página {page} de {totalPages}
           </span>
           <a
-            href={page < totalPages ? buildUrl({ category, brand, gender, q, sort, page: page + 1 }) : undefined}
+            href={page < totalPages ? buildUrl({ category, brand, gender, q, sort, encargo, page: page + 1 }) : undefined}
             aria-disabled={page >= totalPages}
             style={{...inactiveStyle, opacity: page >= totalPages ? 0.4 : 1, pointerEvents: page >= totalPages ? "none" : "auto"}}
           >

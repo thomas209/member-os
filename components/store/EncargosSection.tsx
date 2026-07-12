@@ -388,7 +388,7 @@ export default function EncargosSection({ products }: Props) {
           </div>
           <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.3)", marginTop: "6px" }}>Productos exclusivos traídos especialmente para vos.</p>
           <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)", marginTop: "4px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Tiempo de entrega estimado: 14 días</p>
-          <span style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginTop: "12px" }}>Ver todo</span>
+          <a href="/catalog?encargo=1" style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginTop: "12px", textDecoration: "underline" }}>Ver todo</a>
         </div>
 
         <div className="encargos-desktop" style={{ overflow: "hidden", width: "100%", padding: "60px 0" }}>

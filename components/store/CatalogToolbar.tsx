@@ -8,20 +8,22 @@ type Props = {
   gender?: string;
   q?: string;
   sort?: string;
+  encargo?: string;
 };
 
-export default function CatalogToolbar({ category, brand, gender, q, sort }: Props) {
+export default function CatalogToolbar({ category, brand, gender, q, sort, encargo }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState(q || "");
 
   const navigate = (overrides: Partial<Props>) => {
-    const merged = { category, brand, gender, q, sort, ...overrides };
+    const merged = { category, brand, gender, q, sort, encargo, ...overrides };
     const params = new URLSearchParams();
     if (merged.category) params.set("category", merged.category);
     if (merged.brand) params.set("brand", merged.brand);
     if (merged.gender) params.set("gender", merged.gender);
     if (merged.q) params.set("q", merged.q);
     if (merged.sort && merged.sort !== "newest") params.set("sort", merged.sort);
+    if (merged.encargo) params.set("encargo", merged.encargo);
     router.push("/catalog" + (params.toString() ? "?" + params.toString() : ""));
   };
 
