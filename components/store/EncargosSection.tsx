@@ -405,7 +405,7 @@ export default function EncargosSection({ products }: Props) {
           ))}
         </div>
         <p className="encargos-mobile-hint" style={{ fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", textAlign: "center", marginTop: "12px" }}>
-          Deslizá →
+          Deslizá → → →
         </p>
       </div>
     </section>
