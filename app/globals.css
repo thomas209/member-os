@@ -147,12 +147,19 @@ a:hover .product-img {
   display: none;
 }
 
+.encargos-mobile-hint {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .encargos-desktop {
     display: none !important;
   }
   .encargos-mobile {
     display: flex !important;
+  }
+  .encargos-mobile-hint {
+    display: block !important;
   }
 }
 

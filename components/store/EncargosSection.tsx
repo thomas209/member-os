@@ -344,7 +344,7 @@ function SimpleFlipCard({ product, background }: { product: EncargoProduct; back
       </div>
     </div>
     <p style={{ fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", textAlign: "center", marginTop: "8px" }}>
-      {flipped ? "Deslizá para volver" : "Deslizá para ver"}
+      {flipped ? "Tocar para volver" : "Tocar para ver"}
     </p>
     </div>
   );
@@ -404,6 +404,9 @@ export default function EncargosSection({ products }: Props) {
             <SimpleFlipCard key={p.id} product={p} background={CARD_BACKGROUNDS[i % products.length]} />
           ))}
         </div>
+        <p className="encargos-mobile-hint" style={{ fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", textAlign: "center", marginTop: "12px" }}>
+          Deslizá →
+        </p>
       </div>
     </section>
   );
