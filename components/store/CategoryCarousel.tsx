@@ -58,6 +58,7 @@ export default async function CategoryCarousel({
           comparePrice: p.comparePrice ? Number(p.comparePrice) : null,
           image: p.images[0]?.url ?? null,
           secondImage: p.images[1]?.url ?? null,
+          isEncargo: p.isEncargo,
         }))} />
       </div>
     </section>

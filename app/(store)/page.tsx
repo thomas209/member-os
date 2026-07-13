@@ -74,6 +74,7 @@ export default async function HomePage() {
                 price={product.price.toString()}
                 comparePrice={product.comparePrice?.toString()}
                 inStock={product.variants.some((v) => v.stock > 0)}
+                isEncargo={product.isEncargo}
               />
             ))}
           </div>

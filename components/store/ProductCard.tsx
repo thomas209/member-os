@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-export default function ProductCard({ href, image, secondImage, brand, name, price, comparePrice, inStock = true }: { href: string; image: string | null; secondImage?: string | null; brand: string; name: string; price: string; comparePrice?: string | null; inStock?: boolean }) {
+export default function ProductCard({ href, image, secondImage, brand, name, price, comparePrice, inStock = true, isEncargo = false }: { href: string; image: string | null; secondImage?: string | null; brand: string; name: string; price: string; comparePrice?: string | null; inStock?: boolean; isEncargo?: boolean }) {
   const [hovered, setHovered] = useState(false);
   return (
     <a href={href} style={{textDecoration:"none",color:"#0A0A0A",display:"block"}} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
@@ -30,10 +30,13 @@ export default function ProductCard({ href, image, secondImage, brand, name, pri
       </div>
       <p style={{fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#737373",marginBottom:"6px"}}>{brand}</p>
       <p style={{fontSize:"15px",fontWeight:"500",marginBottom:"8px",color:inStock?"#0A0A0A":"#A3A3A3"}}>{name}</p>
-      <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"32px"}}>
+      <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:isEncargo?"4px":"32px"}}>
         <p style={{fontSize:"15px",fontWeight:"700",color:inStock?"#0A0A0A":"#A3A3A3"}}>${Number(price).toLocaleString("es-AR")}</p>
         {comparePrice && <p style={{fontSize:"13px",color:"#A3A3A3",textDecoration:"line-through"}}>${Number(comparePrice).toLocaleString("es-AR")}</p>}
       </div>
+      {isEncargo && (
+        <p style={{fontSize:"11px",color:"#737373",marginBottom:"32px"}}>Por encargo</p>
+      )}
     </a>
   );
 }

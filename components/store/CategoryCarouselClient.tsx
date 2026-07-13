@@ -10,6 +10,7 @@ type Product = {
   comparePrice: number | null;
   image: string | null;
   secondImage?: string | null;
+  isEncargo?: boolean;
 };
 
 function ProductTile({ product }: { product: Product }) {
@@ -51,6 +52,9 @@ function ProductTile({ product }: { product: Product }) {
           <p style={{ fontSize: "11px", color: "#A3A3A3", textDecoration: "line-through" }}>${product.comparePrice.toLocaleString("es-AR")}</p>
         )}
       </div>
+      {product.isEncargo && (
+        <p style={{ fontSize: "10px", color: "#737373", marginTop: "3px" }}>Por encargo</p>
+      )}
     </a>
   );
 }
