@@ -67,8 +67,8 @@ export default function OrderActions({ orderId, currentStatus, trackingNumber, p
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Error"); setLoading(false); return; }
       if (newStatus) setStatus(newStatus);
-      setSuccess("Pedido actualizado");
-      setTimeout(() => setSuccess(""), 3000);
+      setSuccess(data.emailWarning || "Pedido actualizado");
+      setTimeout(() => setSuccess(""), 5000);
     } catch {
       setError("Error de conexion");
     }
@@ -117,17 +117,32 @@ export default function OrderActions({ orderId, currentStatus, trackingNumber, p
         <div style={{marginBottom:"20px"}}>
           <p style={{fontSize:"12px",color:"#737373",marginBottom:"10px"}}>Cambiar estado:</p>
           <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
-            {nextStatuses.map((s) => (
-              <button
-                key={s}
-                onClick={() => updateOrder(s)}
-                disabled={loading}
-                style={{padding:"8px 16px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",border:"1px solid #0A0A0A",backgroundColor:"#0A0A0A",color:"white",cursor:"pointer"}}
-              >
-                {STATUS_LABELS[s]}
-              </button>
-            ))}
+            {nextStatuses.map((s) => {
+              const blockedBySinTracking = s === "SHIPPED" && !tracking.trim();
+              return (
+                <button
+                  key={s}
+                  onClick={() => updateOrder(s)}
+                  disabled={loading || blockedBySinTracking}
+                  title={blockedBySinTracking ? "Cargá el número de seguimiento antes de despachar" : undefined}
+                  style={{
+                    padding:"8px 16px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",
+                    border: blockedBySinTracking ? "1px solid #D1D1D1" : "1px solid #0A0A0A",
+                    backgroundColor: blockedBySinTracking ? "#F4F4F4" : "#0A0A0A",
+                    color: blockedBySinTracking ? "#A3A3A3" : "white",
+                    cursor: blockedBySinTracking ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {STATUS_LABELS[s]}
+                </button>
+              );
+            })}
           </div>
+          {nextStatuses.includes("SHIPPED") && !tracking.trim() && (
+            <p style={{fontSize:"11px",color:"#D97706",marginTop:"8px"}}>
+              Cargá el número de seguimiento abajo antes de marcar como despachado, así se le avisa al cliente por mail.
+            </p>
+          )}
         </div>
       )}
 
