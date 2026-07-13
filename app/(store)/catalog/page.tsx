@@ -37,7 +37,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
       include: {
         brand: { select: { name: true, slug: true } },
         category: { select: { name: true, slug: true } },
-        images: { orderBy: { isPrimary: "desc" }, take: 1 },
+        images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 2 },
         variants: { select: { stock: true } },
       },
       orderBy,
@@ -141,6 +141,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
               key={product.id}
               href={"/product/" + product.slug}
               image={product.images[0]?.url ?? null}
+              secondImage={product.images[1]?.url ?? null}
               brand={product.brand.name}
               name={product.name}
               price={product.price.toString()}

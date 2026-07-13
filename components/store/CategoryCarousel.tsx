@@ -21,7 +21,7 @@ async function getProductsByCategory(categorySlug: string, take = 16) {
     },
     include: {
       brand: { select: { name: true } },
-      images: { where: { isPrimary: true }, take: 1 },
+      images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 2 },
     },
     orderBy: { createdAt: "desc" },
     take,
@@ -57,6 +57,7 @@ export default async function CategoryCarousel({
           price: Number(p.price),
           comparePrice: p.comparePrice ? Number(p.comparePrice) : null,
           image: p.images[0]?.url ?? null,
+          secondImage: p.images[1]?.url ?? null,
         }))} />
       </div>
     </section>

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-export default function ProductCard({ href, image, brand, name, price, comparePrice, inStock = true }: { href: string; image: string | null; brand: string; name: string; price: string; comparePrice?: string | null; inStock?: boolean }) {
+export default function ProductCard({ href, image, secondImage, brand, name, price, comparePrice, inStock = true }: { href: string; image: string | null; secondImage?: string | null; brand: string; name: string; price: string; comparePrice?: string | null; inStock?: boolean }) {
   const [hovered, setHovered] = useState(false);
   return (
     <a href={href} style={{textDecoration:"none",color:"#0A0A0A",display:"block"}} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
@@ -12,7 +12,16 @@ export default function ProductCard({ href, image, brand, name, price, comparePr
           </div>
         )}
         {image ? (
-          <img src={image} alt={name} style={{width:"100%",height:"100%",objectFit:"cover",transition:"transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity:inStock?1:0.4}} />
+          <>
+            <img src={image} alt={name} style={{width:"100%",height:"100%",objectFit:"cover",transition:"opacity 0.35s ease, transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity:(hovered && secondImage) ? 0 : inStock?1:0.4}} />
+            {secondImage && (
+              <img
+                src={secondImage}
+                alt={name}
+                style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",transition:"opacity 0.35s ease, transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity: hovered ? (inStock?1:0.4) : 0}}
+              />
+            )}
+          </>
         ) : (
           <div style={{width:"100%",height:"100%",backgroundColor:"#E8E8E8",display:"flex",alignItems:"center",justifyContent:"center",opacity:inStock?1:0.4}}>
             <span style={{fontSize:"11px",color:"#A3A3A3"}}>SIN IMAGEN</span>

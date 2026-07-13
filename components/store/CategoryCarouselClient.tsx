@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 type Product = {
   id: string;
@@ -9,17 +9,34 @@ type Product = {
   price: number;
   comparePrice: number | null;
   image: string | null;
+  secondImage?: string | null;
 };
 
 function ProductTile({ product }: { product: Product }) {
+  const [hovered, setHovered] = useState(false);
   return (
     <a
       href={"/product/" + product.slug}
       style={{ textDecoration: "none", color: "#0A0A0A", display: "block" }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      <div style={{ aspectRatio: "4/5", backgroundColor: "#F4F4F4", overflow: "hidden", marginBottom: "10px" }}>
+      <div style={{ aspectRatio: "4/5", backgroundColor: "#F4F4F4", overflow: "hidden", marginBottom: "10px", position: "relative" }}>
         {product.image ? (
-          <img src={product.image} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <>
+            <img
+              src={product.image}
+              alt={product.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover", transition: "opacity 0.35s ease", opacity: (hovered && product.secondImage) ? 0 : 1 }}
+            />
+            {product.secondImage && (
+              <img
+                src={product.secondImage}
+                alt={product.name}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "opacity 0.35s ease", opacity: hovered ? 1 : 0 }}
+              />
+            )}
+          </>
         ) : (
           <div style={{ width: "100%", height: "100%", backgroundColor: "#E8E8E8", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontSize: "10px", color: "#A3A3A3" }}>SIN IMAGEN</span>

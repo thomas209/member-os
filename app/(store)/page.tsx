@@ -5,6 +5,7 @@ import CategoryCarousel from "@/components/store/CategoryCarousel";
 import InstagramSection from "@/components/store/InstagramSection";
 import EncargosSection from "@/components/store/EncargosSection";
 import HeroSplit from "@/components/store/HeroSplit";
+import ProductCard from "@/components/store/ProductCard";
 
 async function getBrands() {
   return await prisma.brand.findMany({
@@ -32,7 +33,7 @@ async function getFeaturedProducts() {
     where: { isActive: true, deletedAt: null, isFeatured: true },
     include: {
       brand: { select: { name: true } },
-      images: { where: { isPrimary: true }, take: 1 },
+      images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 2 },
       variants: { select: { stock: true } },
     },
     orderBy: { createdAt: "desc" },
@@ -63,27 +64,17 @@ export default async function HomePage() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-[2px]">
             {featured.map((product) => (
-              <a key={product.id} href={"/product/" + product.slug} className="no-underline text-[#0A0A0A] block">
-                <div className="aspect-[4/5] bg-neutral-100 mb-3 overflow-hidden">
-                  {product.images[0] ? (
-                    <img src={product.images[0].url} alt={product.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-neutral-200 flex items-center justify-center">
-                      <span className="text-[11px] text-neutral-400 tracking-wider">SIN IMAGEN</span>
-                    </div>
-                  )}
-                </div>
-                <div className="pb-6">
-                  <p className="text-[10px] tracking-widest uppercase text-neutral-400 mb-1">{product.brand.name}</p>
-                  <p className="text-[13px] md:text-[15px] font-medium mb-1">{product.name}</p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-[13px] md:text-[15px] font-bold">${Number(product.price).toLocaleString("es-AR")}</p>
-                    {product.comparePrice && (
-                      <p className="text-[12px] text-neutral-400 line-through">${Number(product.comparePrice).toLocaleString("es-AR")}</p>
-                    )}
-                  </div>
-                </div>
-              </a>
+              <ProductCard
+                key={product.id}
+                href={"/product/" + product.slug}
+                image={product.images[0]?.url ?? null}
+                secondImage={product.images[1]?.url ?? null}
+                brand={product.brand.name}
+                name={product.name}
+                price={product.price.toString()}
+                comparePrice={product.comparePrice?.toString()}
+                inStock={product.variants.some((v) => v.stock > 0)}
+              />
             ))}
           </div>
         </div>
