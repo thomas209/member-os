@@ -24,7 +24,13 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
     include: {
       orders: {
         orderBy: { createdAt: "desc" },
-        include: { items: { select: { size: true, quantity: true } } },
+        include: {
+          items: {
+            include: {
+              product: { include: { images: { where: { isPrimary: true }, take: 1 } } },
+            },
+          },
+        },
       },
     },
   });
@@ -95,7 +101,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
           <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid #E8E8E8" }}>
-                {["Pedido", "Fecha", "Canal", "Estado", "Total"].map((h) => (
+                {["Pedido", "Productos", "Fecha", "Canal", "Estado", "Total"].map((h) => (
                   <th key={h} style={{ padding: "10px 20px", textAlign: "left", fontSize: "11px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "#737373" }}>
                     {h}
                   </th>
@@ -105,10 +111,26 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             <tbody>
               {customer.orders.map((order) => (
                 <tr key={order.id} style={{ borderBottom: "1px solid #F4F4F4" }}>
-                  <td style={{ padding: "14px 20px", fontSize: "13px", fontWeight: 500 }}>
-                    <Link href={"/admin/orders/" + order.id} style={{ color: "#0A0A0A" }}>
-                      #{order.orderNumber}
+                  <td style={{ padding: "14px 20px", fontSize: "13px", fontWeight: 600 }}>
+                    <Link href={"/admin/orders/" + order.id} style={{ color: "#0A0A0A", textDecoration: "underline" }}>
+                      Ver #{order.orderNumber} →
                     </Link>
+                  </td>
+                  <td style={{ padding: "14px 20px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      {order.items.slice(0, 3).map((item) => (
+                        <div key={item.id} title={item.productName + " - Talle " + item.size} style={{ width: "34px", height: "42px", backgroundColor: "#F4F4F4", flexShrink: 0, overflow: "hidden" }}>
+                          {item.product.images[0] ? (
+                            <img src={item.product.images[0].url} alt={item.productName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            <div style={{ width: "100%", height: "100%", backgroundColor: "#E8E8E8" }} />
+                          )}
+                        </div>
+                      ))}
+                      {order.items.length > 3 && (
+                        <span style={{ fontSize: "11px", color: "#737373" }}>+{order.items.length - 3}</span>
+                      )}
+                    </div>
                   </td>
                   <td style={{ padding: "14px 20px", fontSize: "13px", color: "#737373" }}>
                     {new Date(order.createdAt).toLocaleDateString("es-AR")}
@@ -120,7 +142,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
               ))}
               {customer.orders.length === 0 && (
                 <tr>
-                  <td colSpan={5} style={{ padding: "32px 20px", textAlign: "center", fontSize: "13px", color: "#737373" }}>
+                  <td colSpan={6} style={{ padding: "32px 20px", textAlign: "center", fontSize: "13px", color: "#737373" }}>
                     Sin pedidos todavia
                   </td>
                 </tr>
