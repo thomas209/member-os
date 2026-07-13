@@ -204,6 +204,10 @@ model Customer {
   loginToken          String?   @unique
   loginTokenExpiresAt DateTime?
 
+  // CRM interno (solo lo ve el admin, nunca el cliente)
+  notes String? @db.Text
+  tags  String[] @default([])
+
   @@index([email])
 }
 

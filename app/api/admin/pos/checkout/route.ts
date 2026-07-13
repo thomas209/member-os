@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
+import { upsertCustomerByEmail } from "@/lib/customerCrm";
 
 const PAYMENT_METHODS = ["EFECTIVO", "TARJETA", "TRANSFERENCIA"];
 
@@ -50,6 +51,19 @@ export async function POST(request: NextRequest) {
     }
 
     const createdBy = "pos:" + String(token.email || token.id);
+
+    // Si se cargo email del cliente, la venta queda vinculada a su
+    // registro de cliente igual que las compras online (no hace falta
+    // que tenga cuenta). Si no se cargo email, la venta sigue quedando
+    // como venta anonima, sin romper nada del flujo actual.
+    const customerId = customerEmail
+      ? await upsertCustomerByEmail({
+          email: customerEmail,
+          firstName: guestFirstName,
+          lastName: guestLastName,
+          phone: customerPhone,
+        })
+      : null;
 
     const order = await prisma.$transaction(async (tx) => {
       let subtotal = 0;
@@ -137,6 +151,7 @@ export async function POST(request: NextRequest) {
           cashRegisterSessionId: cashSession.id,
           couponId: coupon?.id,
           couponCode: coupon?.code,
+          customerId: customerId || undefined,
           guestFirstName,
           guestLastName,
           guestEmail: customerEmail || null,

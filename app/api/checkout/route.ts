@@ -5,6 +5,7 @@ import { calculateShippingCost } from "@/lib/shipping";
 import { calculateTransferDiscount, BANK_CBU, BANK_HOLDER } from "@/lib/bankDetails";
 import { sendTransferInstructionsEmail } from "@/lib/email";
 import { getCurrentCustomerId } from "@/lib/customerAuth";
+import { upsertCustomerByEmail } from "@/lib/customerCrm";
 
 export async function POST(request: Request) {
   try {
@@ -91,9 +92,12 @@ export async function POST(request: Request) {
     const total = subtotal - discountAmount + shippingCost;
 
     // Si hay sesion de cliente, la orden queda vinculada a la cuenta y
-    // se actualiza su direccion guardada (la ultima usada). No es
-    // obligatorio estar logueado: el checkout de invitado sigue igual.
-    const customerId = await getCurrentCustomerId();
+    // se actualiza su direccion guardada (la ultima usada). Si compra como
+    // invitado pero dejo un email, igual se crea/actualiza su registro de
+    // cliente por email (sin loguearlo) para que quede un solo historial
+    // por persona en el panel de Clientes. El checkout de invitado sigue
+    // funcionando exactamente igual, esto es invisible para el comprador.
+    let customerId = await getCurrentCustomerId();
     if (customerId) {
       try {
         await prisma.customer.update({
@@ -108,6 +112,14 @@ export async function POST(request: Request) {
       } catch (err) {
         console.error("No se pudo actualizar los datos del cliente:", err);
       }
+    } else if (shippingAddress.email) {
+      customerId = await upsertCustomerByEmail({
+        email: shippingAddress.email,
+        firstName: shippingAddress.firstName,
+        lastName: shippingAddress.lastName,
+        phone: shippingAddress.phone,
+        defaultAddress: shippingAddress,
+      });
     }
 
     // Crear orden en DB
