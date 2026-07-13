@@ -4,6 +4,7 @@ import { useState } from "react";
 const salesLinks = [
   { href: "/admin/orders", label: "Pedidos" },
   { href: "/admin/customers", label: "Clientes" },
+  { href: "/admin/campaigns", label: "Campañas" },
 ];
 
 const posLinks = [

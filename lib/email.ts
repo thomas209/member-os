@@ -4,8 +4,16 @@ import OrderConfirmationEmail from "@/emails/OrderConfirmationEmail";
 import AbandonedCartEmail from "@/emails/AbandonedCartEmail";
 import TransferInstructionsEmail from "@/emails/TransferInstructionsEmail";
 import LoginLinkEmail from "@/emails/LoginLinkEmail";
+import PromoEmail from "@/emails/PromoEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Direccion de envio para campañas de oferta. Con el dominio de prueba de
+// Resend (onboarding@resend.dev) solo llega al email del dueño de la cuenta,
+// asi que para mandar de verdad a los clientes hace falta verificar un
+// dominio propio en Resend y cargar esa direccion aca (variable de entorno
+// RESEND_PROMO_FROM en Vercel, ej: "Member Club <ofertas@tudominio.com>").
+const PROMO_FROM = process.env.RESEND_PROMO_FROM || "Member Club <onboarding@resend.dev>";
 
 type SendShippingEmailParams = {
   to: string;
@@ -164,4 +172,73 @@ export async function sendLoginLinkEmail(params: SendLoginLinkEmailParams) {
   }
 
   return data;
+}
+
+type PromoContent = {
+  title: string;
+  message: string;
+  imageUrl?: string;
+  buttonText?: string;
+  buttonUrl?: string;
+};
+
+type PromoRecipient = {
+  email: string;
+  firstName?: string | null;
+};
+
+const PROMO_BATCH_SIZE = 100;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Manda una campaña de oferta a una lista de clientes, en lotes de hasta 100
+// (limite de la API de batch de Resend), con una pausa corta entre lotes
+// para no pasarnos del limite de requests por segundo de la cuenta. Si un
+// lote entero falla (ej: from invalido), no corta el resto: sigue con los
+// siguientes lotes y al final devuelve cuantos se mandaron bien y cuantos no.
+export async function sendPromoEmailBatch(recipients: PromoRecipient[], content: PromoContent) {
+  let sent = 0;
+  let failed = 0;
+  const errors: string[] = [];
+
+  for (let i = 0; i < recipients.length; i += PROMO_BATCH_SIZE) {
+    const chunk = recipients.slice(i, i + PROMO_BATCH_SIZE);
+
+    try {
+      const { data, error } = await resend.batch.send(
+        chunk.map((r) => ({
+          from: PROMO_FROM,
+          to: r.email,
+          subject: content.title,
+          react: PromoEmail({
+            firstName: r.firstName || undefined,
+            imageUrl: content.imageUrl,
+            title: content.title,
+            message: content.message,
+            buttonText: content.buttonText,
+            buttonUrl: content.buttonUrl,
+          }),
+        }))
+      );
+
+      if (error) {
+        failed += chunk.length;
+        errors.push(error.message || "Error desconocido en un lote");
+      } else {
+        sent += data?.length || chunk.length;
+      }
+    } catch (err) {
+      failed += chunk.length;
+      errors.push(err instanceof Error ? err.message : "Error desconocido en un lote");
+    }
+
+    // Pausa breve entre lotes para no pasarnos del limite de requests/seg de Resend
+    if (i + PROMO_BATCH_SIZE < recipients.length) {
+      await sleep(600);
+    }
+  }
+
+  return { sent, failed, total: recipients.length, errors };
 }

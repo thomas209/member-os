@@ -35,6 +35,12 @@ export default async function CustomersPage() {
           <p style={{ fontSize: "13px", color: "#737373" }}>{rows.length} clientes en total</p>
         </div>
         <div style={{ display: "flex", gap: "12px" }}>
+          <Link
+            href="/admin/campaigns"
+            style={{ padding: "10px 18px", fontSize: "12px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", border: "1px solid #0A0A0A", backgroundColor: "#0A0A0A", color: "white", textDecoration: "none", display: "inline-flex", alignItems: "center" }}
+          >
+            Enviar oferta por mail
+          </Link>
           <a
             href="/api/admin/customers/export"
             style={{ padding: "10px 18px", fontSize: "12px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", border: "1px solid #D1D1D1", backgroundColor: "white", color: "#0A0A0A", textDecoration: "none", display: "inline-flex", alignItems: "center" }}
