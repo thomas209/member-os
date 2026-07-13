@@ -162,6 +162,7 @@ const CARD_BACKGROUNDS: (string | null)[] = [
   "https://res.cloudinary.com/dklvmlzds/image/upload/v1783800262/bb0ea26684dd6b302ba7ea26b1c2cb8e_q8e5rc.jpg",
   "https://res.cloudinary.com/dklvmlzds/image/upload/v1783966120/fe6cb6c1120786f876bfb0d35a4936bc_i6wwjl.jpg",
   "https://res.cloudinary.com/dklvmlzds/image/upload/v1783966237/2c67e4a18d44d58db829449f5d945307_vflw7z.jpg",
+  "https://res.cloudinary.com/dklvmlzds/image/upload/v1783966610/6710be30063b799b6e1dfeb213a4fc42_cl4pxe.jpg",
 ];
 
 function PokerCard({ product, rotation, background }: { product: EncargoProduct; rotation: number; background?: string | null }) {
