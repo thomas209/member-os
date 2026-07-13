@@ -16,6 +16,13 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Cancelado",
 };
 
+const PAYMENT_LABELS: Record<string, string> = {
+  MERCADOPAGO: "Mercado Pago",
+  TRANSFERENCIA: "Transferencia",
+  EFECTIVO: "Efectivo",
+  TARJETA: "Tarjeta",
+};
+
 export default async function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
@@ -49,6 +56,16 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
   const favoriteSizes = Array.from(sizeCounts.entries())
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3);
+
+  const onlineCount = countedOrders.filter((o) => o.channel !== "POS").length;
+  const localCount = countedOrders.filter((o) => o.channel === "POS").length;
+
+  const paymentCounts = new Map<string, number>();
+  for (const order of countedOrders) {
+    const method = order.paymentMethod || "SIN DATO";
+    paymentCounts.set(method, (paymentCounts.get(method) || 0) + 1);
+  }
+  const paymentBreakdown = Array.from(paymentCounts.entries()).sort((a, b) => b[1] - a[1]);
 
   const fullName = (customer.firstName + " " + customer.lastName).trim() || "(sin nombre)";
   const whatsappLink = customer.phone
@@ -91,6 +108,20 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
           <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#737373", marginBottom: "8px" }}>Talles favoritos</p>
           <p style={{ fontSize: "14px", fontWeight: 600 }}>
             {favoriteSizes.length === 0 ? "-" : favoriteSizes.map(([size, count]) => size + " (" + count + ")").join(", ")}
+          </p>
+        </div>
+        <div style={{ backgroundColor: "white", border: "1px solid #E8E8E8", padding: "20px" }}>
+          <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#737373", marginBottom: "8px" }}>Canal de compra</p>
+          <p style={{ fontSize: "14px", fontWeight: 600 }}>
+            {countedOrders.length === 0 ? "-" : onlineCount + " online, " + localCount + " local" + (localCount === 1 ? "" : "es")}
+          </p>
+        </div>
+        <div style={{ backgroundColor: "white", border: "1px solid #E8E8E8", padding: "20px" }}>
+          <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#737373", marginBottom: "8px" }}>Medios de pago</p>
+          <p style={{ fontSize: "14px", fontWeight: 600 }}>
+            {paymentBreakdown.length === 0
+              ? "-"
+              : paymentBreakdown.map(([method, count]) => (PAYMENT_LABELS[method] || method) + " (" + count + ")").join(", ")}
           </p>
         </div>
       </div>
