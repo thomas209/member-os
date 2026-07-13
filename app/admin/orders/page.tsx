@@ -14,6 +14,13 @@ const STATUS_COLORS: Record<string, string> = {
 const CHANNEL_LABELS: Record<string, string> = { POS: "Local", ONLINE: "Online" };
 const CHANNEL_COLORS: Record<string, string> = { POS: "#7C3AED", ONLINE: "#2563EB" };
 
+const PAYMENT_LABELS: Record<string, string> = {
+  MERCADOPAGO: "Mercado Pago",
+  TRANSFERENCIA: "Transferencia",
+  EFECTIVO: "Efectivo",
+  TARJETA: "Tarjeta",
+};
+
 export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ channel?: string }> }) {
   const { channel } = await searchParams;
   const activeChannel = channel === "POS" || channel === "ONLINE" ? channel : undefined;
@@ -75,6 +82,9 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                 padding:"4px 10px",flexShrink:0,
               }}>
                 {CHANNEL_LABELS[order.channel] || order.channel}
+              </span>
+              <span style={{fontSize:"11px",color:"#737373",flexShrink:0,whiteSpace:"nowrap"}}>
+                {order.paymentMethod ? PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod : "—"}
               </span>
               <p style={{fontSize:"13px",fontWeight:"700",width:"100px",flexShrink:0}}>
                 ${Number(order.total).toLocaleString("es-AR")}

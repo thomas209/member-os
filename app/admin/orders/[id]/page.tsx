@@ -23,6 +23,13 @@ const STATUS_COLORS: Record<string, string> = {
   REFUNDED: "#737373",
 };
 
+const PAYMENT_LABELS: Record<string, string> = {
+  MERCADOPAGO: "Mercado Pago",
+  TRANSFERENCIA: "Transferencia",
+  EFECTIVO: "Efectivo",
+  TARJETA: "Tarjeta",
+};
+
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
@@ -61,6 +68,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           }}>
             {STATUS_LABELS[order.status]}
           </span>
+          {order.paymentMethod && (
+            <span style={{
+              fontSize:"11px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",
+              color:"#525252", backgroundColor:"#F4F4F4", padding:"4px 10px", marginLeft:"8px",
+            }}>
+              {PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod}
+            </span>
+          )}
           {order.paymentMethod === "TRANSFERENCIA" && order.status === "PENDING" && (
             <span style={{
               fontSize:"11px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",

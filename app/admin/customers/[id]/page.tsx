@@ -132,7 +132,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
           <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid #E8E8E8" }}>
-                {["Pedido", "Productos", "Fecha", "Canal", "Estado", "Total"].map((h) => (
+                {["Pedido", "Productos", "Fecha", "Canal", "Medio de pago", "Estado", "Total"].map((h) => (
                   <th key={h} style={{ padding: "10px 20px", textAlign: "left", fontSize: "11px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "#737373" }}>
                     {h}
                   </th>
@@ -167,13 +167,16 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                     {new Date(order.createdAt).toLocaleDateString("es-AR")}
                   </td>
                   <td style={{ padding: "14px 20px", fontSize: "12px", color: "#737373" }}>{order.channel === "POS" ? "Local" : "Online"}</td>
+                  <td style={{ padding: "14px 20px", fontSize: "12px", color: "#737373" }}>
+                    {order.paymentMethod ? PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod : "-"}
+                  </td>
                   <td style={{ padding: "14px 20px", fontSize: "12px" }}>{STATUS_LABELS[order.status] || order.status}</td>
                   <td style={{ padding: "14px 20px", fontSize: "13px", fontWeight: 700 }}>${Number(order.total).toLocaleString("es-AR")}</td>
                 </tr>
               ))}
               {customer.orders.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ padding: "32px 20px", textAlign: "center", fontSize: "13px", color: "#737373" }}>
+                  <td colSpan={7} style={{ padding: "32px 20px", textAlign: "center", fontSize: "13px", color: "#737373" }}>
                     Sin pedidos todavia
                   </td>
                 </tr>
