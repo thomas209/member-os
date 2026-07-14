@@ -8,12 +8,16 @@ import PromoEmail from "@/emails/PromoEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Direccion de envio para campañas de oferta. Con el dominio de prueba de
-// Resend (onboarding@resend.dev) solo llega al email del dueño de la cuenta,
-// asi que para mandar de verdad a los clientes hace falta verificar un
-// dominio propio en Resend y cargar esa direccion aca (variable de entorno
-// RESEND_PROMO_FROM en Vercel, ej: "Member Club <ofertas@tudominio.com>").
-const PROMO_FROM = process.env.RESEND_PROMO_FROM || "Member Club <onboarding@resend.dev>";
+// Direccion desde la que salen TODOS los mails del sitio (login, confirmacion
+// de compra, despacho, transferencia, campañas). Mientras esta variable no
+// este cargada usa el dominio de prueba de Resend (onboarding@resend.dev),
+// que SOLO entrega al email del dueño de la cuenta de Resend, nunca a
+// clientes reales. Para que llegue de verdad hay que:
+// 1) verificar un dominio propio en Resend (Domains > Add Domain),
+// 2) cargar los registros DNS que da Resend en Hostinger,
+// 3) cargar la variable RESEND_FROM_EMAIL en Vercel, ej:
+//    "Member Club <no-reply@memberclubargentina.com>"
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "Member Club <onboarding@resend.dev>";
 
 type SendShippingEmailParams = {
   to: string;
@@ -35,7 +39,7 @@ export async function sendShippingEmail(params: SendShippingEmailParams) {
   const { to, firstName, orderNumber, trackingNumber, items, total } = params;
 
   const { data, error } = await resend.emails.send({
-    from: "Member Club <onboarding@resend.dev>",
+    from: FROM_EMAIL,
     to,
     subject: "Tu pedido #" + String(orderNumber).padStart(4, "0") + " fue despachado",
     react: ShippingEmail({ firstName, orderNumber, trackingNumber, items, total }),
@@ -72,7 +76,7 @@ export async function sendOrderConfirmationEmail(params: SendOrderConfirmationEm
   const { to, firstName, orderNumber, items, subtotal, discountAmount, shippingCost, total, receiptUrl } = params;
 
   const { data, error } = await resend.emails.send({
-    from: "Member Club <onboarding@resend.dev>",
+    from: FROM_EMAIL,
     to,
     subject: "Confirmamos tu pedido #" + String(orderNumber).padStart(4, "0"),
     react: OrderConfirmationEmail({ firstName, orderNumber, items, subtotal, discountAmount, shippingCost, total, receiptUrl }),
@@ -106,7 +110,7 @@ export async function sendAbandonedCartEmail(params: SendAbandonedCartEmailParam
   const { to, firstName, orderNumber, items, total, checkoutUrl } = params;
 
   const { data, error } = await resend.emails.send({
-    from: "Member Club <onboarding@resend.dev>",
+    from: FROM_EMAIL,
     to,
     subject: "Tu pedido #" + String(orderNumber).padStart(4, "0") + " todavía te espera",
     react: AbandonedCartEmail({ firstName, orderNumber, items, total, checkoutUrl }),
@@ -135,7 +139,7 @@ export async function sendTransferInstructionsEmail(params: SendTransferInstruct
   const { to, firstName, orderNumber, total, cbu, holder, transferUrl, isReminder } = params;
 
   const { data, error } = await resend.emails.send({
-    from: "Member Club <onboarding@resend.dev>",
+    from: FROM_EMAIL,
     to,
     subject: isReminder
       ? "Todavía no vimos tu transferencia del pedido #" + String(orderNumber).padStart(4, "0")
@@ -160,7 +164,7 @@ export async function sendLoginLinkEmail(params: SendLoginLinkEmailParams) {
   const { to, loginUrl } = params;
 
   const { data, error } = await resend.emails.send({
-    from: "Member Club <onboarding@resend.dev>",
+    from: FROM_EMAIL,
     to,
     subject: "Tu link para entrar a tu cuenta",
     react: LoginLinkEmail({ loginUrl }),
@@ -209,7 +213,7 @@ export async function sendPromoEmailBatch(recipients: PromoRecipient[], content:
     try {
       const { data, error } = await resend.batch.send(
         chunk.map((r) => ({
-          from: PROMO_FROM,
+          from: FROM_EMAIL,
           to: r.email,
           subject: content.title,
           react: PromoEmail({
