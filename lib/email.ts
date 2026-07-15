@@ -31,18 +31,23 @@ type SendShippingEmailParams = {
     quantity: number;
     unitPrice: number;
     image?: string | null;
+    isEncargo?: boolean;
   }[];
   total: number;
+  // Cuando el pedido se despacha en varias tandas (ej: stock ya, encargo
+  // despues), este flag agrega una linea aclarando que el resto llega en
+  // otro envio. Si no se manda, el mail queda exactamente igual que antes.
+  partial?: boolean;
 };
 
 export async function sendShippingEmail(params: SendShippingEmailParams) {
-  const { to, firstName, orderNumber, trackingNumber, items, total } = params;
+  const { to, firstName, orderNumber, trackingNumber, items, total, partial } = params;
 
   const { data, error } = await resend.emails.send({
     from: FROM_EMAIL,
     to,
     subject: "Tu pedido #" + String(orderNumber).padStart(4, "0") + " fue despachado",
-    react: ShippingEmail({ firstName, orderNumber, trackingNumber, items, total }),
+    react: ShippingEmail({ firstName, orderNumber, trackingNumber, items, total, partial }),
   });
 
   if (error) {
@@ -64,6 +69,7 @@ type SendOrderConfirmationEmailParams = {
     quantity: number;
     unitPrice: number;
     image?: string | null;
+    isEncargo?: boolean;
   }[];
   subtotal: number;
   discountAmount: number;
@@ -101,6 +107,7 @@ type SendAbandonedCartEmailParams = {
     quantity: number;
     unitPrice: number;
     image?: string | null;
+    isEncargo?: boolean;
   }[];
   total: number;
   checkoutUrl: string;

@@ -10,6 +10,7 @@ type OrderItem = {
   quantity: number;
   unitPrice: number;
   image?: string | null;
+  isEncargo?: boolean;
 };
 
 type OrderConfirmationEmailProps = {
@@ -71,6 +72,9 @@ export default function OrderConfirmationEmail({
                   <Text style={{fontSize:"11px",color:"#737373",margin:"0 0 4px 0",textTransform:"uppercase",letterSpacing:"0.08em"}}>{item.productBrand}</Text>
                   <Text style={{fontSize:"14px",fontWeight:"600",color:"#0A0A0A",margin:"0 0 4px 0"}}>{item.productName}</Text>
                   <Text style={{fontSize:"12px",color:"#737373",margin:0}}>Talle {item.size} x {item.quantity}</Text>
+                  {item.isEncargo && (
+                    <Text style={{fontSize:"11px",color:"#A3A3A3",margin:"4px 0 0 0"}}>Por encargo</Text>
+                  )}
                 </Column>
                 <Column style={{textAlign:"right"}}>
                   <Text style={{fontSize:"14px",fontWeight:"700",color:"#0A0A0A",margin:0}}>

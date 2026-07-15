@@ -305,6 +305,18 @@ model OrderItem {
   size         String
   unitPrice    Decimal @db.Decimal(10, 2)
   quantity     Int
+  // Copia de Product.isEncargo al momento de la compra (igual que
+  // productName/productBrand): asi si despues el producto deja de ser
+  // encargo, el pedido viejo no cambia de estado retroactivamente.
+  isEncargo    Boolean @default(false)
+
+  // Despacho por item: permite despachar un pedido en varias tandas (ej:
+  // lo que hay en stock ya, el encargo despues) sin dejar de ser un solo
+  // pedido/pago. Order.trackingNumber sigue existiendo como "ultimo
+  // numero cargado" para compatibilidad con pedidos viejos de una sola
+  // tanda; el detalle por item vive aca.
+  trackingNumber String?
+  shippedAt      DateTime?
 
   @@index([orderId])
   @@index([productId])

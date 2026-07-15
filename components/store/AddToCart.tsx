@@ -17,6 +17,7 @@ type Props = {
     brand: string;
     price: number;
     image: string | null;
+    isEncargo?: boolean;
   };
 };
 
@@ -41,6 +42,7 @@ export default function AddToCart({ variants, product }: Props) {
       price: product.price,
       image: product.image,
       maxStock: selectedVariant.stock,
+      isEncargo: product.isEncargo,
     });
     if (!wasAdded) {
       setError("Ya tenés en el carrito todo el stock disponible de este talle (" + selectedVariant.stock + ")");

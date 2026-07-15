@@ -36,7 +36,10 @@ export default function CartDrawer() {
                   <div style={{flex:1}}>
                     <p style={{fontSize:"10px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"4px"}}>{item.brand}</p>
                     <p style={{fontSize:"14px",fontWeight:"500",marginBottom:"4px"}}>{item.name}</p>
-                    <p style={{fontSize:"12px",color:"#737373",marginBottom:"12px"}}>Talle {item.size}</p>
+                    <p style={{fontSize:"12px",color:"#737373",marginBottom:item.isEncargo?"4px":"12px"}}>Talle {item.size}</p>
+                    {item.isEncargo && (
+                      <p style={{fontSize:"11px",color:"#737373",marginBottom:"12px"}}>Por encargo</p>
+                    )}
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                       <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
                         <button onClick={() => updateQuantity(item.variantId, item.quantity - 1)} style={{width:"28px",height:"28px",border:"1px solid #E8E8E8",backgroundColor:"white",cursor:"pointer"}}>-</button>

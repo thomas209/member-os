@@ -111,6 +111,7 @@ export async function POST(request: NextRequest) {
           size: variant.size,
           unitPrice: price,
           quantity: qty,
+          isEncargo: variant.product.isEncargo,
         });
 
         movementsData.push({

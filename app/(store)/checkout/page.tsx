@@ -222,6 +222,11 @@ export default function CheckoutPage() {
             <p style={{fontSize:"11px",color:"#16A34A",fontWeight:"600"}}>{TRANSFER_DISCOUNT_PERCENT}% de descuento</p>
           </div>
         </div>
+        {items.some((i) => i.isEncargo) && (
+          <p style={{fontSize:"12px",color:"#737373",marginBottom:"16px"}}>
+            Tu pedido incluye productos por encargo: esos se envían por separado y pueden demorar más que el resto.
+          </p>
+        )}
         {error && <p style={{fontSize:"13px",color:"#DC2626",marginBottom:"16px"}}>{error}</p>}
         <button onClick={handleSubmit} disabled={loading} style={{width:"100%",padding:"18px",backgroundColor:loading?"#E8E8E8":"#0A0A0A",color:loading?"#A3A3A3":"white",fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",border:"none",cursor:loading?"not-allowed":"pointer"}}>
           {loading ? "Procesando..." : paymentMethod === "TRANSFERENCIA" ? "Continuar con transferencia" : "Pagar con Mercado Pago"}
@@ -242,6 +247,9 @@ export default function CheckoutPage() {
               <div style={{flex:1}}>
                 <p style={{fontSize:"13px",fontWeight:"500"}}>{item.name}</p>
                 <p style={{fontSize:"11px",color:"#737373"}}>Talle {item.size} x {item.quantity}</p>
+                {item.isEncargo && (
+                  <p style={{fontSize:"11px",color:"#737373",marginTop:"2px"}}>Por encargo</p>
+                )}
               </div>
               <p style={{fontSize:"13px",fontWeight:"700"}}>${(item.price * item.quantity).toLocaleString("es-AR")}</p>
             </div>

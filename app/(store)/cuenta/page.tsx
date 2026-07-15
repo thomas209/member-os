@@ -31,6 +31,7 @@ export default async function AccountPage() {
 
   const orders = await prisma.order.findMany({
     where: { customerId: customer.id },
+    include: { items: { select: { isEncargo: true, shippedAt: true } } },
     orderBy: { createdAt: "desc" },
   });
 
@@ -70,13 +71,18 @@ export default async function AccountPage() {
                 <p style={{ fontSize: "12px", color: "#737373", marginTop: "4px" }}>
                   {new Date(order.createdAt).toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric" })}
                 </p>
+                {order.items.some((i) => i.isEncargo) && (
+                  <p style={{ fontSize: "11px", color: "#A3A3A3", marginTop: "4px" }}>Incluye producto por encargo</p>
+                )}
               </div>
               <div style={{ textAlign: "right" }}>
                 <p style={{ fontSize: "14px", fontWeight: 700 }}>
                   ${Number(order.total).toLocaleString("es-AR")}
                 </p>
                 <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: STATUS_COLORS[order.status] || "#737373", marginTop: "4px" }}>
-                  {STATUS_LABELS[order.status] || order.status}
+                  {order.status === "PROCESSING" && order.items.some((i) => i.shippedAt)
+                    ? "Despachado " + order.items.filter((i) => i.shippedAt).length + "/" + order.items.length
+                    : STATUS_LABELS[order.status] || order.status}
                 </p>
               </div>
             </a>

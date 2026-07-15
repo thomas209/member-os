@@ -49,6 +49,7 @@ export async function POST(request: Request) {
         size: variant.size,
         unitPrice: price,
         quantity: item.quantity,
+        isEncargo: variant.product.isEncargo,
       });
     }
 

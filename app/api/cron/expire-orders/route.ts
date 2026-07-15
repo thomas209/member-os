@@ -119,6 +119,7 @@ export async function GET(request: NextRequest) {
             quantity: item.quantity,
             unitPrice: Number(item.unitPrice),
             image: item.product.images[0]?.url ?? null,
+            isEncargo: item.isEncargo,
           })),
           total: Number(order.total),
           checkoutUrl: mpPreference.init_point!,

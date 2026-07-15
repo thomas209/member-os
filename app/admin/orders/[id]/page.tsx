@@ -110,6 +110,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     <p style={{fontSize:"13px",fontWeight:"600",marginBottom:"2px"}}>{item.productName}</p>
                     <p style={{fontSize:"12px",color:"#737373",marginBottom:"2px"}}>{item.productBrand}</p>
                     <p style={{fontSize:"12px",color:"#737373"}}>Talle {item.size} x {item.quantity}</p>
+                    {item.isEncargo && (
+                      <p style={{fontSize:"11px",color:"#A3A3A3",marginTop:"2px"}}>Por encargo</p>
+                    )}
+                    {item.shippedAt && (
+                      <p style={{fontSize:"11px",color:"#16A34A",marginTop:"2px"}}>✓ Despachado</p>
+                    )}
                   </div>
                   <p style={{fontSize:"14px",fontWeight:"700"}}>${(Number(item.unitPrice) * item.quantity).toLocaleString("es-AR")}</p>
                 </div>
@@ -122,7 +128,20 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </div>
 
           {/* Acciones */}
-          <OrderActions orderId={order.id} currentStatus={order.status} trackingNumber={order.trackingNumber} paymentMethod={order.paymentMethod} />
+          <OrderActions
+            orderId={order.id}
+            currentStatus={order.status}
+            paymentMethod={order.paymentMethod}
+            items={order.items.map((item) => ({
+              id: item.id,
+              productName: item.productName,
+              size: item.size,
+              quantity: item.quantity,
+              isEncargo: item.isEncargo,
+              trackingNumber: item.trackingNumber,
+              shippedAt: item.shippedAt ? item.shippedAt.toISOString() : null,
+            }))}
+          />
 
         </div>
 

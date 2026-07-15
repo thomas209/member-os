@@ -105,6 +105,22 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                   Transferencia
                 </span>
               )}
+              {order.status === "PROCESSING" && order.items.some((i) => i.shippedAt) && (
+                <span style={{
+                  fontSize:"11px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",
+                  color:"#7C3AED", backgroundColor:"#7C3AED20", padding:"4px 10px",flexShrink:0,
+                }}>
+                  Despachado {order.items.filter((i) => i.shippedAt).length}/{order.items.length}
+                </span>
+              )}
+              {order.items.some((i) => i.isEncargo) && (
+                <span style={{
+                  fontSize:"11px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",
+                  color:"#525252", backgroundColor:"#F4F4F4", padding:"4px 10px",flexShrink:0,
+                }}>
+                  Por encargo
+                </span>
+              )}
               <p style={{fontSize:"12px",color:"#737373",flexShrink:0}}>
                 {new Date(order.createdAt).toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })}
               </p>

@@ -16,6 +16,7 @@ export type CartItem = {
   // revalida el stock real igual, esto solo evita que el carrito deje
   // sumar de mas a simple vista).
   maxStock: number;
+  isEncargo?: boolean;
 };
 
 type CartStore = {

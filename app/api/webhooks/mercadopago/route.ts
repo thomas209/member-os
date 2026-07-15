@@ -166,6 +166,7 @@ export async function POST(request: Request) {
               quantity: item.quantity,
               unitPrice: Number(item.unitPrice),
               image: item.product.images[0]?.url ?? null,
+              isEncargo: item.isEncargo,
             })),
             subtotal: Number(order.subtotal),
             discountAmount: Number(order.discountAmount),

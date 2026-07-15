@@ -10,6 +10,7 @@ type OrderItem = {
   quantity: number;
   unitPrice: number;
   image?: string | null;
+  isEncargo?: boolean;
 };
 
 type ShippingEmailProps = {
@@ -18,6 +19,7 @@ type ShippingEmailProps = {
   trackingNumber: string;
   items: OrderItem[];
   total: number;
+  partial?: boolean;
 };
 
 export default function ShippingEmail({
@@ -26,6 +28,7 @@ export default function ShippingEmail({
   trackingNumber,
   items,
   total,
+  partial,
 }: ShippingEmailProps) {
   const trackingUrl = "https://www.andreani.com/#!/informacionEnvio/" + trackingNumber;
 
@@ -48,9 +51,14 @@ export default function ShippingEmail({
             <Heading style={{fontSize:"24px",fontWeight:"700",color:"#0A0A0A",marginBottom:"8px"}}>
               Tu pedido fue despachado
             </Heading>
-            <Text style={{fontSize:"15px",color:"#525252",marginBottom:"32px"}}>
-              Hola {firstName}, tu pedido #{String(orderNumber).padStart(4, "0")} está en camino.
+            <Text style={{fontSize:"15px",color:"#525252",marginBottom:partial?"8px":"32px"}}>
+              Hola {firstName}, {partial ? "parte de tu" : "tu"} pedido #{String(orderNumber).padStart(4, "0")} está en camino.
             </Text>
+            {partial && (
+              <Text style={{fontSize:"13px",color:"#737373",marginBottom:"32px"}}>
+                El resto de tu pedido se despacha por separado — te avisamos apenas salga.
+              </Text>
+            )}
 
             {/* Tracking */}
             <Section style={{backgroundColor:"#F4F4F4",padding:"24px",marginBottom:"32px",textAlign:"center"}}>
@@ -83,6 +91,9 @@ export default function ShippingEmail({
                   <Text style={{fontSize:"11px",color:"#737373",margin:"0 0 4px 0",textTransform:"uppercase",letterSpacing:"0.08em"}}>{item.productBrand}</Text>
                   <Text style={{fontSize:"14px",fontWeight:"600",color:"#0A0A0A",margin:"0 0 4px 0"}}>{item.productName}</Text>
                   <Text style={{fontSize:"12px",color:"#737373",margin:0}}>Talle {item.size} x {item.quantity}</Text>
+                  {item.isEncargo && (
+                    <Text style={{fontSize:"11px",color:"#A3A3A3",margin:"4px 0 0 0"}}>Por encargo</Text>
+                  )}
                 </Column>
                 <Column style={{textAlign:"right"}}>
                   <Text style={{fontSize:"14px",fontWeight:"700",color:"#0A0A0A",margin:0}}>
