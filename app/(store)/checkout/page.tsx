@@ -210,22 +210,22 @@ export default function CheckoutPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div>
-            <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Ciudad *</label>
-            <Autocomplete
-              name="city"
-              value={form.city}
-              onChange={(v) => setForm({ ...form, city: v })}
-              suggestions={localidades}
-              placeholder="Buenos Aires"
-            />
-          </div>
-          <div>
             <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Provincia *</label>
             <Autocomplete
               name="province"
               value={form.province}
               onChange={(v) => setForm({ ...form, province: v })}
               suggestions={PROVINCES}
+              placeholder="Buenos Aires"
+            />
+          </div>
+          <div>
+            <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Ciudad *</label>
+            <Autocomplete
+              name="city"
+              value={form.city}
+              onChange={(v) => setForm({ ...form, city: v })}
+              suggestions={localidades}
               placeholder="Buenos Aires"
             />
           </div>
