@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useCartStore } from "@/store/cart";
 import { calculateShippingCost, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 import { calculateTransferDiscount, TRANSFER_DISCOUNT_PERCENT } from "@/lib/bankDetails";
+import { PROVINCES } from "@/lib/argentina";
+import Autocomplete from "@/components/store/Autocomplete";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const POSTAL_CODE_REGEX = /^(\d{4}|[A-Za-z]\d{4}[A-Za-z]{3})$/;
@@ -21,6 +23,25 @@ export default function CheckoutPage() {
     street: "", number: "", floor: "", city: "", province: "", postalCode: "",
   });
   const [loggedInEmail, setLoggedInEmail] = useState<string | null>(null);
+  const [localidades, setLocalidades] = useState<string[]>([]);
+
+  // Cuando la provincia elegida matchea una provincia real (no cualquier
+  // cosa que este tipeando), trae sus localidades para sugerir en el
+  // campo de ciudad. Si la API externa falla, se guarda una lista vacia
+  // y el campo de ciudad sigue funcionando como texto libre.
+  useEffect(() => {
+    const match = PROVINCES.find((p) => p.toLowerCase() === form.province.trim().toLowerCase());
+    if (!match) {
+      setLocalidades([]);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/georef/localidades?provincia=" + encodeURIComponent(match))
+      .then((res) => res.json())
+      .then((data) => { if (!cancelled) setLocalidades(data.localidades || []); })
+      .catch(() => { if (!cancelled) setLocalidades([]); });
+    return () => { cancelled = true; };
+  }, [form.province]);
 
   // Si hay sesion de cliente, precarga el formulario con los datos y la
   // direccion guardada. El checkout sigue funcionando igual sin sesion.
@@ -190,11 +211,23 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div>
             <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Ciudad *</label>
-            <input name="city" value={form.city} onChange={handleChange} placeholder="Buenos Aires" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none"}} />
+            <Autocomplete
+              name="city"
+              value={form.city}
+              onChange={(v) => setForm({ ...form, city: v })}
+              suggestions={localidades}
+              placeholder="Buenos Aires"
+            />
           </div>
           <div>
             <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Provincia *</label>
-            <input name="province" value={form.province} onChange={handleChange} placeholder="Buenos Aires" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none"}} />
+            <Autocomplete
+              name="province"
+              value={form.province}
+              onChange={(v) => setForm({ ...form, province: v })}
+              suggestions={PROVINCES}
+              placeholder="Buenos Aires"
+            />
           </div>
           <div>
             <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>CP *</label>
