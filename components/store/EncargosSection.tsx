@@ -258,30 +258,44 @@ function PokerCard({ product, rotation, background }: { product: EncargoProduct;
             <div ref={glowRef} style={{ position: "absolute", inset: 0, pointerEvents: "none", transition: "opacity 0.3s ease" }} />
           </div>
           <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)", backgroundColor: "#F0F0F0", borderRadius: "12px", overflow: "hidden", border: "1px solid #E8E8E8" }}>
-            <a href={"/product/" + product.slug} style={{ position: "absolute", inset: 0, display: "block" }} onClick={(e) => { if (!flipped) e.preventDefault(); }}>
-              {imageUrl ? (
-                <img
-                  src={imageUrl}
-                  alt={product.name}
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transform: flipped ? "scale(1)" : "scale(1.2)", transition: "transform 0.8s cubic-bezier(0.23, 1, 0.32, 1) 0.3s" }}
-                />
-              ) : (
-                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", transform: flipped ? "scale(1)" : "scale(1.2)", transition: "transform 0.8s cubic-bezier(0.23, 1, 0.32, 1) 0.3s" }}>
-                  <p style={{ fontSize: "11px", color: "#B0B0B0", letterSpacing: "0.1em", textTransform: "uppercase" }}>Sin imagen</p>
-                </div>
-              )}
-              <div style={{
-                position: "absolute", top: 0, left: 0, right: 0,
-                padding: "20px",
-                background: "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 65%, transparent 100%)",
-                transform: flipped ? "translateY(0)" : "translateY(-10px)",
-                opacity: flipped ? 1 : 0,
-                transition: "transform 0.5s ease 0.4s, opacity 0.5s ease 0.4s",
-              }}>
-                <p style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.8)", marginBottom: "4px" }}>{product.brand.name}</p>
-                <p style={{ fontSize: "16px", fontWeight: "700", marginBottom: "4px", letterSpacing: "-0.01em", color: "white" }}>{product.name}</p>
-                <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)" }}>Por encargo · 14 días · ${Number(product.price).toLocaleString("es-AR")}</p>
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={product.name}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transform: flipped ? "scale(1)" : "scale(1.2)", transition: "transform 0.8s cubic-bezier(0.23, 1, 0.32, 1) 0.3s" }}
+              />
+            ) : (
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", transform: flipped ? "scale(1)" : "scale(1.2)", transition: "transform 0.8s cubic-bezier(0.23, 1, 0.32, 1) 0.3s" }}>
+                <p style={{ fontSize: "11px", color: "#B0B0B0", letterSpacing: "0.1em", textTransform: "uppercase" }}>Sin imagen</p>
               </div>
+            )}
+            <div style={{
+              position: "absolute", top: 0, left: 0, right: 0,
+              padding: "20px",
+              background: "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 65%, transparent 100%)",
+              transform: flipped ? "translateY(0)" : "translateY(-10px)",
+              opacity: flipped ? 1 : 0,
+              transition: "transform 0.5s ease 0.4s, opacity 0.5s ease 0.4s",
+            }}>
+              <p style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.8)", marginBottom: "4px" }}>{product.brand.name}</p>
+              <p style={{ fontSize: "16px", fontWeight: "700", marginBottom: "4px", letterSpacing: "-0.01em", color: "white" }}>{product.name}</p>
+              <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)" }}>Por encargo · 14 días · ${Number(product.price).toLocaleString("es-AR")}</p>
+            </div>
+            <a
+              href={"/product/" + product.slug}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: "absolute", bottom: "16px", left: "20px", zIndex: 2,
+                fontSize: "11px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase",
+                color: "#0A0A0A", backgroundColor: "white", padding: "8px 14px", borderRadius: "999px",
+                textDecoration: "none",
+                opacity: flipped ? 1 : 0,
+                transform: flipped ? "translateY(0)" : "translateY(10px)",
+                transition: "opacity 0.4s ease 0.5s, transform 0.4s ease 0.5s",
+                pointerEvents: flipped ? "auto" : "none",
+              }}
+            >
+              Ver producto →
             </a>
           </div>
         </div>
@@ -343,11 +357,25 @@ function SimpleFlipCard({ product, background }: { product: EncargoProduct; back
             <p style={{ fontSize: "13px", fontWeight: "700", marginBottom: "3px", lineHeight: 1.2, color: "white" }}>{product.name}</p>
             <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.8)" }}>Por encargo</p>
           </div>
+          {flipped && (
+            <a
+              href={"/product/" + product.slug}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: "absolute", bottom: "10px", left: "12px", zIndex: 2,
+                fontSize: "10px", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase",
+                color: "#0A0A0A", backgroundColor: "white", padding: "6px 12px", borderRadius: "999px",
+                textDecoration: "none",
+              }}
+            >
+              Ver producto →
+            </a>
+          )}
         </div>
       </div>
     </div>
     <p style={{ fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", textAlign: "center", marginTop: "8px" }}>
-      {flipped ? "Tocar para volver" : "Tocar para ver"}
+      {flipped ? "Tocar la carta para volver" : "Tocar para ver"}
     </p>
     </div>
   );
