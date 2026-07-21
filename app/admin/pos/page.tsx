@@ -44,6 +44,21 @@ const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   TRANSFERENCIA: "Transferencia",
 };
 
+// El QR de las etiquetas ahora codifica la URL publica del producto (con ?v=<variantId>),
+// para que un cliente que escanea con la camara caiga en la ficha de la tienda.
+// El POS extrae el variantId de esa misma URL; si lo escaneado no es una URL (etiquetas
+// viejas, o el lector USB tipeando el codigo suelto), lo usa tal cual, como antes.
+function extractScannedVariantId(rawCode: string): string {
+  const code = rawCode.trim();
+  if (!code.startsWith("http://") && !code.startsWith("https://")) return code;
+  try {
+    const url = new URL(code);
+    return url.searchParams.get("v") || code;
+  } catch {
+    return code;
+  }
+}
+
 export default function PosPage() {
   // --- Caja ---
   // undefined = todavia no sabemos si hay caja abierta, null = no hay caja abierta
@@ -242,7 +257,8 @@ export default function PosPage() {
     setCashSession(null);
   };
 
-  const lookupVariant = async (variantId: string) => {
+  const lookupVariant = async (scannedCode: string) => {
+    const variantId = extractScannedVariantId(scannedCode);
     // Evitar procesar el mismo codigo repetido en menos de 2 segundos (la camara lee varias veces por segundo)
     const now = Date.now();
     if (variantId === lastCodeRef.current && now - lastScanTimeRef.current < 2000) return;
