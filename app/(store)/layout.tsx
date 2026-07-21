@@ -96,7 +96,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
 
       <main style={{flex: 1}}>{children}</main>
 
-      <footer style={{backgroundColor: "#FAFAFA", borderTop: "1px solid #E8E8E8", padding: "48px"}}>
+      <footer className="hidden md:block" style={{backgroundColor: "#FAFAFA", borderTop: "1px solid #E8E8E8", padding: "48px"}}>
         <div style={{maxWidth: "1440px", margin: "0 auto"}}>
           <p style={{fontSize: "13px", color: "#737373"}}>© 2026 Member Club. Todos los derechos reservados.</p>
         </div>
