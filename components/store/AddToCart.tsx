@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useCartStore } from "@/store/cart";
+import { buildWhatsappLink } from "@/lib/whatsapp";
+import { STORE_WHATSAPP_NUMBER } from "@/lib/bankDetails";
 
 type Variant = {
   id: string;
@@ -54,6 +56,13 @@ export default function AddToCart({ variants, product }: Props) {
   };
 
   const hasStock = variants.some((v) => v.stock > 0);
+  const selectedOutOfStock = selectedVariant !== null && selectedVariant.stock === 0;
+
+  const buildStockAlertHref = (variant: Variant) => {
+    const pageUrl = typeof window !== "undefined" ? window.location.href : "";
+    const message = `Hola! Quiero que me avisen cuando haya stock de ${product.brand} ${product.name} talle ${variant.size}.\n${pageUrl}`;
+    return buildWhatsappLink(STORE_WHATSAPP_NUMBER, message);
+  };
 
   return (
     <>
@@ -69,15 +78,16 @@ export default function AddToCart({ variants, product }: Props) {
             return (
               <button
                 key={variant.id}
-                disabled={outOfStock}
                 onClick={() => { setSelectedVariant(variant); setError(""); }}
                 className={`
-                  py-4 text-sm font-medium border transition-all
-                  ${isSelected
+                  py-4 text-sm font-medium border transition-all cursor-pointer
+                  ${isSelected && outOfStock
+                    ? "border-neutral-900 text-neutral-900 line-through"
+                    : isSelected
                     ? "border-neutral-900 bg-neutral-900 text-white"
                     : outOfStock
-                    ? "border-neutral-200 text-neutral-300 line-through cursor-not-allowed"
-                    : "border-neutral-300 text-neutral-900 hover:border-neutral-900 cursor-pointer"
+                    ? "border-neutral-200 text-neutral-300 line-through hover:border-neutral-400"
+                    : "border-neutral-300 text-neutral-900 hover:border-neutral-900"
                   }
                 `}
               >
@@ -93,40 +103,62 @@ export default function AddToCart({ variants, product }: Props) {
 
       {/* BOTON — desktop */}
       <div className="desktop-cta">
-        <button
-          onClick={handleAdd}
-          disabled={!hasStock}
-          className={`
-            w-full py-5 text-[13px] font-semibold tracking-widest uppercase border-none transition-colors
-            ${added
-              ? "bg-green-600 text-white cursor-pointer"
-              : hasStock
-              ? "bg-neutral-900 text-white cursor-pointer hover:bg-neutral-700"
-              : "bg-neutral-100 text-neutral-400 cursor-not-allowed"
-            }
-          `}
-        >
-          {added ? "Agregado ✓" : hasStock ? "Agregar al carrito" : "Sin stock"}
-        </button>
+        {selectedOutOfStock ? (
+          <a
+            href={buildStockAlertHref(selectedVariant!)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full py-5 text-[13px] font-semibold tracking-widest uppercase text-center border border-neutral-900 text-neutral-900 bg-white hover:bg-neutral-900 hover:text-white transition-colors"
+          >
+            Avisame cuando haya stock
+          </a>
+        ) : (
+          <button
+            onClick={handleAdd}
+            disabled={!hasStock}
+            className={`
+              w-full py-5 text-[13px] font-semibold tracking-widest uppercase border-none transition-colors
+              ${added
+                ? "bg-green-600 text-white cursor-pointer"
+                : hasStock
+                ? "bg-neutral-900 text-white cursor-pointer hover:bg-neutral-700"
+                : "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+              }
+            `}
+          >
+            {added ? "Agregado ✓" : hasStock ? "Agregar al carrito" : "Sin stock"}
+          </button>
+        )}
       </div>
 
       {/* BOTON STICKY — mobile */}
       <div className="mobile-sticky-cta fixed bottom-0 left-0 right-0 p-3 bg-white border-t border-neutral-100 z-40">
-        <button
-          onClick={handleAdd}
-          disabled={!hasStock}
-          className={`
-            w-full py-4 text-[13px] font-semibold tracking-widest uppercase border-none transition-colors
-            ${added
-              ? "bg-green-600 text-white cursor-pointer"
-              : hasStock
-              ? "bg-neutral-900 text-white cursor-pointer"
-              : "bg-neutral-100 text-neutral-400 cursor-not-allowed"
-            }
-          `}
-        >
-          {added ? "Agregado ✓" : !selectedVariant ? "Seleccioná un talle" : "Agregar al carrito"}
-        </button>
+        {selectedOutOfStock ? (
+          <a
+            href={buildStockAlertHref(selectedVariant!)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full py-4 text-[13px] font-semibold tracking-widest uppercase text-center border border-neutral-900 text-neutral-900 bg-white"
+          >
+            Avisame cuando haya stock
+          </a>
+        ) : (
+          <button
+            onClick={handleAdd}
+            disabled={!hasStock}
+            className={`
+              w-full py-4 text-[13px] font-semibold tracking-widest uppercase border-none transition-colors
+              ${added
+                ? "bg-green-600 text-white cursor-pointer"
+                : hasStock
+                ? "bg-neutral-900 text-white cursor-pointer"
+                : "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+              }
+            `}
+          >
+            {added ? "Agregado ✓" : !selectedVariant ? "Seleccioná un talle" : "Agregar al carrito"}
+          </button>
+        )}
       </div>
     </>
   );
