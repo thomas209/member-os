@@ -167,7 +167,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 py-8 md:px-12 md:py-12 flex flex-col-reverse md:grid md:grid-cols-[1fr_400px] gap-8 md:gap-20">
+    <div className="max-w-[1200px] mx-auto px-6 py-8 md:px-12 md:py-12 flex flex-col-reverse md:grid md:grid-cols-[1fr_400px] gap-8 md:gap-20">
       <div>
         <h1 style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"8px",paddingBottom:"16px",borderBottom:"1px solid #E8E8E8"}}>Datos de envio</h1>
         {loggedInEmail && (
