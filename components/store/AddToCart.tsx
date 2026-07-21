@@ -132,13 +132,13 @@ export default function AddToCart({ variants, product }: Props) {
       </div>
 
       {/* BOTON STICKY — mobile */}
-      <div className="mobile-sticky-cta fixed bottom-0 left-0 right-0 p-3 bg-white border-t border-neutral-100 z-40">
+      <div className="mobile-sticky-cta fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 z-40">
         {selectedOutOfStock ? (
           <a
             href={buildStockAlertHref(selectedVariant!)}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full py-4 text-[13px] font-semibold tracking-widest uppercase text-center border border-neutral-900 text-neutral-900 bg-white"
+            className="block w-full py-6 text-sm font-semibold tracking-widest uppercase text-center border-2 border-neutral-900 text-neutral-900 bg-white"
           >
             Avisame cuando haya stock
           </a>
@@ -147,7 +147,7 @@ export default function AddToCart({ variants, product }: Props) {
             onClick={handleAdd}
             disabled={!hasStock}
             className={`
-              w-full py-4 text-[13px] font-semibold tracking-widest uppercase border-none transition-colors
+              w-full py-6 text-sm font-semibold tracking-widest uppercase border-none transition-colors
               ${added
                 ? "bg-green-600 text-white cursor-pointer"
                 : hasStock
