@@ -76,6 +76,7 @@ export default function ReceiptTicket({ order }: { order: ReceiptOrderData }) {
             <img
               src={item.image}
               alt={item.productName}
+              className="receipt-item-image no-print"
               style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
             />
           )}
