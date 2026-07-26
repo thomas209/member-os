@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import OrderActions from "./OrderActions";
+import ShareReceipt from "./ShareReceipt";
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: "Pendiente",
@@ -153,6 +154,15 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <p style={{fontSize:"13px",color:"#737373",marginBottom:"4px"}}>{order.guestEmail}</p>
             <p style={{fontSize:"13px",color:"#737373"}}>{order.guestPhone}</p>
           </div>
+
+          {/* Comprobante: WhatsApp, mail, link para copiar (ej: Instagram) */}
+          <ShareReceipt
+            orderId={order.id}
+            receiptUrl={(process.env.NEXT_PUBLIC_URL || "http://localhost:3000") + "/receipt/" + order.id}
+            guestFirstName={order.guestFirstName}
+            guestPhone={order.guestPhone}
+            guestEmail={order.guestEmail}
+          />
 
           {/* Direccion */}
           <div style={{backgroundColor:"white",border:"1px solid #E8E8E8",padding:"24px"}}>
