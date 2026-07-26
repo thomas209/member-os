@@ -18,7 +18,15 @@ export type ReceiptOrderData = {
   guestLastName: string | null;
   guestPhone: string | null;
   guestEmail: string | null;
-  items: { id: string; productName: string; size: string; unitPrice: number; quantity: number }[];
+  items: {
+    id: string;
+    productName: string;
+    size: string;
+    unitPrice: number;
+    quantity: number;
+    image?: string | null;
+    description?: string | null;
+  }[];
 };
 
 // Ticket de venta compartido entre la vista admin (con controles de anular/
@@ -62,11 +70,24 @@ export default function ReceiptTicket({ order }: { order: ReceiptOrderData }) {
       </div>
 
       {order.items.map((item) => (
-        <div key={item.id} style={{ marginBottom: "8px" }}>
-          <p>{item.productName}</p>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span>Talle {item.size} x{item.quantity}</span>
-            <span>${(item.unitPrice * item.quantity).toLocaleString("es-AR")}</span>
+        <div key={item.id} style={{ marginBottom: "12px", display: "flex", gap: "10px" }}>
+          {item.image && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.image}
+              alt={item.productName}
+              style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
+            />
+          )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p>{item.productName}</p>
+            {item.description && (
+              <p style={{ color: "#737373", fontSize: "11px", marginBottom: "2px" }}>{item.description}</p>
+            )}
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>Talle {item.size} x{item.quantity}</span>
+              <span>${(item.unitPrice * item.quantity).toLocaleString("es-AR")}</span>
+            </div>
           </div>
         </div>
       ))}

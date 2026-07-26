@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { buildWhatsappLink } from "@/lib/whatsapp";
 
 type VariantSummary = { id: string; size: string; stock: number };
 
@@ -104,7 +105,7 @@ export default function PosPage() {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
-  const [lastSale, setLastSale] = useState<{ orderId: string; orderNumber: number; total: number } | null>(null);
+  const [lastSale, setLastSale] = useState<{ orderId: string; orderNumber: number; total: number; customerName: string; customerPhone: string } | null>(null);
 
   // --- Cupon y descuento manual (se cargan al momento de cobrar) ---
   const [couponCodeInput, setCouponCodeInput] = useState("");
@@ -507,7 +508,13 @@ export default function PosPage() {
         setCheckingOut(false);
         return;
       }
-      setLastSale({ orderId: data.orderId, orderNumber: data.orderNumber, total: data.total });
+      setLastSale({
+        orderId: data.orderId,
+        orderNumber: data.orderNumber,
+        total: data.total,
+        customerName: customerName.trim(),
+        customerPhone: customerPhone.trim(),
+      });
       setCart([]);
       setLastScanned(null);
       setShowPaymentModal(false);
@@ -604,6 +611,21 @@ export default function PosPage() {
               >
                 Ver comprobante
               </a>
+              {lastSale.customerPhone && (
+                <a
+                  href={buildWhatsappLink(
+                    lastSale.customerPhone,
+                    "Hola" + (lastSale.customerName ? " " + lastSale.customerName.split(" ")[0] : "") +
+                      "! Te paso el comprobante de tu compra en Member Club: " +
+                      (process.env.NEXT_PUBLIC_URL || window.location.origin) + "/receipt/" + lastSale.orderId
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: "12px", fontWeight: "600", color: "#16A34A", textDecoration: "underline" }}
+                >
+                  Enviar por WhatsApp
+                </a>
+              )}
               <button onClick={() => setLastSale(null)} style={{ background: "none", border: "none", color: "#16A34A", cursor: "pointer", fontSize: "16px" }}>×</button>
             </div>
           </div>

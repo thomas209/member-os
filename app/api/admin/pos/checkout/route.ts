@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 import { upsertCustomerByEmail } from "@/lib/customerCrm";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 
 const PAYMENT_METHODS = ["EFECTIVO", "TARJETA", "TRANSFERENCIA"];
 
@@ -181,6 +182,50 @@ export async function POST(request: NextRequest) {
 
       return createdOrder;
     });
+
+    // Si el cliente cargo su mail en el POS, le mandamos el mismo mail de
+    // confirmacion que recibe una compra online (con el link publico al
+    // comprobante). Va en un try/catch aparte para que si Resend falla
+    // (o no esta configurado) la venta ya cobrada no se vea afectada.
+    if (customerEmail) {
+      try {
+        const orderWithItems = await prisma.order.findUnique({
+          where: { id: order.id },
+          include: {
+            items: {
+              include: {
+                product: { include: { images: { orderBy: { isPrimary: "desc" }, take: 1 } } },
+              },
+            },
+          },
+        });
+
+        if (orderWithItems) {
+          const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+          await sendOrderConfirmationEmail({
+            to: customerEmail,
+            firstName: guestFirstName || "",
+            orderNumber: orderWithItems.orderNumber,
+            items: orderWithItems.items.map((item) => ({
+              productName: item.productName,
+              productBrand: item.productBrand,
+              size: item.size,
+              quantity: item.quantity,
+              unitPrice: Number(item.unitPrice),
+              image: item.product.images[0]?.url ?? null,
+              isEncargo: item.isEncargo,
+            })),
+            subtotal: Number(orderWithItems.subtotal),
+            discountAmount: Number(orderWithItems.discountAmount),
+            shippingCost: Number(orderWithItems.shippingCost),
+            total: Number(orderWithItems.total),
+            receiptUrl: baseUrl + "/receipt/" + orderWithItems.id,
+          });
+        }
+      } catch (emailError) {
+        console.error("Error enviando mail de confirmacion de venta POS:", emailError);
+      }
+    }
 
     return NextResponse.json({
       orderId: order.id,

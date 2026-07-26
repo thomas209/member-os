@@ -9,7 +9,13 @@ export default async function PublicReceiptPage({ params }: { params: Promise<{ 
 
   const order = await prisma.order.findUnique({
     where: { id },
-    include: { items: true },
+    include: {
+      items: {
+        include: {
+          product: { include: { images: { orderBy: { isPrimary: "desc" }, take: 1 } } },
+        },
+      },
+    },
   });
 
   if (!order) notFound();
@@ -34,6 +40,8 @@ export default async function PublicReceiptPage({ params }: { params: Promise<{ 
       size: i.size,
       unitPrice: Number(i.unitPrice),
       quantity: i.quantity,
+      image: i.product.images[0]?.url ?? null,
+      description: i.product.description,
     })),
   };
 
