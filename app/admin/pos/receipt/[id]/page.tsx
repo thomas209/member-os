@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import PrintButton from "@/components/pos/PrintButton";
 import ReceiptTicket from "@/components/pos/ReceiptTicket";
 import VoidSaleButton from "./VoidSaleButton";
-import { buildWhatsappLink } from "@/lib/whatsapp";
+import ShareReceipt from "@/app/admin/orders/[id]/ShareReceipt";
 
 export default async function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -53,12 +53,6 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
 
   const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
   const publicReceiptUrl = baseUrl + "/receipt/" + order.id;
-  const whatsappLink = order.guestPhone
-    ? buildWhatsappLink(
-        order.guestPhone,
-        "Hola" + (order.guestFirstName ? " " + order.guestFirstName : "") + "! Te paso el comprobante de tu compra en Member Club: " + publicReceiptUrl
-      )
-    : null;
 
   return (
     <div style={{ padding: "24px", backgroundColor: "#F4F4F4", minHeight: "100vh" }}>
@@ -70,16 +64,13 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
       <ReceiptTicket order={ticketData} />
 
       <div className="no-print" style={{ maxWidth: "340px", margin: "16px auto 0", display: "flex", flexDirection: "column", gap: "10px" }}>
-        {whatsappLink && (
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textAlign: "center", padding: "10px 14px", fontSize: "13px", fontWeight: "700", backgroundColor: "#16A34A", color: "white", borderRadius: "8px", textDecoration: "none" }}
-          >
-            Enviar por WhatsApp
-          </a>
-        )}
+        <ShareReceipt
+          orderId={order.id}
+          receiptUrl={publicReceiptUrl}
+          guestFirstName={order.guestFirstName}
+          guestPhone={order.guestPhone}
+          guestEmail={order.guestEmail}
+        />
 
         {canVoid && <VoidSaleButton orderId={order.id} />}
         {alreadyClosed && (
