@@ -40,8 +40,8 @@ export default function PromoEmail({
             <table role="presentation" style={{ margin: "0 auto", borderCollapse: "collapse" }}>
               <tbody>
                 <tr>
-                  <td style={{ lineHeight: 0 }}>
-                    <Img src={logoUrl} height="36" alt="Member Club" style={{ display: "block", margin: "0 auto", height: "36px", width: "auto" }} />
+                  <td style={{ backgroundColor: "white", borderRadius: "14px", padding: "14px 18px", lineHeight: 0 }}>
+                    <Img src={logoUrl} height="32" alt="Member Club" style={{ display: "block", margin: "0 auto", height: "32px", width: "auto" }} />
                   </td>
                 </tr>
               </tbody>
