@@ -24,9 +24,9 @@ export default function PromoEmail({
   // linea se respetan como parrafos separados.
   const paragraphs = message.split("\n").filter((p) => p.trim().length > 0);
 
-  // Mismo isotipo "M" que se usa como favicon/icono del sitio, hosteado en
-  // /public para que los clientes de mail puedan cargarlo por URL.
-  const logoUrl = (process.env.NEXT_PUBLIC_URL || "http://localhost:3000") + "/icon-512.png";
+  // Logo de Member Club hosteado en Cloudinary (mismo isotipo de la marca,
+  // pensado para verse directo sobre el header negro del mail).
+  const logoUrl = "https://res.cloudinary.com/dklvmlzds/image/upload/v1783912898/MEMBER_B_1_3_wyfasx.png";
 
   return (
     <Html>
@@ -40,8 +40,8 @@ export default function PromoEmail({
             <table role="presentation" style={{ margin: "0 auto", borderCollapse: "collapse" }}>
               <tbody>
                 <tr>
-                  <td style={{ backgroundColor: "white", borderRadius: "8px", padding: "10px 14px", lineHeight: 0 }}>
-                    <Img src={logoUrl} width="26" height="26" alt="Member Club" style={{ display: "block" }} />
+                  <td style={{ lineHeight: 0 }}>
+                    <Img src={logoUrl} height="36" alt="Member Club" style={{ display: "block", margin: "0 auto", height: "36px", width: "auto" }} />
                   </td>
                 </tr>
               </tbody>

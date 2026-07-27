@@ -289,7 +289,11 @@ export default function CampaignComposer({ recipientCount, customers }: Props) {
         <p style={labelStyle}>Vista previa</p>
         <div style={{ backgroundColor: "white", border: "1px solid #E8E8E8", overflow: "hidden" }}>
           <div style={{ backgroundColor: "#0A0A0A", padding: "24px", textAlign: "center" }}>
-            <p style={{ color: "white", fontSize: "16px", letterSpacing: "0.05em", margin: 0 }}>Member Club</p>
+            <img
+              src="https://res.cloudinary.com/dklvmlzds/image/upload/v1783912898/MEMBER_B_1_3_wyfasx.png"
+              alt="Member Club"
+              style={{ height: "32px", width: "auto", display: "inline-block" }}
+            />
           </div>
           {imageUrl && <img src={imageUrl} alt="" style={{ width: "100%", display: "block" }} />}
           <div style={{ padding: "32px" }}>
