@@ -13,6 +13,10 @@ export async function POST(request: NextRequest) {
     const buttonText = body.buttonText ? String(body.buttonText).trim() : undefined;
     const buttonUrl = body.buttonUrl ? String(body.buttonUrl).trim() : undefined;
     const testEmail = body.testEmail ? String(body.testEmail).trim() : "";
+    // Lista opcional de ids de cliente: si viene, la campaña se manda solo
+    // a esa seleccion en vez de a toda la base (ver selector de
+    // destinatarios en Campañas).
+    const customerIds: string[] | undefined = Array.isArray(body.customerIds) ? body.customerIds : undefined;
 
     if (!title || !message) {
       return NextResponse.json({ error: "Falta el titulo o el mensaje" }, { status: 400 });
@@ -27,8 +31,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, mode: "test", ...result });
     }
 
+    if (customerIds && customerIds.length === 0) {
+      return NextResponse.json({ error: "No hay clientes seleccionados" }, { status: 400 });
+    }
+
     const customers = await prisma.customer.findMany({
-      where: { email: { not: "" } },
+      where: {
+        email: { not: "" },
+        ...(customerIds ? { id: { in: customerIds } } : {}),
+      },
       select: { email: true, firstName: true },
     });
 

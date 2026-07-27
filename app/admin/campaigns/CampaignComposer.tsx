@@ -1,14 +1,23 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+type Customer = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  tags: string[];
+};
 
 type Props = {
   recipientCount: number;
+  customers: Customer[];
 };
 
 const inputStyle: React.CSSProperties = { width: "100%", padding: "12px", border: "1px solid #D1D1D1", fontSize: "14px", outline: "none", backgroundColor: "white", fontFamily: "inherit" };
 const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#737373", marginBottom: "8px" };
 
-export default function CampaignComposer({ recipientCount }: Props) {
+export default function CampaignComposer({ recipientCount, customers }: Props) {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -16,11 +25,56 @@ export default function CampaignComposer({ recipientCount }: Props) {
   const [buttonUrl, setButtonUrl] = useState("");
   const [testEmail, setTestEmail] = useState("");
 
+  // Destinatarios: por defecto todos los clientes con mail. Si el usuario
+  // activa "Selección personalizada" elige a mano (o filtrando por tag)
+  // a quien mandarle, en vez de disparar siempre a toda la base.
+  const [audienceMode, setAudienceMode] = useState<"all" | "custom">("all");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [activeTag, setActiveTag] = useState<string | null>(null);
+
   const [sendingTest, setSendingTest] = useState(false);
   const [sendingAll, setSendingAll] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
 
-  const canSend = title.trim().length > 0 && message.trim().length > 0;
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    customers.forEach((c) => c.tags.forEach((t) => set.add(t)));
+    return Array.from(set).sort();
+  }, [customers]);
+
+  const filteredCustomers = useMemo(() => {
+    const q = customerSearch.trim().toLowerCase();
+    return customers.filter((c) => {
+      if (activeTag && !c.tags.includes(activeTag)) return false;
+      if (!q) return true;
+      const name = (c.firstName + " " + c.lastName).toLowerCase();
+      return name.includes(q) || c.email.toLowerCase().includes(q);
+    });
+  }, [customers, customerSearch, activeTag]);
+
+  const toggleCustomer = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllFiltered = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      filteredCustomers.forEach((c) => next.add(c.id));
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const effectiveRecipientCount = audienceMode === "all" ? recipientCount : selectedIds.size;
+
+  const canSend = title.trim().length > 0 && message.trim().length > 0 && (audienceMode === "all" || selectedIds.size > 0);
 
   const send = async (mode: "test" | "all") => {
     setResult(null);
@@ -38,6 +92,7 @@ export default function CampaignComposer({ recipientCount }: Props) {
           buttonText: buttonText || undefined,
           buttonUrl: buttonUrl || undefined,
           testEmail: mode === "test" ? testEmail : undefined,
+          customerIds: mode === "all" && audienceMode === "custom" ? Array.from(selectedIds) : undefined,
         }),
       });
       const data = await res.json();
@@ -66,7 +121,8 @@ export default function CampaignComposer({ recipientCount }: Props) {
 
   const handleSendAll = () => {
     const confirmed = window.confirm(
-      "Esto va a mandar el mail a los " + recipientCount + " clientes registrados con email. ¿Confirmás?"
+      "Esto va a mandar el mail a " + effectiveRecipientCount + " " +
+        (audienceMode === "all" ? "clientes registrados con email" : "clientes seleccionados") + ". ¿Confirmás?"
     );
     if (confirmed) send("all");
   };
@@ -105,6 +161,102 @@ export default function CampaignComposer({ recipientCount }: Props) {
           </div>
         </div>
 
+        <div style={{ borderTop: "1px solid #E8E8E8", paddingTop: "20px", marginBottom: "20px" }}>
+          <label style={labelStyle}>Destinatarios</label>
+          <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+            <button
+              onClick={() => setAudienceMode("all")}
+              style={{
+                flex: 1, padding: "10px", fontSize: "12px", fontWeight: 600,
+                border: audienceMode === "all" ? "1px solid #0A0A0A" : "1px solid #D1D1D1",
+                backgroundColor: audienceMode === "all" ? "#0A0A0A" : "white",
+                color: audienceMode === "all" ? "white" : "#525252", cursor: "pointer",
+              }}
+            >
+              Todos ({recipientCount})
+            </button>
+            <button
+              onClick={() => setAudienceMode("custom")}
+              style={{
+                flex: 1, padding: "10px", fontSize: "12px", fontWeight: 600,
+                border: audienceMode === "custom" ? "1px solid #0A0A0A" : "1px solid #D1D1D1",
+                backgroundColor: audienceMode === "custom" ? "#0A0A0A" : "white",
+                color: audienceMode === "custom" ? "white" : "#525252", cursor: "pointer",
+              }}
+            >
+              Selección personalizada {selectedIds.size > 0 ? "(" + selectedIds.size + ")" : ""}
+            </button>
+          </div>
+
+          {audienceMode === "custom" && (
+            <div style={{ border: "1px solid #E8E8E8" }}>
+              <div style={{ padding: "10px", borderBottom: "1px solid #E8E8E8", display: "flex", gap: "8px" }}>
+                <input
+                  value={customerSearch}
+                  onChange={(e) => setCustomerSearch(e.target.value)}
+                  placeholder="Buscar por nombre o mail..."
+                  style={{ ...inputStyle, padding: "8px 10px", fontSize: "13px" }}
+                />
+              </div>
+
+              {allTags.length > 0 && (
+                <div style={{ padding: "10px", borderBottom: "1px solid #E8E8E8", display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                  <button
+                    onClick={() => setActiveTag(null)}
+                    style={{
+                      fontSize: "11px", fontWeight: 600, padding: "4px 10px", cursor: "pointer",
+                      border: !activeTag ? "1px solid #0A0A0A" : "1px solid #D1D1D1",
+                      backgroundColor: !activeTag ? "#0A0A0A" : "white", color: !activeTag ? "white" : "#525252",
+                    }}
+                  >
+                    Todos los tags
+                  </button>
+                  {allTags.map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => setActiveTag(tag === activeTag ? null : tag)}
+                      style={{
+                        fontSize: "11px", fontWeight: 600, padding: "4px 10px", cursor: "pointer",
+                        border: activeTag === tag ? "1px solid #0A0A0A" : "1px solid #D1D1D1",
+                        backgroundColor: activeTag === tag ? "#0A0A0A" : "white", color: activeTag === tag ? "white" : "#525252",
+                      }}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ padding: "8px 10px", borderBottom: "1px solid #E8E8E8", display: "flex", justifyContent: "space-between", fontSize: "11px" }}>
+                <button onClick={selectAllFiltered} style={{ background: "none", border: "none", color: "#0A0A0A", fontWeight: 600, cursor: "pointer", padding: 0 }}>
+                  Seleccionar {filteredCustomers.length} filtrados
+                </button>
+                <button onClick={clearSelection} style={{ background: "none", border: "none", color: "#737373", cursor: "pointer", padding: 0 }}>
+                  Vaciar selección
+                </button>
+              </div>
+
+              <div style={{ maxHeight: "220px", overflowY: "auto" }}>
+                {filteredCustomers.length === 0 && (
+                  <p style={{ padding: "16px", fontSize: "12px", color: "#A3A3A3", textAlign: "center" }}>Sin resultados</p>
+                )}
+                {filteredCustomers.map((c) => (
+                  <label
+                    key={c.id}
+                    style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 10px", borderBottom: "1px solid #F4F4F4", cursor: "pointer", fontSize: "13px" }}
+                  >
+                    <input type="checkbox" checked={selectedIds.has(c.id)} onChange={() => toggleCustomer(c.id)} />
+                    <span style={{ flex: 1 }}>
+                      {(c.firstName + " " + c.lastName).trim() || "(sin nombre)"}
+                      <span style={{ color: "#A3A3A3" }}> — {c.email}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
         <div style={{ borderTop: "1px solid #E8E8E8", paddingTop: "20px", marginBottom: "16px" }}>
           <label style={labelStyle}>Enviar de prueba a</label>
           <div style={{ display: "flex", gap: "8px" }}>
@@ -124,7 +276,7 @@ export default function CampaignComposer({ recipientCount }: Props) {
           disabled={!canSend || sendingAll}
           style={{ width: "100%", padding: "14px", backgroundColor: !canSend || sendingAll ? "#E8E8E8" : "#0A0A0A", color: !canSend || sendingAll ? "#A3A3A3" : "white", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", border: "none", cursor: !canSend || sendingAll ? "not-allowed" : "pointer" }}
         >
-          {sendingAll ? "Enviando..." : "Enviar a los " + recipientCount + " clientes registrados"}
+          {sendingAll ? "Enviando..." : "Enviar a " + effectiveRecipientCount + " " + (audienceMode === "all" ? "clientes registrados" : "clientes seleccionados")}
         </button>
 
         {result && (
