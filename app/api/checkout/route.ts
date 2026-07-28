@@ -197,23 +197,41 @@ export async function POST(request: Request) {
       });
     }
 
-    const mpPreference = await preference.create({
-      body: {
-        items: mpItems,
-        payer: {
-          email: shippingAddress.email,
-          name: shippingAddress.firstName,
-          surname: shippingAddress.lastName,
+    // La orden ya quedo creada en DB como PENDING antes de este punto. Si
+    // Mercado Pago rechaza la preferencia (token vencido/invalido, item
+    // invalido, etc.) esa orden queda huerfana pero visible en Pedidos —
+    // por eso separamos este try/catch del resto: logueamos el motivo
+    // puntual de MP en vez de perderlo en el catch generico de abajo.
+    let mpPreference;
+    try {
+      mpPreference = await preference.create({
+        body: {
+          items: mpItems,
+          payer: {
+            email: shippingAddress.email,
+            name: shippingAddress.firstName,
+            surname: shippingAddress.lastName,
+          },
+          back_urls: {
+            success: baseUrl + "/checkout/success?orderId=" + order.id,
+            failure: baseUrl + "/checkout?error=payment_failed",
+            pending: baseUrl + "/checkout/success?orderId=" + order.id,
+          },
+          external_reference: order.id,
+          notification_url: baseUrl + "/api/webhooks/mercadopago",
         },
-        back_urls: {
-          success: baseUrl + "/checkout/success?orderId=" + order.id,
-          failure: baseUrl + "/checkout?error=payment_failed",
-          pending: baseUrl + "/checkout/success?orderId=" + order.id,
-        },
-        external_reference: order.id,
-        notification_url: baseUrl + "/api/webhooks/mercadopago",
-      },
-    });
+      });
+    } catch (mpError: any) {
+      console.error("Error creando preferencia de Mercado Pago para orden " + order.id + ":", {
+        message: mpError?.message,
+        status: mpError?.status,
+        cause: mpError?.cause,
+      });
+      return NextResponse.json({
+        error: "No pudimos conectar con Mercado Pago. Probá de nuevo en unos minutos o elegí pagar por transferencia.",
+        orderId: order.id,
+      }, { status: 502 });
+    }
 
     return NextResponse.json({
       orderId: order.id,
