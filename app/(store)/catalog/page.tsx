@@ -1,9 +1,56 @@
 import { prisma } from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
+import type { Metadata } from "next";
 import ProductCard from "@/components/store/ProductCard";
 import CatalogToolbar from "@/components/store/CatalogToolbar";
 
 const PAGE_SIZE = 24;
+
+type CatalogSearchParams = {
+  category?: string;
+  brand?: string;
+  gender?: string;
+  q?: string;
+  sort?: string;
+  page?: string;
+  encargo?: string;
+};
+
+const GENDER_LABEL: Record<string, string> = {
+  HOMBRE: "Hombre",
+  MUJER: "Mujer",
+  UNISEX: "Unisex",
+};
+
+export async function generateMetadata({ searchParams }: { searchParams: Promise<CatalogSearchParams> }): Promise<Metadata> {
+  const { category, brand, gender, q, encargo } = await searchParams;
+
+  const [categoryRow, brandRow] = await Promise.all([
+    category ? prisma.category.findUnique({ where: { slug: category }, select: { name: true } }) : null,
+    brand ? prisma.brand.findUnique({ where: { slug: brand }, select: { name: true } }) : null,
+  ]);
+
+  const parts = [
+    encargo === "1" ? "Encargos" : null,
+    brandRow?.name,
+    categoryRow?.name,
+    gender ? GENDER_LABEL[gender] : null,
+    q ? `"${q}"` : null,
+  ].filter(Boolean);
+
+  const title = parts.length > 0 ? `${parts.join(" · ")} | Catálogo` : "Catálogo";
+  const description =
+    parts.length > 0
+      ? `Descubrí ${parts.join(", ")} en Member Club. Indumentaria y zapatillas premium con envíos a todo el país.`
+      : "Todo el catálogo de Member Club: indumentaria y zapatillas premium de las mejores marcas.";
+
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    twitter: { card: "summary", title, description },
+  };
+}
 
 const SORT_OPTIONS: Record<string, { createdAt?: "asc" | "desc"; price?: "asc" | "desc" }> = {
   newest: { createdAt: "desc" },
@@ -11,7 +58,7 @@ const SORT_OPTIONS: Record<string, { createdAt?: "asc" | "desc"; price?: "asc" |
   price_desc: { price: "desc" },
 };
 
-export default async function CatalogPage({ searchParams }: { searchParams: Promise<{ category?: string; brand?: string; gender?: string; q?: string; sort?: string; page?: string; encargo?: string }> }) {
+export default async function CatalogPage({ searchParams }: { searchParams: Promise<CatalogSearchParams> }) {
   const { category, brand, gender, q, sort, page: pageParam, encargo } = await searchParams;
   const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
   const orderBy = SORT_OPTIONS[sort || "newest"] || SORT_OPTIONS.newest;

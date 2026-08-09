@@ -8,12 +8,28 @@ const inter = Inter({
   display: 'swap',
 })
 
+const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com"
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'Member Club',
     template: '%s | Member Club',
   },
   description: 'Indumentaria y zapatillas premium.',
+  openGraph: {
+    title: 'Member Club',
+    description: 'Indumentaria y zapatillas premium.',
+    url: SITE_URL,
+    siteName: 'Member Club',
+    locale: 'es_AR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Member Club',
+    description: 'Indumentaria y zapatillas premium.',
+  },
 }
 
 export default function RootLayout({

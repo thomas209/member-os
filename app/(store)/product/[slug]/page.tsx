@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import AddToCart from "@/components/store/AddToCart";
 import ProductGallery from "@/components/store/ProductGallery";
 
-export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com";
 
-  const product = await prisma.product.findFirst({
+async function getProduct(slug: string) {
+  return prisma.product.findFirst({
     where: { slug, isActive: true, deletedAt: null },
     include: {
       brand: { select: { name: true, slug: true } },
@@ -15,6 +16,50 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       variants: { orderBy: { sortOrder: "asc" } },
     },
   });
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProduct(slug);
+
+  if (!product) {
+    return { title: "Producto no encontrado" };
+  }
+
+  const title = product.metaTitle || `${product.name} | ${product.brand.name}`;
+  const description =
+    product.metaDescription ||
+    (product.description
+      ? product.description.slice(0, 160)
+      : `Comprá ${product.name} de ${product.brand.name} en Member Club. Envíos a todo el país.`);
+  const image = product.images[0]?.url;
+  const url = `${SITE_URL}/product/${product.slug}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "website",
+      siteName: "Member Club",
+      images: image ? [{ url: image, width: 1200, height: 1500, alt: product.name }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
+}
+
+export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+
+  const product = await getProduct(slug);
 
   if (!product) notFound();
 
