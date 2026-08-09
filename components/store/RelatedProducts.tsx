@@ -16,7 +16,7 @@ export default function RelatedProducts({ products }: { products: RelatedProduct
   if (products.length === 0) return null;
 
   return (
-    <section className="max-w-[1440px] mx-auto px-4 md:px-12 pt-4 pb-16 md:pb-24">
+    <section id="related-products" className="max-w-[1440px] mx-auto px-4 md:px-12 pt-4 pb-16 md:pb-24">
       <p className="text-[11px] font-semibold tracking-widest uppercase text-neutral-400 mb-6">
         También te puede interesar
       </p>

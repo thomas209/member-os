@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCartStore } from "@/store/cart";
 import { buildWhatsappLink } from "@/lib/whatsapp";
 import { STORE_WHATSAPP_NUMBER } from "@/lib/bankDetails";
@@ -29,7 +29,23 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [error, setError] = useState("");
   const [added, setAdded] = useState(false);
+  const [hideStickyCta, setHideStickyCta] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
+  const stickyRef = useRef<HTMLDivElement>(null);
+
+  // Oculta el botón sticky mobile antes de que tape "También te puede interesar"
+  useEffect(() => {
+    const relatedSection = document.getElementById("related-products");
+    if (!relatedSection) return;
+
+    const stickyHeight = stickyRef.current?.offsetHeight ?? 72;
+    const observer = new IntersectionObserver(
+      ([entry]) => setHideStickyCta(entry.isIntersecting),
+      { rootMargin: `0px 0px -${stickyHeight}px 0px`, threshold: 0 }
+    );
+    observer.observe(relatedSection);
+    return () => observer.disconnect();
+  }, []);
 
   const handleAdd = () => {
     if (!selectedVariant) {
@@ -137,7 +153,12 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
       </div>
 
       {/* BOTON STICKY — mobile */}
-      <div className="mobile-sticky-cta fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 z-40">
+      <div
+        ref={stickyRef}
+        className={`mobile-sticky-cta fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 z-40 transition-transform duration-200 ${
+          hideStickyCta ? "translate-y-full" : "translate-y-0"
+        }`}
+      >
         {selectedOutOfStock ? (
           <a
             href={buildStockAlertHref(selectedVariant!)}
