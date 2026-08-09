@@ -58,7 +58,11 @@ export default function CartDrawer() {
                       <p style={{fontSize:"14px",fontWeight:"700"}}>${(item.price * item.quantity).toLocaleString("es-AR")}</p>
                     </div>
                     {item.quantity >= item.maxStock && (
-                      <p style={{fontSize:"11px",color:"#A3A3A3",marginTop:"6px"}}>No hay mas stock disponible de este talle</p>
+                      <p style={{fontSize:"11px",color:"#A3A3A3",marginTop:"6px"}}>
+                        {item.maxStock === 1
+                          ? "Es la última unidad disponible — ya la tenés en tu carrito"
+                          : `Ya tenés las ${item.maxStock} unidades disponibles en tu carrito`}
+                      </p>
                     )}
                   </div>
                   <button onClick={() => removeItem(item.variantId)} style={{background:"none",border:"none",cursor:"pointer",color:"#A3A3A3",fontSize:"18px",alignSelf:"flex-start"}}>x</button>

@@ -49,7 +49,11 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
       isEncargo: product.isEncargo,
     });
     if (!wasAdded) {
-      setError("Ya tenés en el carrito todo el stock disponible de este talle (" + selectedVariant.stock + ")");
+      setError(
+        selectedVariant.stock === 1
+          ? "Ya tenés la última unidad disponible de este talle en el carrito"
+          : `Ya tenés las ${selectedVariant.stock} unidades disponibles de este talle en el carrito`
+      );
       return;
     }
     setError("");
