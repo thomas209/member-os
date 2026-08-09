@@ -1,5 +1,8 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
+
+const CARD_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw";
 
 export default function ProductCard({ href, image, secondImage, brand, name, price, comparePrice, inStock = true, isEncargo = false }: { href: string; image: string | null; secondImage?: string | null; brand: string; name: string; price: string; comparePrice?: string | null; inStock?: boolean; isEncargo?: boolean }) {
   const [hovered, setHovered] = useState(false);
@@ -13,12 +16,20 @@ export default function ProductCard({ href, image, secondImage, brand, name, pri
         )}
         {image ? (
           <>
-            <img src={image} alt={name} style={{width:"100%",height:"100%",objectFit:"cover",transition:"opacity 0.35s ease, transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity:(hovered && secondImage) ? 0 : inStock?1:0.4}} />
+            <Image
+              src={image}
+              alt={name}
+              fill
+              sizes={CARD_SIZES}
+              style={{objectFit:"cover",transition:"opacity 0.35s ease, transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity:(hovered && secondImage) ? 0 : inStock?1:0.4}}
+            />
             {secondImage && (
-              <img
+              <Image
                 src={secondImage}
                 alt={name}
-                style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",transition:"opacity 0.35s ease, transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity: hovered ? (inStock?1:0.4) : 0}}
+                fill
+                sizes={CARD_SIZES}
+                style={{objectFit:"cover",transition:"opacity 0.35s ease, transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity: hovered ? (inStock?1:0.4) : 0}}
               />
             )}
           </>

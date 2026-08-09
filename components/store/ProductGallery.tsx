@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
+import Image from "next/image";
 
 type Image = { url: string; altText?: string | null };
 
@@ -38,10 +39,13 @@ export default function ProductGallery({ images, productName }: { images: Image[
 
       {/* Imagen principal */}
       <div className="relative aspect-[4/5] bg-neutral-100 overflow-hidden" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-        <img
+        <Image
           src={images[selected].url}
           alt={images[selected].altText || productName}
-          className="w-full h-full object-cover"
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          priority
+          className="object-cover"
         />
 
         {images.length > 1 && (
@@ -93,14 +97,16 @@ export default function ProductGallery({ images, productName }: { images: Image[
             <button
               key={i}
               onClick={() => setSelected(i)}
-              className={`w-16 h-20 border flex-shrink-0 overflow-hidden bg-neutral-100 cursor-pointer transition-all ${
+              className={`relative w-16 h-20 border flex-shrink-0 overflow-hidden bg-neutral-100 cursor-pointer transition-all ${
                 selected === i ? "border-neutral-900" : "border-neutral-200"
               }`}
             >
-              <img
+              <Image
                 src={img.url}
                 alt={img.altText || productName}
-                className="w-full h-full object-cover"
+                fill
+                sizes="64px"
+                className="object-cover"
               />
             </button>
           ))}
