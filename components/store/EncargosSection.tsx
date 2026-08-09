@@ -165,7 +165,7 @@ const CARD_BACKGROUNDS: (string | null)[] = [
   "https://res.cloudinary.com/dklvmlzds/image/upload/v1783966610/6710be30063b799b6e1dfeb213a4fc42_cl4pxe.jpg",
 ];
 
-function PokerCard({ product, rotation, background }: { product: EncargoProduct; rotation: number; background?: string | null }) {
+function PokerCard({ product, rotation, background, duplicate = false }: { product: EncargoProduct; rotation: number; background?: string | null; duplicate?: boolean }) {
   const outerRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
@@ -224,6 +224,7 @@ function PokerCard({ product, rotation, background }: { product: EncargoProduct;
 
   return (
     <div
+      aria-hidden={duplicate || undefined}
       style={{ width: "280px", aspectRatio: "2.5/3.5", flexShrink: 0, cursor: "pointer", marginRight: "-48px", position: "relative", zIndex: hovered || flipped ? 10 : 1 }}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setHovered(true)}
@@ -284,6 +285,7 @@ function PokerCard({ product, rotation, background }: { product: EncargoProduct;
             <a
               href={"/product/" + product.slug}
               onClick={(e) => e.stopPropagation()}
+              tabIndex={duplicate ? -1 : undefined}
               style={{
                 position: "absolute", bottom: "16px", left: "20px", zIndex: 2,
                 fontSize: "11px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase",
@@ -387,13 +389,17 @@ export default function EncargosSection({ products }: Props) {
   const pausedRef = useRef(false);
   const posRef = useRef(0);
 
-  const items = products.length > 0 ? [...products, ...products, ...products] : [];
+  // Dos copias alcanzan para el loop infinito (la segunda tapa el hueco
+  // cuando la primera termina de salir de pantalla). Antes eran tres —
+  // duplicaba de más el HTML sin necesidad. La segunda copia se marca
+  // aria-hidden porque es puramente decorativa para el efecto de scroll.
+  const items = products.length > 0 ? [...products, ...products] : [];
 
   useEffect(() => {
     const track = trackRef.current;
     if (!track || items.length === 0) return;
     const SPEED = 0.25;
-    const singleWidth = track.scrollWidth / 3;
+    const singleWidth = track.scrollWidth / 2;
     const animate = () => {
       if (!pausedRef.current) {
         posRef.current += SPEED;
@@ -425,7 +431,7 @@ export default function EncargosSection({ products }: Props) {
         <div className="encargos-desktop" style={{ overflow: "hidden", width: "100%", padding: "60px 0" }}>
           <div ref={trackRef} onMouseEnter={() => { pausedRef.current = true; }} onMouseLeave={() => { pausedRef.current = false; }} style={{ display: "flex", alignItems: "center", willChange: "transform", paddingLeft: "80px" }}>
             {items.map((p, i) => (
-              <PokerCard key={p.id + "-" + i} product={p} rotation={ROTATIONS[i % ROTATIONS.length]} background={CARD_BACKGROUNDS[i % products.length]} />
+              <PokerCard key={p.id + "-" + i} product={p} rotation={ROTATIONS[i % ROTATIONS.length]} background={CARD_BACKGROUNDS[i % products.length]} duplicate={i >= products.length} />
             ))}
           </div>
         </div>
