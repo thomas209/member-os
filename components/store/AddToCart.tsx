@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useCartStore } from "@/store/cart";
 import { buildWhatsappLink } from "@/lib/whatsapp";
 import { STORE_WHATSAPP_NUMBER } from "@/lib/bankDetails";
+import SizeGuideModal from "@/components/store/SizeGuideModal";
 
 type Variant = {
   id: string;
@@ -21,9 +22,10 @@ type Props = {
     image: string | null;
     isEncargo?: boolean;
   };
+  sizeGuideType?: "calzado" | "indumentaria";
 };
 
-export default function AddToCart({ variants, product }: Props) {
+export default function AddToCart({ variants, product, sizeGuideType = "indumentaria" }: Props) {
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [error, setError] = useState("");
   const [added, setAdded] = useState(false);
@@ -68,9 +70,12 @@ export default function AddToCart({ variants, product }: Props) {
     <>
       {/* SELECTOR DE TALLES */}
       <div className="mb-8">
-        <p className="text-[11px] font-semibold tracking-widest uppercase text-neutral-400 mb-4">
-          ¿Qué talle estás buscando?
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-[11px] font-semibold tracking-widest uppercase text-neutral-400">
+            ¿Qué talle estás buscando?
+          </p>
+          <SizeGuideModal type={sizeGuideType} />
+        </div>
         <div className="grid grid-cols-3 gap-2">
           {variants.map((variant) => {
             const isSelected = selectedVariant?.id === variant.id;

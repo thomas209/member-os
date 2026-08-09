@@ -3,8 +3,11 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import AddToCart from "@/components/store/AddToCart";
 import ProductGallery from "@/components/store/ProductGallery";
+import ProductBreadcrumbs from "@/components/store/ProductBreadcrumbs";
+import RelatedProducts, { type RelatedProduct } from "@/components/store/RelatedProducts";
 
 const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com";
+const RELATED_PRODUCTS_LIMIT = 8;
 
 async function getProduct(slug: string) {
   return prisma.product.findFirst({
@@ -16,6 +19,57 @@ async function getProduct(slug: string) {
       variants: { orderBy: { sortOrder: "asc" } },
     },
   });
+}
+
+const RELATED_INCLUDE = {
+  brand: { select: { name: true } },
+  images: { orderBy: [{ isPrimary: "desc" as const }, { sortOrder: "asc" as const }], take: 2 },
+  variants: { select: { stock: true } },
+};
+
+async function getRelatedProducts(product: { id: string; categoryId: string; brandId: string }): Promise<RelatedProduct[]> {
+  // Criterio v1: misma categoría + misma marca. Si no alcanza, se completa con misma categoría.
+  const sameCategoryAndBrand = await prisma.product.findMany({
+    where: {
+      id: { not: product.id },
+      categoryId: product.categoryId,
+      brandId: product.brandId,
+      isActive: true,
+      deletedAt: null,
+    },
+    include: RELATED_INCLUDE,
+    orderBy: { createdAt: "desc" },
+    take: RELATED_PRODUCTS_LIMIT,
+  });
+
+  let related = sameCategoryAndBrand;
+
+  if (related.length < RELATED_PRODUCTS_LIMIT) {
+    const fillers = await prisma.product.findMany({
+      where: {
+        id: { notIn: [product.id, ...related.map((p) => p.id)] },
+        categoryId: product.categoryId,
+        isActive: true,
+        deletedAt: null,
+      },
+      include: RELATED_INCLUDE,
+      orderBy: { createdAt: "desc" },
+      take: RELATED_PRODUCTS_LIMIT - related.length,
+    });
+    related = [...related, ...fillers];
+  }
+
+  return related.map((p) => ({
+    id: p.id,
+    slug: p.slug,
+    image: p.images[0]?.url ?? null,
+    secondImage: p.images[1]?.url ?? null,
+    brand: p.brand.name,
+    name: p.name,
+    price: p.price.toString(),
+    comparePrice: p.comparePrice?.toString() ?? null,
+    inStock: p.variants.some((v) => v.stock > 0),
+  }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -63,8 +117,23 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   if (!product) notFound();
 
+  const relatedProducts = await getRelatedProducts({
+    id: product.id,
+    categoryId: product.categoryId,
+    brandId: product.brandId,
+  });
+
+  const sizeGuideType = product.category.slug === "zapatillas" ? "calzado" : "indumentaria";
+
   return (
+    <>
     <div className="max-w-[1440px] mx-auto px-4 py-6 md:px-12 md:py-12">
+      <ProductBreadcrumbs
+        categoryName={product.category.name}
+        categorySlug={product.category.slug}
+        productName={product.name}
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-20">
 
         <ProductGallery images={product.images} productName={product.name} />
@@ -103,6 +172,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               image: product.images[0]?.url ?? null,
               isEncargo: product.isEncargo,
             }}
+            sizeGuideType={sizeGuideType}
           />
 
           {product.description && (
@@ -118,5 +188,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         </div>
       </div>
     </div>
+
+    <RelatedProducts products={relatedProducts} />
+    </>
   );
 }
