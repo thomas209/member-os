@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useCartStore } from "@/store/cart";
 import { buildWhatsappLink } from "@/lib/whatsapp";
 import { STORE_WHATSAPP_NUMBER } from "@/lib/bankDetails";
@@ -29,23 +29,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [error, setError] = useState("");
   const [added, setAdded] = useState(false);
-  const [hideStickyCta, setHideStickyCta] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
-  const stickyRef = useRef<HTMLDivElement>(null);
-
-  // Oculta el botón sticky mobile antes de que tape "También te puede interesar"
-  useEffect(() => {
-    const relatedSection = document.getElementById("related-products");
-    if (!relatedSection) return;
-
-    const stickyHeight = stickyRef.current?.offsetHeight ?? 72;
-    const observer = new IntersectionObserver(
-      ([entry]) => setHideStickyCta(entry.isIntersecting),
-      { rootMargin: `0px 0px -${stickyHeight}px 0px`, threshold: 0 }
-    );
-    observer.observe(relatedSection);
-    return () => observer.disconnect();
-  }, []);
 
   const handleAdd = () => {
     if (!selectedVariant) {
@@ -153,18 +137,13 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
       </div>
 
       {/* BOTON STICKY — mobile */}
-      <div
-        ref={stickyRef}
-        className={`mobile-sticky-cta fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 z-40 transition-transform duration-200 ${
-          hideStickyCta ? "translate-y-full" : "translate-y-0"
-        }`}
-      >
+      <div className="mobile-sticky-cta fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 z-40">
         {selectedOutOfStock ? (
           <a
             href={buildStockAlertHref(selectedVariant!)}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full py-6 text-sm font-semibold tracking-widest uppercase text-center border-2 border-neutral-900 text-neutral-900 bg-white"
+            className="block w-full py-7 text-base font-semibold tracking-widest uppercase text-center border-2 border-neutral-900 text-neutral-900 bg-white"
           >
             Avisame cuando haya stock
           </a>
@@ -173,7 +152,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
             onClick={handleAdd}
             disabled={!hasStock}
             className={`
-              w-full py-6 text-sm font-semibold tracking-widest uppercase border-none transition-colors
+              w-full py-7 text-base font-semibold tracking-widest uppercase border-none transition-colors
               ${added
                 ? "bg-green-600 text-white cursor-pointer"
                 : hasStock
