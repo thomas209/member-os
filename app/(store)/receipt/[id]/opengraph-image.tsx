@@ -3,7 +3,10 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const alt = "Comprobante de compra - Member Club";
-export const size = { width: 1200, height: 630 };
+// WhatsApp recorta la preview del link en un cuadrado centrado. Usamos un
+// lienzo cuadrado para que el ticket ocupe todo el recorte, sin márgenes
+// grises de sobra a los costados.
+export const size = { width: 1200, height: 1200 };
 export const contentType = "image/png";
 
 const PAYMENT_LABELS: Record<string, string> = {
@@ -52,7 +55,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             backgroundColor: "#F0F0F0",
           }}
         >
-          <p style={{ fontSize: 32, color: "#0A0A0A" }}>Member Club</p>
+          <p style={{ fontSize: 48, color: "#0A0A0A" }}>Member Club</p>
         </div>
       ),
       { ...size }
@@ -81,23 +84,26 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: "#F0F0F0",
+          padding: 40,
         }}
       >
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            width: 460,
+            justifyContent: "center",
+            width: "100%",
+            height: "100%",
             backgroundColor: "#FFFFFF",
-            padding: "32px 36px",
-            fontSize: 15,
+            padding: "72px 64px",
+            fontSize: 26,
             color: "#0A0A0A",
           }}
         >
-          <p style={{ textAlign: "center", fontWeight: 700, fontSize: 20, margin: 0, marginBottom: 4 }}>
+          <p style={{ textAlign: "center", fontWeight: 700, fontSize: 40, margin: 0, marginBottom: 8 }}>
             Member Club
           </p>
-          <p style={{ textAlign: "center", color: "#737373", margin: 0, marginBottom: 20, fontSize: 14 }}>
+          <p style={{ textAlign: "center", color: "#737373", margin: 0, marginBottom: 40, fontSize: 26 }}>
             Comprobante de venta
           </p>
 
@@ -105,14 +111,14 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             style={{
               display: "flex",
               flexDirection: "column",
-              borderTop: "1px dashed #A3A3A3",
-              borderBottom: "1px dashed #A3A3A3",
-              padding: "10px 0",
-              marginBottom: 16,
+              borderTop: "2px dashed #A3A3A3",
+              borderBottom: "2px dashed #A3A3A3",
+              padding: "20px 0",
+              marginBottom: 32,
             }}
           >
-            <p style={{ margin: 0, marginBottom: 2 }}>Venta #{order.orderNumber}</p>
-            <p style={{ margin: 0, marginBottom: 2 }}>{dateStr}</p>
+            <p style={{ margin: 0, marginBottom: 6 }}>Venta #{order.orderNumber}</p>
+            <p style={{ margin: 0, marginBottom: 6 }}>{dateStr}</p>
             <p style={{ margin: 0 }}>
               Pago: {PAYMENT_LABELS[order.paymentMethod || ""] || order.paymentMethod || "-"}
             </p>
@@ -121,14 +127,14 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           {visibleItems.map((item) => {
             const img = toSatoriSafeImage(item.product.images[0]?.url);
             return (
-              <div key={item.id} style={{ display: "flex", gap: 12, marginBottom: 14 }}>
+              <div key={item.id} style={{ display: "flex", gap: 24, marginBottom: 28 }}>
                 {img ? (
-                  <img src={img} width={56} height={56} style={{ objectFit: "cover", borderRadius: 4 }} />
+                  <img src={img} width={120} height={120} style={{ objectFit: "cover", borderRadius: 8 }} />
                 ) : (
-                  <div style={{ width: 56, height: 56, backgroundColor: "#F0F0F0", borderRadius: 4, display: "flex" }} />
+                  <div style={{ width: 120, height: 120, backgroundColor: "#F0F0F0", borderRadius: 8, display: "flex" }} />
                 )}
-                <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-                  <p style={{ margin: 0, marginBottom: 2 }}>{item.productName}</p>
+                <div style={{ display: "flex", flexDirection: "column", flex: 1, justifyContent: "center" }}>
+                  <p style={{ margin: 0, marginBottom: 10 }}>{item.productName}</p>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#525252" }}>
                       Talle {item.size} x{item.quantity}
@@ -141,19 +147,19 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           })}
 
           {extraCount > 0 && (
-            <p style={{ margin: 0, marginBottom: 14, color: "#737373", fontSize: 13 }}>
+            <p style={{ margin: 0, marginBottom: 28, color: "#737373", fontSize: 22 }}>
               + {extraCount} producto{extraCount > 1 ? "s" : ""} más
             </p>
           )}
 
-          <div style={{ display: "flex", flexDirection: "column", borderTop: "1px dashed #A3A3A3", paddingTop: 10 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 18 }}>
+          <div style={{ display: "flex", flexDirection: "column", borderTop: "2px dashed #A3A3A3", paddingTop: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 32 }}>
               <span>Total</span>
               <span>${Number(order.total).toLocaleString("es-AR")}</span>
             </div>
           </div>
 
-          <p style={{ textAlign: "center", color: "#A3A3A3", marginTop: 18, marginBottom: 0, fontSize: 13 }}>
+          <p style={{ textAlign: "center", color: "#A3A3A3", marginTop: 32, marginBottom: 0, fontSize: 22 }}>
             ¡Gracias por tu compra!
           </p>
         </div>
