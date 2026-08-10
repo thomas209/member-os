@@ -1,13 +1,14 @@
 export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import PrintButton from "@/components/pos/PrintButton";
 import ReceiptTicket from "@/components/pos/ReceiptTicket";
 
-export default async function PublicReceiptPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com";
 
-  const order = await prisma.order.findUnique({
+async function getOrder(id: string) {
+  return prisma.order.findUnique({
     where: { id },
     include: {
       items: {
@@ -17,6 +18,47 @@ export default async function PublicReceiptPage({ params }: { params: Promise<{ 
       },
     },
   });
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const order = await getOrder(id);
+
+  if (!order) {
+    return { title: "Comprobante no encontrado" };
+  }
+
+  const total = Number(order.total).toLocaleString("es-AR");
+  const title = `Comprobante de compra #${order.orderNumber} | Member Club`;
+  const description = `Compra confirmada por $${total} en Member Club.`;
+  const image = order.items[0]?.product.images[0]?.url || `${SITE_URL}/icon-512.png`;
+  const url = `${SITE_URL}/receipt/${order.id}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "website",
+      siteName: "Member Club",
+      images: [{ url: image, width: 1200, height: 1200, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+  };
+}
+
+export default async function PublicReceiptPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+
+  const order = await getOrder(id);
 
   if (!order) notFound();
 
