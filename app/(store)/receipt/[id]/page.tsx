@@ -31,9 +31,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const total = Number(order.total).toLocaleString("es-AR");
   const title = `Comprobante de compra #${order.orderNumber} | Member Club`;
   const description = `Compra confirmada por $${total} en Member Club.`;
-  const image = order.items[0]?.product.images[0]?.url || `${SITE_URL}/icon-512.png`;
   const url = `${SITE_URL}/receipt/${order.id}`;
 
+  // La imagen de la preview la genera opengraph-image.tsx (Next.js la inyecta sola).
   return {
     title,
     description,
@@ -44,13 +44,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       url,
       type: "website",
       siteName: "Member Club",
-      images: [{ url: image, width: 1200, height: 1200, alt: title }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [image],
     },
   };
 }
