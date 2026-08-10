@@ -14,6 +14,17 @@ const PAYMENT_LABELS: Record<string, string> = {
 
 const MAX_ITEMS = 2;
 
+// El generador de imágenes (Satori) no decodifica bien .webp, que es el
+// formato en que Cloudinary guarda las fotos de producto. Le pedimos la
+// misma imagen en jpg al vuelo.
+function toSatoriSafeImage(url: string | null | undefined) {
+  if (!url) return url;
+  if (url.includes("res.cloudinary.com") && url.includes("/upload/")) {
+    return url.replace("/upload/", "/upload/f_jpg/");
+  }
+  return url;
+}
+
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
@@ -108,7 +119,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           </div>
 
           {visibleItems.map((item) => {
-            const img = item.product.images[0]?.url;
+            const img = toSatoriSafeImage(item.product.images[0]?.url);
             return (
               <div key={item.id} style={{ display: "flex", gap: 12, marginBottom: 14 }}>
                 {img ? (
