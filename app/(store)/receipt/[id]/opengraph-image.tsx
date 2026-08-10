@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import QRCode from "qrcode";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -8,6 +9,9 @@ export const alt = "Comprobante de compra - Member Club";
 // grises de sobra a los costados.
 export const size = { width: 1200, height: 1200 };
 export const contentType = "image/png";
+
+const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com";
+const LOGO_URL = "https://res.cloudinary.com/dklvmlzds/image/upload/v1783912898/MEMBER_B_1_3_wyfasx.png";
 
 const PAYMENT_LABELS: Record<string, string> = {
   EFECTIVO: "Efectivo",
@@ -28,6 +32,27 @@ function toSatoriSafeImage(url: string | null | undefined) {
   return url;
 }
 
+function FallbackImage() {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#F0F0F0",
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={LOGO_URL} width={280} height={280} style={{ objectFit: "contain" }} />
+      </div>
+    ),
+    { ...size }
+  );
+}
+
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
@@ -42,25 +67,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
     },
   });
 
-  if (!order) {
-    return new ImageResponse(
-      (
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "#F0F0F0",
-          }}
-        >
-          <p style={{ fontSize: 48, color: "#0A0A0A" }}>Member Club</p>
-        </div>
-      ),
-      { ...size }
-    );
-  }
+  if (!order) return FallbackImage();
 
   const dateStr = new Date(order.createdAt).toLocaleString("es-AR", {
     day: "2-digit",
@@ -73,6 +80,18 @@ export default async function Image({ params }: { params: Promise<{ id: string }
 
   const visibleItems = order.items.slice(0, MAX_ITEMS);
   const extraCount = order.items.length - visibleItems.length;
+  const voided = order.status === "CANCELLED";
+
+  let qrDataUrl: string | null = null;
+  try {
+    qrDataUrl = await QRCode.toDataURL(`${SITE_URL}/receipt/${order.id}`, {
+      margin: 0,
+      width: 160,
+      color: { dark: "#0A0A0A", light: "#FFFFFF" },
+    });
+  } catch {
+    qrDataUrl = null;
+  }
 
   return new ImageResponse(
     (
@@ -92,36 +111,65 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
+            position: "relative",
             width: "100%",
             height: "100%",
             backgroundColor: "#FFFFFF",
-            padding: "72px 64px",
+            border: "3px solid #0A0A0A",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.25)",
+            padding: "64px 64px",
             fontSize: 26,
             color: "#0A0A0A",
           }}
         >
-          <p style={{ textAlign: "center", fontWeight: 700, fontSize: 40, margin: 0, marginBottom: 8 }}>
-            Member Club
-          </p>
-          <p style={{ textAlign: "center", color: "#737373", margin: 0, marginBottom: 40, fontSize: 26 }}>
+          {/* Chip de estado */}
+          <div
+            style={{
+              position: "absolute",
+              top: 40,
+              right: 40,
+              display: "flex",
+              backgroundColor: voided ? "#DC2626" : "#0A0A0A",
+              color: "#FFFFFF",
+              fontSize: 16,
+              fontWeight: 700,
+              letterSpacing: 3,
+              textTransform: "uppercase",
+              padding: "8px 18px",
+              borderRadius: 999,
+            }}
+          >
+            {voided ? "Anulada" : "Pagado"}
+          </div>
+
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={LOGO_URL} width={140} height={70} style={{ objectFit: "contain", alignSelf: "center", marginBottom: 12 }} />
+          <p style={{ textAlign: "center", color: "#737373", margin: 0, marginBottom: 36, fontSize: 24 }}>
             Comprobante de venta
           </p>
 
           <div
             style={{
               display: "flex",
-              flexDirection: "column",
+              justifyContent: "space-between",
+              alignItems: "center",
               borderTop: "2px dashed #A3A3A3",
               borderBottom: "2px dashed #A3A3A3",
               padding: "20px 0",
               marginBottom: 32,
             }}
           >
-            <p style={{ margin: 0, marginBottom: 6 }}>Venta #{order.orderNumber}</p>
-            <p style={{ margin: 0, marginBottom: 6 }}>{dateStr}</p>
-            <p style={{ margin: 0 }}>
-              Pago: {PAYMENT_LABELS[order.paymentMethod || ""] || order.paymentMethod || "-"}
-            </p>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <p style={{ margin: 0, marginBottom: 6 }}>Venta #{order.orderNumber}</p>
+              <p style={{ margin: 0, marginBottom: 6 }}>{dateStr}</p>
+              <p style={{ margin: 0 }}>
+                Pago: {PAYMENT_LABELS[order.paymentMethod || ""] || order.paymentMethod || "-"}
+              </p>
+            </div>
+            {qrDataUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={qrDataUrl} width={110} height={110} style={{ flexShrink: 0 }} />
+            )}
           </div>
 
           {visibleItems.map((item) => {
@@ -159,8 +207,20 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             </div>
           </div>
 
-          <p style={{ textAlign: "center", color: "#A3A3A3", marginTop: 32, marginBottom: 0, fontSize: 22 }}>
+          <p style={{ textAlign: "center", color: "#A3A3A3", marginTop: 32, marginBottom: 6, fontSize: 22 }}>
             ¡Gracias por tu compra!
+          </p>
+          <p
+            style={{
+              textAlign: "center",
+              color: "#0A0A0A",
+              margin: 0,
+              fontSize: 18,
+              letterSpacing: 2,
+              fontWeight: 600,
+            }}
+          >
+            @member_ba · memberclubargentina.com
           </p>
         </div>
       </div>
