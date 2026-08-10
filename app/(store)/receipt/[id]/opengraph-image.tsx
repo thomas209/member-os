@@ -103,7 +103,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: "#F0F0F0",
-          padding: 40,
+          padding: 16,
         }}
       >
         <div
@@ -115,10 +115,10 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             width: "100%",
             height: "100%",
             backgroundColor: "#FFFFFF",
-            border: "3px solid #0A0A0A",
+            border: "4px solid #0A0A0A",
             boxShadow: "0 24px 60px rgba(0,0,0,0.25)",
-            padding: "64px 64px",
-            fontSize: 26,
+            padding: "56px 56px",
+            fontSize: 30,
             color: "#0A0A0A",
           }}
         >
@@ -126,16 +126,16 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           <div
             style={{
               position: "absolute",
-              top: 40,
-              right: 40,
+              top: 36,
+              right: 36,
               display: "flex",
               backgroundColor: voided ? "#DC2626" : "#0A0A0A",
               color: "#FFFFFF",
-              fontSize: 16,
+              fontSize: 20,
               fontWeight: 700,
               letterSpacing: 3,
               textTransform: "uppercase",
-              padding: "8px 18px",
+              padding: "10px 22px",
               borderRadius: 999,
             }}
           >
@@ -143,8 +143,8 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           </div>
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={LOGO_URL} width={140} height={70} style={{ objectFit: "contain", alignSelf: "center", marginBottom: 12 }} />
-          <p style={{ textAlign: "center", color: "#737373", margin: 0, marginBottom: 36, fontSize: 24 }}>
+          <img src={LOGO_URL} width={220} height={110} style={{ objectFit: "contain", alignSelf: "center", marginBottom: 8 }} />
+          <p style={{ textAlign: "center", color: "#737373", margin: 0, marginBottom: 32, fontSize: 28 }}>
             Comprobante de venta
           </p>
 
@@ -153,36 +153,36 @@ export default async function Image({ params }: { params: Promise<{ id: string }
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              borderTop: "2px dashed #A3A3A3",
-              borderBottom: "2px dashed #A3A3A3",
-              padding: "20px 0",
+              borderTop: "3px dashed #A3A3A3",
+              borderBottom: "3px dashed #A3A3A3",
+              padding: "24px 0",
               marginBottom: 32,
             }}
           >
             <div style={{ display: "flex", flexDirection: "column" }}>
-              <p style={{ margin: 0, marginBottom: 6 }}>Venta #{order.orderNumber}</p>
-              <p style={{ margin: 0, marginBottom: 6 }}>{dateStr}</p>
+              <p style={{ margin: 0, marginBottom: 8 }}>Venta #{order.orderNumber}</p>
+              <p style={{ margin: 0, marginBottom: 8 }}>{dateStr}</p>
               <p style={{ margin: 0 }}>
                 Pago: {PAYMENT_LABELS[order.paymentMethod || ""] || order.paymentMethod || "-"}
               </p>
             </div>
             {qrDataUrl && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={qrDataUrl} width={110} height={110} style={{ flexShrink: 0 }} />
+              <img src={qrDataUrl} width={150} height={150} style={{ flexShrink: 0 }} />
             )}
           </div>
 
           {visibleItems.map((item) => {
             const img = toSatoriSafeImage(item.product.images[0]?.url);
             return (
-              <div key={item.id} style={{ display: "flex", gap: 24, marginBottom: 28 }}>
+              <div key={item.id} style={{ display: "flex", gap: 28, marginBottom: 32 }}>
                 {img ? (
-                  <img src={img} width={120} height={120} style={{ objectFit: "cover", borderRadius: 8 }} />
+                  <img src={img} width={150} height={150} style={{ objectFit: "cover", borderRadius: 10 }} />
                 ) : (
-                  <div style={{ width: 120, height: 120, backgroundColor: "#F0F0F0", borderRadius: 8, display: "flex" }} />
+                  <div style={{ width: 150, height: 150, backgroundColor: "#F0F0F0", borderRadius: 10, display: "flex" }} />
                 )}
                 <div style={{ display: "flex", flexDirection: "column", flex: 1, justifyContent: "center" }}>
-                  <p style={{ margin: 0, marginBottom: 10 }}>{item.productName}</p>
+                  <p style={{ margin: 0, marginBottom: 12 }}>{item.productName}</p>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#525252" }}>
                       Talle {item.size} x{item.quantity}
@@ -195,19 +195,19 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           })}
 
           {extraCount > 0 && (
-            <p style={{ margin: 0, marginBottom: 28, color: "#737373", fontSize: 22 }}>
+            <p style={{ margin: 0, marginBottom: 32, color: "#737373", fontSize: 26 }}>
               + {extraCount} producto{extraCount > 1 ? "s" : ""} más
             </p>
           )}
 
-          <div style={{ display: "flex", flexDirection: "column", borderTop: "2px dashed #A3A3A3", paddingTop: 20 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 32 }}>
+          <div style={{ display: "flex", flexDirection: "column", borderTop: "3px dashed #A3A3A3", paddingTop: 24 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 40 }}>
               <span>Total</span>
               <span>${Number(order.total).toLocaleString("es-AR")}</span>
             </div>
           </div>
 
-          <p style={{ textAlign: "center", color: "#A3A3A3", marginTop: 32, marginBottom: 6, fontSize: 22 }}>
+          <p style={{ textAlign: "center", color: "#A3A3A3", marginTop: 36, marginBottom: 8, fontSize: 26 }}>
             ¡Gracias por tu compra!
           </p>
           <p
@@ -215,7 +215,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
               textAlign: "center",
               color: "#0A0A0A",
               margin: 0,
-              fontSize: 18,
+              fontSize: 22,
               letterSpacing: 2,
               fontWeight: 600,
             }}
