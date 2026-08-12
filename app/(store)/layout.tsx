@@ -83,11 +83,11 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#737373" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18.977 14C19.6 12.701 20 11.343 20 10a8 8 0 0 0-16 0c0 4.993 5.539 10.193 7.399 11.799a1 1 0 0 0 1.202 0 32 32 0 0 0 .824-.738"/><circle cx="12" cy="10" r="3"/><path d="M16 18h6"/></svg>
             Stores
           </a>
-          <a href="/encargos" onClick={() => setMenuOpen(false)} style={{display: "flex", alignItems: "center", gap: "12px", padding: "16px 20px", fontSize: "14px", fontWeight: "400", color: "#737373", textDecoration: "none", borderBottom: "1px solid #F4F4F4", letterSpacing: "0.06em", textTransform: "uppercase"}}>
+          <a href="/catalog?encargo=1" onClick={() => setMenuOpen(false)} style={{display: "flex", alignItems: "center", gap: "12px", padding: "16px 20px", fontSize: "14px", fontWeight: "400", color: "#737373", textDecoration: "none", borderBottom: "1px solid #F4F4F4", letterSpacing: "0.06em", textTransform: "uppercase"}}>
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#737373" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
             Encargos
           </a>
-          <a href="/bigboy" onClick={() => setMenuOpen(false)} style={{display: "flex", alignItems: "center", gap: "12px", padding: "16px 20px", fontSize: "14px", fontWeight: "700", color: "#DC2626", textDecoration: "none", letterSpacing: "0.06em"}}>
+          <a href="/catalog?category=arte" onClick={() => setMenuOpen(false)} style={{display: "flex", alignItems: "center", gap: "12px", padding: "16px 20px", fontSize: "14px", fontWeight: "700", color: "#DC2626", textDecoration: "none", letterSpacing: "0.06em"}}>
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="#DC2626"/><circle cx="17.5" cy="10.5" r=".5" fill="#DC2626"/><circle cx="6.5" cy="12.5" r=".5" fill="#DC2626"/><circle cx="8.5" cy="7.5" r=".5" fill="#DC2626"/></svg>
             BIG.BOY.OK
           </a>
