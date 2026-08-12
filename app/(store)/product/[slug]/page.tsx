@@ -125,8 +125,42 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   const sizeGuideType = product.category.slug === "zapatillas" ? "calzado" : "indumentaria";
 
+  const inStock = product.variants.some((v) => v.stock > 0);
+  const productUrl = `${SITE_URL}/product/${product.slug}`;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description:
+      product.metaDescription ||
+      product.description ||
+      `${product.name} de ${product.brand.name} en Member Club.`,
+    image: product.images.map((img) => img.url),
+    sku: product.id,
+    brand: {
+      "@type": "Brand",
+      name: product.brand.name,
+    },
+    category: product.category.name,
+    offers: {
+      "@type": "Offer",
+      url: productUrl,
+      priceCurrency: "ARS",
+      price: Number(product.price),
+      availability: inStock
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
+    },
+  };
+
   return (
     <>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
     <div className="max-w-[1440px] mx-auto px-4 py-6 md:px-12 md:py-12">
       <ProductBreadcrumbs
         categoryName={product.category.name}
