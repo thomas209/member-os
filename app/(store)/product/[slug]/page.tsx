@@ -81,12 +81,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     return { title: "Producto no encontrado" };
   }
 
-  const title = product.metaTitle || `${product.name} | ${product.brand.name}`;
+  // Sin esto, el título quedaba "Onitsuka Tiger | Onitsuka" (repite la marca,
+  // no dice qué categoría es) y la descripción era literalmente el campo
+  // description crudo ("Mexico 66", sin más contexto). Ninguno de los dos le
+  // daba a Google la señal de "esto es una zapatilla" para búsquedas tipo
+  // "onitsuka zapas". Se arma automático para los ~60+ productos del catálogo,
+  // sin depender de que se cargue metaTitle/metaDescription a mano en cada uno.
+  const isShoes = product.category.slug === "zapatillas";
+  const categoryLabel = isShoes ? `${product.category.name} (zapas)` : product.category.name;
+
+  const title =
+    product.metaTitle ||
+    `${product.name} | ${product.category.name} ${product.brand.name} | Member Club`;
   const description =
     product.metaDescription ||
-    (product.description
-      ? product.description.slice(0, 160)
-      : `Comprá ${product.name} de ${product.brand.name} en Member Club. Envíos a todo el país.`);
+    `${product.description ? product.description + ". " : ""}${categoryLabel} ${product.brand.name} en Member Club Argentina. Envíos a todo el país.`.slice(0, 160);
   const image = product.images[0]?.url;
   const url = `${SITE_URL}/product/${product.slug}`;
 
