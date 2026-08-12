@@ -5,6 +5,7 @@ import AddToCart from "@/components/store/AddToCart";
 import ProductGallery from "@/components/store/ProductGallery";
 import ProductBreadcrumbs from "@/components/store/ProductBreadcrumbs";
 import RelatedProducts, { type RelatedProduct } from "@/components/store/RelatedProducts";
+import ViewContentTracker from "@/components/ViewContentTracker";
 
 const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com";
 const RELATED_PRODUCTS_LIMIT = 8;
@@ -160,6 +161,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+    <ViewContentTracker
+      id={product.id}
+      name={product.name}
+      price={Number(product.price)}
+      category={product.category.name}
     />
     <div className="max-w-[1440px] mx-auto px-4 py-6 md:px-12 md:py-12">
       <ProductBreadcrumbs
