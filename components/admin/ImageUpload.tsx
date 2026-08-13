@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import CloudinaryPicker from "./CloudinaryPicker";
 
 type Props = {
   onUpload: (urls: string[]) => void;
@@ -56,6 +57,17 @@ export default function ImageUpload({ onUpload, label = "Subir imagen", multiple
   const [error, setError] = useState("");
   const [localImages, setLocalImages] = useState<string[]>([]);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  // Agrega imagenes ya existentes en Cloudinary (elegidas con el picker),
+  // sin descargarlas ni volver a subirlas. Mismo patron que handleFile al
+  // final: no toca la logica de subida existente.
+  const handleCloudinarySelect = (urls: string[]) => {
+    const newImages = [...localImages, ...urls];
+    setLocalImages(newImages);
+    onUpload(newImages);
+    setPickerOpen(false);
+  };
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -126,6 +138,18 @@ export default function ImageUpload({ onUpload, label = "Subir imagen", multiple
         </p>
         <p style={{fontSize:"11px",color:"#A3A3A3",marginTop:"4px"}}>JPG, PNG, WebP — max 20MB por imagen</p>
       </div>
+
+      <button
+        type="button"
+        onClick={() => setPickerOpen(true)}
+        style={{display:"block",width:"100%",background:"none",border:"1px dashed #D1D1D1",padding:"10px",fontSize:"12px",color:"#525252",cursor:"pointer",marginBottom:"16px",marginTop:"-8px"}}
+      >
+        O elegí una imagen que ya subiste a Cloudinary
+      </button>
+
+      {pickerOpen && (
+        <CloudinaryPicker onSelect={handleCloudinarySelect} onClose={() => setPickerOpen(false)} />
+      )}
 
       {localImages.length > 0 && (
         <div>
