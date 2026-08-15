@@ -40,10 +40,16 @@ export default function ShippingEmail({
         <Container style={{maxWidth:"600px",margin:"0 auto",backgroundColor:"white"}}>
 
           {/* Header */}
-          <Section style={{backgroundColor:"#0A0A0A",padding:"32px 48px",textAlign:"center"}}>
-            <Text style={{color:"white",fontSize:"20px",fontWeight:"400",letterSpacing:"0.05em",margin:0}}>
-              Member Club
-            </Text>
+          <Section style={{backgroundColor:"#0A0A0A",padding:"28px 48px",textAlign:"center"}}>
+            <table role="presentation" style={{margin:"0 auto",borderCollapse:"collapse"}}>
+              <tbody>
+                <tr>
+                  <td style={{backgroundColor:"white",borderRadius:"14px",padding:"14px 18px",lineHeight:0}}>
+                    <Img src="https://res.cloudinary.com/dklvmlzds/image/upload/v1783912898/MEMBER_B_1_3_wyfasx.png" height="32" alt="Member Club" style={{display:"block",margin:"0 auto",height:"32px",width:"auto"}} />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </Section>
 
           {/* Body */}

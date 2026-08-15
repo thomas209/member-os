@@ -55,7 +55,12 @@ export default function ReceiptTicket({ order }: { order: ReceiptOrderData }) {
         </div>
       )}
 
-      <p style={{ textAlign: "center", fontWeight: "700", fontSize: "14px", marginBottom: "4px" }}>Member Club</p>
+      {/* eslint-disable-next-line @next/next/no-img-element -- ticket se exporta a imagen/impresión, evita depender de next/image */}
+      <img
+        src="https://res.cloudinary.com/dklvmlzds/image/upload/v1783912898/MEMBER_B_1_3_wyfasx.png"
+        alt="Member Club"
+        style={{ display: "block", height: "28px", width: "auto", margin: "0 auto 8px" }}
+      />
       <p style={{ textAlign: "center", color: "#737373", marginBottom: "16px" }}>Comprobante de venta</p>
 
       <div style={{ borderTop: "1px dashed #A3A3A3", borderBottom: "1px dashed #A3A3A3", padding: "8px 0", marginBottom: "12px" }}>

@@ -5,6 +5,8 @@ import CartDrawer from "@/components/store/CartDrawer";
 import CartButton from "@/components/store/CartButton";
 import PromoMarquee from "@/components/store/PromoMarquee";
 
+const LOGO_URL = "https://res.cloudinary.com/dklvmlzds/image/upload/v1783912898/MEMBER_B_1_3_wyfasx.png";
+
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -15,7 +17,9 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
 
         {/* DESKTOP */}
         <div className="hidden md:flex" style={{maxWidth: "1440px", margin: "0 auto", padding: "0 48px", height: "56px", alignItems: "center", justifyContent: "space-between"}}>
-          <a href="/" style={{fontWeight: "400", fontSize: "18px", letterSpacing: "0.02em", fontFamily: "Georgia, serif", textDecoration: "none", color: "#0A0A0A"}}>Member Club</a>
+          <a href="/" style={{display: "flex", alignItems: "center"}}>
+            <Image src={LOGO_URL} alt="Member Club" width={140} height={32} style={{height: "24px", width: "auto", objectFit: "contain"}} priority />
+          </a>
           <nav style={{display: "flex", gap: "32px"}}>
             <a href="/catalog" style={{fontSize: "13px", color: "#737373", textDecoration: "none", letterSpacing: "0.04em"}}>Catálogo</a>
             <a href="/catalog?gender=HOMBRE" style={{fontSize: "13px", color: "#737373", textDecoration: "none", letterSpacing: "0.04em"}}>Hombre</a>
@@ -34,7 +38,9 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         {/* MOBILE NAVBAR */}
         <div className="flex md:hidden items-center justify-between px-4 relative" style={{height: "56px"}}>
           <div style={{width: "40px"}} />
-          <a href="/" className="absolute left-1/2 -translate-x-1/2" style={{fontWeight: "400", fontSize: "17px", letterSpacing: "0.02em", fontFamily: "Georgia, serif", textDecoration: "none", color: "#0A0A0A"}}>Member Club</a>
+          <a href="/" className="absolute left-1/2 -translate-x-1/2" style={{display: "flex", alignItems: "center"}}>
+            <Image src={LOGO_URL} alt="Member Club" width={130} height={30} style={{height: "22px", width: "auto", objectFit: "contain"}} priority />
+          </a>
           <div style={{display: "flex", alignItems: "center", gap: "16px"}}>
             <CartButton />
             <button onClick={() => setMenuOpen(true)} style={{background: "none", border: "none", cursor: "pointer", padding: "4px"}}>
@@ -57,7 +63,9 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
 
         {/* Header drawer */}
         <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", height: "56px", borderBottom: "1px solid #F4F4F4"}}>
-          <a href="/" onClick={() => setMenuOpen(false)} style={{fontWeight: "400", fontSize: "17px", letterSpacing: "0.02em", fontFamily: "Georgia, serif", textDecoration: "none", color: "#0A0A0A"}}>Member Club</a>
+          <a href="/" onClick={() => setMenuOpen(false)} style={{display: "flex", alignItems: "center"}}>
+            <Image src={LOGO_URL} alt="Member Club" width={130} height={30} style={{height: "22px", width: "auto", objectFit: "contain"}} />
+          </a>
           <button onClick={() => setMenuOpen(false)} style={{background: "none", border: "none", cursor: "pointer", padding: "4px"}}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
