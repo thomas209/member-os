@@ -191,3 +191,42 @@ a:hover .product-img {
     animation: none;
   }
 }
+
+/* =====================
+   MICRO-INTERACCIONES
+   Set chico y reutilizable para que todo elemento clickeable
+   (links, iconos, botones, pills) responda igual al touch/hover,
+   sin importar si el componente usa inline style o Tailwind.
+===================== */
+
+/* Links de texto, iconos, tarjetas sobre fondo oscuro: fade sutil.
+   Solo toca opacity (no transform) para no pisar transforms de
+   posicionamiento/animación que ya usan varios componentes. */
+.hover-fade {
+  transition: opacity 0.2s ease;
+}
+.hover-fade:hover {
+  opacity: 0.6 !important;
+}
+.hover-fade:active {
+  opacity: 0.4 !important;
+}
+
+/* Botones sólidos oscuros (CTAs principales): oscurece un toque + press */
+.hover-btn-dark {
+  transition: background-color 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
+}
+.hover-btn-dark:not(:disabled):hover {
+  background-color: #262626 !important;
+}
+.hover-btn-dark:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+/* Pills / tarjetas seleccionables (filtros, métodos de pago): resalta borde */
+.hover-pill {
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+.hover-pill:not(:disabled):hover {
+  border-color: #0A0A0A !important;
+}

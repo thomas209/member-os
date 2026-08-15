@@ -60,7 +60,7 @@ export default async function HomePage() {
         <div className="max-w-[1440px] mx-auto">
           <div className="flex justify-between items-baseline mb-8 pb-4 border-b border-neutral-200 overflow-hidden">
             <h2 className="text-[13px] font-semibold tracking-widest uppercase">Destacados</h2>
-            <a href="/catalog" className="text-[12px] text-neutral-400 no-underline">Ver todo</a>
+            <a href="/catalog" className="text-[12px] text-neutral-400 no-underline hover:text-neutral-900 transition-colors">Ver todo</a>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-[2px]">
             {featured.map((product) => (

@@ -17,6 +17,7 @@ export default function LogoutButton() {
     <button
       onClick={handleLogout}
       disabled={loading}
+      className="hover-fade"
       style={{
         fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase",
         color: "#737373", background: "none", border: "none", cursor: loading ? "not-allowed" : "pointer", padding: 0,

@@ -147,17 +147,17 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
 
         {/* Filtros genero */}
         <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"12px"}}>
-          <a href={buildUrl({ category, brand, q, sort, encargo })} style={!gender ? activeStyle : inactiveStyle}>Todos</a>
-          <a href={buildUrl({ category, brand, q, sort, encargo, gender: "HOMBRE" })} style={gender === "HOMBRE" ? activeStyle : inactiveStyle}>Hombre</a>
-          <a href={buildUrl({ category, brand, q, sort, encargo, gender: "MUJER" })} style={gender === "MUJER" ? activeStyle : inactiveStyle}>Mujer</a>
-          <a href={buildUrl({ category, brand, q, sort, encargo, gender: "UNISEX" })} style={gender === "UNISEX" ? activeStyle : inactiveStyle}>Unisex</a>
+          <a href={buildUrl({ category, brand, q, sort, encargo })} className="hover-pill" style={!gender ? activeStyle : inactiveStyle}>Todos</a>
+          <a href={buildUrl({ category, brand, q, sort, encargo, gender: "HOMBRE" })} className="hover-pill" style={gender === "HOMBRE" ? activeStyle : inactiveStyle}>Hombre</a>
+          <a href={buildUrl({ category, brand, q, sort, encargo, gender: "MUJER" })} className="hover-pill" style={gender === "MUJER" ? activeStyle : inactiveStyle}>Mujer</a>
+          <a href={buildUrl({ category, brand, q, sort, encargo, gender: "UNISEX" })} className="hover-pill" style={gender === "UNISEX" ? activeStyle : inactiveStyle}>Unisex</a>
         </div>
 
         {/* Filtros categoria */}
         <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"12px"}}>
-          <a href={buildUrl({ brand, gender, q, sort, encargo })} style={!category ? activeStyle : inactiveStyle}>Todas las categorias</a>
+          <a href={buildUrl({ brand, gender, q, sort, encargo })} className="hover-pill" style={!category ? activeStyle : inactiveStyle}>Todas las categorias</a>
           {categories.map((cat) => (
-            <a key={cat.id} href={buildUrl({ category: cat.slug, brand, gender, q, sort, encargo })} style={category === cat.slug ? activeStyle : inactiveStyle}>
+            <a key={cat.id} href={buildUrl({ category: cat.slug, brand, gender, q, sort, encargo })} className="hover-pill" style={category === cat.slug ? activeStyle : inactiveStyle}>
               {cat.name}
             </a>
           ))}
@@ -165,9 +165,9 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
 
         {/* Filtros marca */}
         <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
-          <a href={buildUrl({ category, gender, q, sort, encargo })} style={!brand ? activeStyle : inactiveStyle}>Todas las marcas</a>
+          <a href={buildUrl({ category, gender, q, sort, encargo })} className="hover-pill" style={!brand ? activeStyle : inactiveStyle}>Todas las marcas</a>
           {brands.map((b) => (
-            <a key={b.id} href={buildUrl({ category, brand: b.slug, gender, q, sort, encargo })} style={brand === b.slug ? activeStyle : inactiveStyle}>
+            <a key={b.id} href={buildUrl({ category, brand: b.slug, gender, q, sort, encargo })} className="hover-pill" style={brand === b.slug ? activeStyle : inactiveStyle}>
               {b.name}
             </a>
           ))}
@@ -206,6 +206,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
           <a
             href={page > 1 ? buildUrl({ category, brand, gender, q, sort, encargo, page: page - 1 }) : undefined}
             aria-disabled={page <= 1}
+            className="hover-pill"
             style={{...inactiveStyle, opacity: page <= 1 ? 0.4 : 1, pointerEvents: page <= 1 ? "none" : "auto"}}
           >
             Anterior
@@ -216,6 +217,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
           <a
             href={page < totalPages ? buildUrl({ category, brand, gender, q, sort, encargo, page: page + 1 }) : undefined}
             aria-disabled={page >= totalPages}
+            className="hover-pill"
             style={{...inactiveStyle, opacity: page >= totalPages ? 0.4 : 1, pointerEvents: page >= totalPages ? "none" : "auto"}}
           >
             Siguiente

@@ -161,7 +161,7 @@ export default function CheckoutPage() {
     return (
       <div style={{maxWidth:"600px",margin:"80px auto",textAlign:"center",padding:"48px"}}>
         <p style={{fontSize:"16px",color:"#737373",marginBottom:"24px"}}>Tu carrito esta vacio</p>
-        <a href="/catalog" style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",textDecoration:"none",color:"#0A0A0A",border:"1px solid #0A0A0A",padding:"14px 32px"}}>Ver catalogo</a>
+        <a href="/catalog" className="hover-pill" style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",textDecoration:"none",color:"#0A0A0A",border:"1px solid #0A0A0A",padding:"14px 32px"}}>Ver catalogo</a>
       </div>
     );
   }
@@ -238,6 +238,7 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
           <div
             onClick={() => setPaymentMethod("MERCADOPAGO")}
+            className="hover-pill"
             style={{
               cursor:"pointer",padding:"16px",border: paymentMethod === "MERCADOPAGO" ? "2px solid #0A0A0A" : "1px solid #D1D1D1",
             }}
@@ -247,6 +248,7 @@ export default function CheckoutPage() {
           </div>
           <div
             onClick={() => setPaymentMethod("TRANSFERENCIA")}
+            className="hover-pill"
             style={{
               cursor:"pointer",padding:"16px",border: paymentMethod === "TRANSFERENCIA" ? "2px solid #0A0A0A" : "1px solid #D1D1D1",
             }}
@@ -261,7 +263,7 @@ export default function CheckoutPage() {
           </p>
         )}
         {error && <p style={{fontSize:"13px",color:"#DC2626",marginBottom:"16px"}}>{error}</p>}
-        <button onClick={handleSubmit} disabled={loading} style={{width:"100%",padding:"18px",backgroundColor:loading?"#E8E8E8":"#0A0A0A",color:loading?"#A3A3A3":"white",fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",border:"none",cursor:loading?"not-allowed":"pointer"}}>
+        <button onClick={handleSubmit} disabled={loading} className="hover-btn-dark" style={{width:"100%",padding:"18px",backgroundColor:loading?"#E8E8E8":"#0A0A0A",color:loading?"#A3A3A3":"white",fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",border:"none",cursor:loading?"not-allowed":"pointer"}}>
           {loading ? "Procesando..." : paymentMethod === "TRANSFERENCIA" ? "Continuar con transferencia" : "Pagar con Mercado Pago"}
         </button>
       </div>
@@ -305,6 +307,7 @@ export default function CheckoutPage() {
                 {couponStatus === "valid" ? (
                   <button
                     onClick={() => { setCouponStatus("idle"); setCouponCode(""); setCouponDiscount(0); setCouponMessage(""); }}
+                    className="hover-pill"
                     style={{padding:"12px 16px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",border:"1px solid #0A0A0A",backgroundColor:"white",color:"#0A0A0A",cursor:"pointer"}}
                   >
                     Quitar
@@ -313,6 +316,7 @@ export default function CheckoutPage() {
                   <button
                     onClick={handleApplyCoupon}
                     disabled={couponStatus === "checking" || !couponCode.trim()}
+                    className="hover-btn-dark"
                     style={{padding:"12px 16px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",border:"1px solid #0A0A0A",backgroundColor: !couponCode.trim() ? "#F4F4F4" : "#0A0A0A",color: !couponCode.trim() ? "#A3A3A3" : "white",cursor: !couponCode.trim() ? "not-allowed":"pointer"}}
                   >
                     {couponStatus === "checking" ? "..." : "Aplicar"}

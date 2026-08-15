@@ -58,7 +58,7 @@ export default async function SuccessPage({ searchParams }: { searchParams: any 
         </p>
       </div>
 
-      <a href="/" style={{display:"block",textAlign:"center",padding:"16px",backgroundColor:"#0A0A0A",color:"white",fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",textDecoration:"none"}}>
+      <a href="/" className="hover-btn-dark" style={{display:"block",textAlign:"center",padding:"16px",backgroundColor:"#0A0A0A",color:"white",fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",textDecoration:"none"}}>
         Volver al inicio
       </a>
     </div>

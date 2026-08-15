@@ -14,6 +14,7 @@ export default function CartButton() {
     <button
       onClick={openCart}
       aria-label="Carrito de compras"
+      className="hover-fade"
       style={{background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", color: "#0A0A0A"}}
     >
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

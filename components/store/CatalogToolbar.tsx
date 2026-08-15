@@ -41,6 +41,7 @@ export default function CatalogToolbar({ category, brand, gender, q, sort, encar
         />
         <button
           type="submit"
+          className="hover-btn-dark"
           style={{ padding: "10px 16px", border: "1px solid #0A0A0A", backgroundColor: "#0A0A0A", color: "white", fontSize: "12px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer" }}
         >
           Buscar

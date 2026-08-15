@@ -47,7 +47,7 @@ export default async function CategoryCarousel({
       <div className="max-w-[1440px] mx-auto">
         <div className="flex justify-between items-baseline mb-8 pb-4 border-b border-neutral-200">
           <h2 className="text-[13px] font-semibold tracking-widest uppercase">{title}</h2>
-          <a href={"/catalog?category=" + categorySlug} className="text-[12px] text-neutral-400 no-underline">Ver todo</a>
+          <a href={"/catalog?category=" + categorySlug} className="text-[12px] text-neutral-400 no-underline hover:text-neutral-900 transition-colors">Ver todo</a>
         </div>
         <CategoryCarouselClient rows={rows} products={products.map(p => ({
           id: p.id,

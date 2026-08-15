@@ -17,6 +17,7 @@ export default function CopyButton({ value }: { value: string }) {
   return (
     <button
       onClick={handleCopy}
+      className="hover-fade"
       style={{
         padding: "6px 12px", fontSize: "11px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase",
         border: "1px solid #0A0A0A", backgroundColor: copied ? "#0A0A0A" : "white", color: copied ? "white" : "#0A0A0A",

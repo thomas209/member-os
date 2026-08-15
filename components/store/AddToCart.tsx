@@ -147,7 +147,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
             href={buildStockAlertHref(selectedVariant!)}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full py-7 text-base font-semibold tracking-widest uppercase text-center border-2 border-neutral-900 text-neutral-900 bg-white"
+            className="block w-full py-7 text-base font-semibold tracking-widest uppercase text-center border-2 border-neutral-900 text-neutral-900 bg-white hover:bg-neutral-900 hover:text-white active:bg-neutral-800 transition-colors"
           >
             Avisame cuando haya stock
           </a>
@@ -160,7 +160,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
               ${added
                 ? "bg-green-600 text-white cursor-pointer"
                 : hasStock
-                ? "bg-neutral-900 text-white cursor-pointer"
+                ? "bg-neutral-900 text-white cursor-pointer hover:bg-neutral-700 active:bg-neutral-800"
                 : "bg-neutral-100 text-neutral-400 cursor-not-allowed"
               }
             `}
