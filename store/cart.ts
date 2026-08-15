@@ -22,6 +22,11 @@ export type CartItem = {
 type CartStore = {
   items: CartItem[];
   isOpen: boolean;
+  // Se incrementa cada vez que se agrega un producto con éxito. No tiene
+  // significado propio más allá de "cambió" — sirve para que componentes
+  // como el ícono del carrito en el header puedan animarse en respuesta,
+  // sin acoplarse a AddToCart directamente.
+  bumpCount: number;
   addItem: (item: Omit<CartItem, "quantity">) => boolean;
   removeItem: (variantId: string) => void;
   updateQuantity: (variantId: string, quantity: number) => void;
@@ -37,6 +42,7 @@ export const useCartStore = create<CartStore>()(
     (set, get) => ({
       items: [],
       isOpen: false,
+      bumpCount: 0,
 
       // Devuelve false si ya estaba en el tope de stock (no se agrego nada
       // nuevo), para que el que llama pueda avisar al usuario.
@@ -55,9 +61,10 @@ export const useCartStore = create<CartStore>()(
                 : i
             ),
             isOpen: true,
+            bumpCount: get().bumpCount + 1,
           });
         } else {
-          set({ items: [...items, { ...item, quantity: 1 }], isOpen: true });
+          set({ items: [...items, { ...item, quantity: 1 }], isOpen: true, bumpCount: get().bumpCount + 1 });
         }
         return true;
       },
