@@ -8,6 +8,20 @@ type Brand = {
   logoUrl: string | null;
 };
 
+// Los logos vienen de Cloudinary con muchísimo padding interno distinto
+// entre sí (algunos casi sin margen, otros con el isotipo chiquito en medio
+// de un lienzo grande) — por eso, aunque la caja del carrusel sea igual
+// para todos, se ven de tamaños muy distintos. Le pedimos a Cloudinary que
+// recorte ese margen (e_trim) y escale a una altura fija en origen, así
+// todos ocupan proporcionalmente lo mismo dentro de la caja.
+// e_trim no es confiable sobre vectores (svg), ahí solo escalamos.
+function normalizeLogoUrl(url: string) {
+  if (!url.includes("/upload/")) return url;
+  const isVector = /\.svg(\?|$)/i.test(url);
+  const transform = isVector ? "c_fit,h_160" : "e_trim,c_fit,h_160";
+  return url.replace("/upload/", `/upload/${transform}/`);
+}
+
 export default function BrandCarousel({ brands }: { brands: Brand[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -68,7 +82,7 @@ export default function BrandCarousel({ brands }: { brands: Brand[] }) {
           >
             {brand.logoUrl ? (
               <img
-                src={brand.logoUrl}
+                src={normalizeLogoUrl(brand.logoUrl)}
                 alt={brand.name}
                 style={{height: "32px", width: "100px", objectFit: "contain", filter: "grayscale(100%)", opacity: 0.7}}
               />
