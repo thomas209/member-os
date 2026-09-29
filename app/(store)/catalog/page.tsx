@@ -41,8 +41,8 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const title = parts.length > 0 ? `${parts.join(" · ")} | Catálogo` : "Catálogo";
   const description =
     parts.length > 0
-      ? `Descubrí ${parts.join(", ")} en Member Club. Indumentaria y zapatillas premium con envíos a todo el país.`
-      : "Todo el catálogo de Member Club: indumentaria y zapatillas premium de las mejores marcas.";
+      ? `Descubrí ${parts.join(", ")} en Member Club. Ropa y zapatillas importadas con envíos a todo el país.`
+      : "Catálogo de Member Club: ropa y zapatillas importadas de Nike, Adidas, On Running, Hoka, Supreme y más. Envíos a todo el país.";
 
   return {
     title,
