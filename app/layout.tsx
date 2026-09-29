@@ -18,10 +18,10 @@ export const metadata: Metadata = {
     default: 'Member Club',
     template: '%s | Member Club',
   },
-  description: 'Indumentaria y zapatillas premium.',
+  description: 'Ropa y zapatillas importadas en Pinamar y envíos a todo el país. Nike, Adidas, On Running, Hoka, Supreme, Kith y más.',
   openGraph: {
     title: 'Member Club',
-    description: 'Indumentaria y zapatillas premium.',
+    description: 'Ropa y zapatillas importadas en Pinamar y envíos a todo el país. Nike, Adidas, On Running, Hoka, Supreme, Kith y más.',
     url: SITE_URL,
     siteName: 'Member Club',
     locale: 'es_AR',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Member Club',
-    description: 'Indumentaria y zapatillas premium.',
+    description: 'Ropa y zapatillas importadas en Pinamar y envíos a todo el país. Nike, Adidas, On Running, Hoka, Supreme, Kith y más.',
   },
 }
 

@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 
 const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com";
 
+// Se regenera una vez por día para que las fechas de temporada del schema estén al día.
+export const revalidate = 86400;
+
 const STORE = {
   name: "Member Club",
   address: "Av. Constitución 270, B7167 Pinamar, Provincia de Buenos Aires",
@@ -11,14 +14,37 @@ const STORE = {
   mapsQuery: "Av. Constitución 270, Pinamar, Buenos Aires",
 };
 
+// Solo para Google/IAs (datos estructurados), no se muestra en la página.
+const BRANDS = [
+  "Nike",
+  "Adidas",
+  "On Running",
+  "Hoka",
+  "Onitsuka Tiger",
+  "Birkenstock",
+  "Supreme",
+  "Kith",
+  "Stussy",
+  "Alo",
+  "Longchamp",
+];
+
+// Temporada vigente o próxima: 15/12 al 31/03, todos los días 10 a 22:30.
+// Resto del año: viernes a domingo, 10 a 20.
+function seasonDates(now = new Date()) {
+  const y = now.getFullYear();
+  const startYear = now.getMonth() < 3 ? y - 1 : y;
+  return { validFrom: `${startYear}-12-15`, validThrough: `${startYear + 1}-03-31` };
+}
+
 export const metadata: Metadata = {
-  title: "Nuestro local en Pinamar | Member Club",
+  title: "Ropa y zapatillas importadas en Pinamar",
   description:
-    "Visitá Member Club en Av. Constitución 270, Pinamar. Ropa y zapatillas premium: Nike, Adidas, Onitsuka, Stussy y más marcas.",
+    "Member Club: ropa y zapatillas importadas en Pinamar. Nike, Adidas, On Running, Hoka, Supreme, Kith y más. Local en Av. Constitución 270.",
   alternates: { canonical: `${SITE_URL}/stores` },
   openGraph: {
-    title: "Nuestro local en Pinamar | Member Club",
-    description: "Ropa y zapatillas premium en Pinamar. Av. Constitución 270.",
+    title: "Ropa y zapatillas importadas en Pinamar | Member Club",
+    description: "Zapatillas e indumentaria importada en Pinamar. Av. Constitución 270.",
     url: `${SITE_URL}/stores`,
     siteName: "Member Club",
     type: "website",
@@ -29,10 +55,16 @@ export default function StoresPage() {
   const mapsEmbedSrc = `https://www.google.com/maps?q=${encodeURIComponent(STORE.mapsQuery)}&output=embed`;
   const mapsDirectionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(STORE.mapsQuery)}`;
 
+  const season = seasonDates();
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ClothingStore",
+    "@id": `${SITE_URL}/stores#store`,
     name: STORE.name,
+    description:
+      "Tienda de ropa y zapatillas importadas en Pinamar. Streetwear, sneakers y accesorios de marcas internacionales. Envíos a todo el país y encargos de productos fuera de stock.",
+    image: "https://res.cloudinary.com/dklvmlzds/image/upload/v1783912898/MEMBER_B_1_3_wyfasx.png",
     address: {
       "@type": "PostalAddress",
       streetAddress: "Av. Constitución 270",
@@ -41,8 +73,30 @@ export default function StoresPage() {
       postalCode: "B7167",
       addressCountry: "AR",
     },
+    areaServed: ["Pinamar", "Cariló", "Valeria del Mar", "Ostende", "Argentina"],
     telephone: STORE.phone,
-    url: `${SITE_URL}/stores`,
+    url: SITE_URL,
+    hasMap: `https://www.google.com/maps?q=${encodeURIComponent(STORE.mapsQuery)}`,
+    sameAs: ["https://instagram.com/member_ba"],
+    brand: BRANDS.map((name) => ({ "@type": "Brand", name })),
+    paymentAccepted: "Mercado Pago, tarjeta de crédito, tarjeta de débito, transferencia",
+    currenciesAccepted: "ARS",
+    openingHoursSpecification: [
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Friday", "Saturday", "Sunday"],
+        opens: "10:00",
+        closes: "20:00",
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        opens: "10:00",
+        closes: "22:30",
+        validFrom: season.validFrom,
+        validThrough: season.validThrough,
+      },
+    ],
   };
 
   return (
