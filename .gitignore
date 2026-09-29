@@ -40,3 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env
+
+# backups locales de la base (tienen datos de clientes, nunca al repo)
+/backups/
+/_archivo-ruleta/
