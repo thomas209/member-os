@@ -12,7 +12,8 @@ export async function uploadImage(file: string, folder: string = "member-os/prod
   const result = await cloudinary.uploader.upload(file, {
     folder,
     transformation: [
-      { width: 1200, height: 1500, crop: "fill", gravity: "auto" },
+      // "pad": no recorta el producto; completa hasta 4:5 con el color del borde de la foto
+      { width: 1200, height: 1500, crop: "pad", background: "auto" },
       { format: "webp", quality: "auto" },
     ],
   });
