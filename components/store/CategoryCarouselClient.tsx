@@ -22,22 +22,22 @@ function ProductTile({ product }: { product: Product }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div style={{ aspectRatio: "4/5", backgroundColor: "#F4F4F4", overflow: "hidden", marginBottom: "10px", position: "relative" }}>
+      <div style={{ aspectRatio: "4/5", backgroundColor: "#F5F5F7", borderRadius: "18px", overflow: "hidden", marginBottom: "10px", position: "relative" }}>
         {product.image ? (
-          <>
+          <div style={{ position: "absolute", inset: "9%" }}>
             <img
               src={product.image}
               alt={product.name}
-              style={{ width: "100%", height: "100%", objectFit: "cover", transition: "opacity 0.35s ease", opacity: (hovered && product.secondImage) ? 0 : 1 }}
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", mixBlendMode: "multiply", transition: "opacity 0.35s ease", opacity: (hovered && product.secondImage) ? 0 : 1 }}
             />
             {product.secondImage && (
               <img
                 src={product.secondImage}
                 alt={product.name}
-                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "opacity 0.35s ease", opacity: hovered ? 1 : 0 }}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", mixBlendMode: "multiply", transition: "opacity 0.35s ease", opacity: hovered ? 1 : 0 }}
               />
             )}
-          </>
+          </div>
         ) : (
           <div style={{ width: "100%", height: "100%", backgroundColor: "#E8E8E8", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontSize: "10px", color: "#A3A3A3" }}>SIN IMAGEN</span>
@@ -111,7 +111,7 @@ function DesktopRow({ products }: { products: Product[] }) {
       className="category-row-desktop"
       style={{
         display: "flex",
-        gap: "2px",
+        gap: "12px",
         overflowX: "auto",
         cursor: "grab",
         userSelect: "none",

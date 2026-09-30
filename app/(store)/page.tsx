@@ -62,7 +62,7 @@ export default async function HomePage() {
             <h2 className="text-[13px] font-semibold tracking-widest uppercase">Destacados</h2>
             <a href="/catalog" className="text-[12px] text-neutral-400 no-underline hover:text-neutral-900 transition-colors">Ver todo</a>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-[2px]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {featured.map((product) => (
               <ProductCard
                 key={product.id}
