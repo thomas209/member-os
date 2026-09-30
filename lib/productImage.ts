@@ -18,7 +18,7 @@ export function fondoEsBlanco(img: HTMLImageElement): boolean {
     const mirar = (x: number, y: number) => {
       const i = (y * w + x) * 4;
       total++;
-      if (d[i + 3] < 20 || Math.min(d[i], d[i + 1], d[i + 2]) >= 238) blancos++;
+      if (d[i + 3] < 20 || Math.min(d[i], d[i + 1], d[i + 2]) >= 250) blancos++;
     };
     for (let x = 0; x < w; x++) { mirar(x, 0); mirar(x, 1); mirar(x, h - 1); mirar(x, h - 2); }
     for (let y = 2; y < h - 2; y++) { mirar(0, y); mirar(1, y); mirar(w - 1, y); mirar(w - 2, y); }
