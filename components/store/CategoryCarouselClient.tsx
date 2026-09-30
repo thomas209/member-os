@@ -16,6 +16,7 @@ type Product = {
 
 function ProductTile({ product }: { product: Product }) {
   const [hovered, setHovered] = useState(false);
+  const [fondoColor, setFondoColor] = useState(false);
   return (
     <a
       href={"/product/" + product.slug}
@@ -23,7 +24,7 @@ function ProductTile({ product }: { product: Product }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div style={{ aspectRatio: "4/5", backgroundColor: "#F5F5F7", borderRadius: "18px", overflow: "hidden", marginBottom: "10px", position: "relative" }}>
+      <div style={{ aspectRatio: "4/5", backgroundColor: "#F4F4F4", borderRadius: fondoColor ? "18px" : 0, overflow: "hidden", marginBottom: "10px", position: "relative" }}>
         {product.image ? (
           <>
             <ProductPhoto
@@ -31,6 +32,7 @@ function ProductTile({ product }: { product: Product }) {
               alt={product.name}
               sizes="260px"
               unoptimized
+              onFondoColor={setFondoColor}
               style={{ transition: "opacity 0.35s ease", opacity: (hovered && product.secondImage) ? 0 : 1 }}
             />
             {product.secondImage && (

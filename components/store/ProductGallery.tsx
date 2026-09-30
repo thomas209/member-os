@@ -1,11 +1,13 @@
 "use client";
 import { useState, useRef } from "react";
+import Image from "next/image";
 import ProductPhoto from "@/components/store/ProductPhoto";
 
-type Image = { url: string; altText?: string | null };
+type Foto = { url: string; altText?: string | null };
 
-export default function ProductGallery({ images, productName }: { images: Image[]; productName: string }) {
+export default function ProductGallery({ images, productName }: { images: Foto[]; productName: string }) {
   const [selected, setSelected] = useState(0);
+  const [fondoColor, setFondoColor] = useState(false);
 
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -38,14 +40,14 @@ export default function ProductGallery({ images, productName }: { images: Image[
     <div className="flex flex-col gap-3">
 
       {/* Imagen principal */}
-      <div className="relative aspect-[4/5] bg-[#F5F5F7] rounded-[18px] overflow-hidden" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      <div className={`relative aspect-[4/5] bg-neutral-100 overflow-hidden ${fondoColor ? "rounded-[18px]" : ""}`} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <ProductPhoto
           key={images[selected].url}
           src={images[selected].url}
           alt={images[selected].altText || productName}
           sizes="(max-width: 768px) 100vw, 50vw"
           priority
-          inset="7%"
+          onFondoColor={setFondoColor}
         />
 
         {images.length > 1 && (
@@ -97,15 +99,16 @@ export default function ProductGallery({ images, productName }: { images: Image[
             <button
               key={i}
               onClick={() => setSelected(i)}
-              className={`relative w-16 h-20 border flex-shrink-0 overflow-hidden rounded-lg bg-[#F5F5F7] cursor-pointer transition-all ${
+              className={`relative w-16 h-20 border flex-shrink-0 overflow-hidden bg-neutral-100 cursor-pointer transition-all ${
                 selected === i ? "border-neutral-900" : "border-neutral-200"
               }`}
             >
-              <ProductPhoto
+              <Image
                 src={img.url}
                 alt={img.altText || productName}
+                fill
                 sizes="64px"
-                inset="6%"
+                className="object-cover"
               />
             </button>
           ))}

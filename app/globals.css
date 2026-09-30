@@ -265,7 +265,3 @@ a:hover .product-img {
     animation: none;
   }
 }
-
-/* Aire alrededor del producto en las fotos con fondo blanco */
-:root { --foto-aire: 9%; }
-@media (max-width: 640px) { :root { --foto-aire: 4%; } }
