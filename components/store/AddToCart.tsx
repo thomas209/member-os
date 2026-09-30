@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useCartStore } from "@/store/cart";
 import { buildWhatsappLink } from "@/lib/whatsapp";
 import { STORE_WHATSAPP_NUMBER } from "@/lib/bankDetails";
@@ -27,6 +27,24 @@ type Props = {
 
 export default function AddToCart({ variants, product, sizeGuideType = "indumentaria" }: Props) {
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
+
+  // Pastilla que se desliza hasta el talle elegido (efecto tipo Apple)
+  const sizeRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [pill, setPill] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+  const [pillAnimada, setPillAnimada] = useState(false);
+  const medirPill = () => {
+    const el = selectedVariant ? sizeRefs.current[selectedVariant.id] : null;
+    setPill(el ? { left: el.offsetLeft, top: el.offsetTop, width: el.offsetWidth, height: el.offsetHeight } : null);
+  };
+  useLayoutEffect(medirPill, [selectedVariant]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    window.addEventListener("resize", medirPill);
+    return () => window.removeEventListener("resize", medirPill);
+  }); // eslint-disable-line react-hooks/exhaustive-deps
+  // La primera vez que aparece la pastilla no se anima (aparece en su lugar)
+  useEffect(() => {
+    if (pill && !pillAnimada) requestAnimationFrame(() => setPillAnimada(true));
+  }, [pill, pillAnimada]);
   const [error, setError] = useState("");
   const [added, setAdded] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
@@ -82,23 +100,37 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
         </div>
         {/* Selector tipo "pastilla" (estilo Apple): todas las opciones dentro de una
             pastilla gris y el talle elegido resaltado con su propia pastilla */}
-        <div className="flex w-full md:w-auto md:inline-flex flex-wrap gap-1 p-1.5 rounded-[30px] bg-[#1D1D1F] border border-[#2A2A2A]">
+        <div className="relative flex w-full md:w-auto md:inline-flex flex-wrap gap-1 p-1.5 rounded-[30px] bg-neutral-100">
+          {pill && (
+            <span
+              aria-hidden
+              className="absolute rounded-full bg-neutral-900 shadow-md pointer-events-none"
+              style={{
+                left: pill.left,
+                top: pill.top,
+                width: pill.width,
+                height: pill.height,
+                transition: pillAnimada ? "left 0.3s cubic-bezier(0.32,0.72,0,1), top 0.3s cubic-bezier(0.32,0.72,0,1), width 0.3s cubic-bezier(0.32,0.72,0,1)" : "none",
+              }}
+            />
+          )}
           {variants.map((variant) => {
             const isSelected = selectedVariant?.id === variant.id;
             const outOfStock = variant.stock === 0;
             return (
               <button
                 key={variant.id}
+                ref={(el) => { sizeRefs.current[variant.id] = el; }}
                 onClick={() => { setSelectedVariant(variant); setError(""); }}
                 className={`
-                  flex-1 basis-[18%] md:flex-none md:basis-auto md:min-w-[64px] px-4 md:px-5 py-3.5 md:py-3 rounded-full text-[15px] md:text-sm border-none transition-all duration-200 cursor-pointer
+                  flex-1 basis-[18%] md:flex-none md:basis-auto md:min-w-[64px] px-4 md:px-5 py-3.5 md:py-3 relative z-[1] rounded-full text-[15px] md:text-sm border-none bg-transparent transition-colors duration-300 cursor-pointer
                   ${isSelected && outOfStock
-                    ? "bg-black text-neutral-500 font-semibold line-through"
+                    ? "text-neutral-400 font-semibold line-through"
                     : isSelected
-                    ? "bg-black text-white font-semibold"
+                    ? "text-white font-semibold"
                     : outOfStock
-                    ? "bg-transparent text-neutral-600 font-medium line-through hover:text-neutral-500"
-                    : "bg-transparent text-neutral-400 font-medium hover:text-white"
+                    ? "text-neutral-300 font-medium line-through hover:text-neutral-400"
+                    : "text-neutral-600 font-medium hover:text-neutral-900"
                   }
                 `}
               >
