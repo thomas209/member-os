@@ -78,7 +78,7 @@ function ProductRow({ products }: { products: Product[] }) {
       }}
     >
       {products.map((product) => (
-        <div key={product.slug} style={{ flexShrink: 0, width: "44vw", scrollSnapAlign: "start" }}>
+        <div key={product.slug} style={{ flexShrink: 0, width: "58vw", scrollSnapAlign: "start" }}>
           <ProductTile product={product} />
         </div>
       ))}

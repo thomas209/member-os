@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { fondoEsBlanco } from "@/lib/productImage";
 
@@ -11,7 +11,7 @@ export default function ProductPhoto({
   sizes,
   priority,
   unoptimized,
-  inset = "9%",
+  inset = "var(--foto-aire)",
   style,
 }: {
   src: string;
@@ -23,6 +23,18 @@ export default function ProductPhoto({
   style?: React.CSSProperties;
 }) {
   const [modo, setModo] = useState<"blanco" | "color" | null>(null);
+  const ref = useRef<HTMLImageElement>(null);
+  const analizar = (img: HTMLImageElement) => setModo(fondoEsBlanco(img) ? "blanco" : "color");
+
+  // Si la foto ya estaba cargada antes de que arranque la pagina, onLoad no
+  // llega a dispararse: la analizamos igual. Y si por algo no se pudo decidir,
+  // a los 1,5 s se muestra igual (nunca queda invisible).
+  useEffect(() => {
+    const img = ref.current;
+    if (img && img.complete && img.naturalWidth > 0) analizar(img);
+    const t = setTimeout(() => setModo((m) => m ?? "blanco"), 1500);
+    return () => clearTimeout(t);
+  }, [src]);
   return (
     <div style={{ position: "absolute", inset: modo === "color" ? 0 : inset, opacity: modo ? 1 : 0, transition: "opacity 0.2s ease" }}>
       <Image
@@ -33,7 +45,8 @@ export default function ProductPhoto({
         priority={priority}
         unoptimized={unoptimized}
         crossOrigin="anonymous"
-        onLoad={(e) => setModo(fondoEsBlanco(e.currentTarget) ? "blanco" : "color")}
+        ref={ref}
+        onLoad={(e) => analizar(e.currentTarget)}
         onError={() => setModo("blanco")}
         style={{ objectFit: modo === "color" ? "cover" : "contain", mixBlendMode: "multiply", ...style }}
       />
