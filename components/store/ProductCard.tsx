@@ -1,12 +1,11 @@
 "use client";
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { sinFondo } from "@/lib/productImage";
+import ProductPhoto from "@/components/store/ProductPhoto";
 
 const CARD_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw";
 
-export default function ProductCard({ href, image, secondImage, brand, name, price, comparePrice, inStock = true, isEncargo = false, keepBackground = false }: { href: string; image: string | null; secondImage?: string | null; brand: string; name: string; price: string; comparePrice?: string | null; inStock?: boolean; isEncargo?: boolean; keepBackground?: boolean }) {
+export default function ProductCard({ href, image, secondImage, brand, name, price, comparePrice, inStock = true, isEncargo = false }: { href: string; image: string | null; secondImage?: string | null; brand: string; name: string; price: string; comparePrice?: string | null; inStock?: boolean; isEncargo?: boolean }) {
   const [hovered, setHovered] = useState(false);
   return (
     <Link href={href} prefetch style={{textDecoration:"none",color:"#0A0A0A",display:"block"}} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
@@ -17,24 +16,22 @@ export default function ProductCard({ href, image, secondImage, brand, name, pri
           </div>
         )}
         {image ? (
-          <div style={{position:"absolute",inset:"9%"}}>
-            <Image
-              src={sinFondo(image, keepBackground)!}
+          <>
+            <ProductPhoto
+              src={image}
               alt={name}
-              fill
               sizes={CARD_SIZES}
-              style={{objectFit:"contain",mixBlendMode:"multiply",transition:"opacity 0.35s ease, transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity:(hovered && secondImage) ? 0 : inStock?1:0.4}}
+              style={{transition:"opacity 0.35s ease, transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity:(hovered && secondImage) ? 0 : inStock?1:0.4}}
             />
             {secondImage && (
-              <Image
-                src={sinFondo(secondImage, keepBackground)!}
+              <ProductPhoto
+                src={secondImage}
                 alt={name}
-                fill
                 sizes={CARD_SIZES}
-                style={{objectFit:"contain",mixBlendMode:"multiply",transition:"opacity 0.35s ease, transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity: hovered ? (inStock?1:0.4) : 0}}
+                style={{transition:"opacity 0.35s ease, transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity: hovered ? (inStock?1:0.4) : 0}}
               />
             )}
-          </div>
+          </>
         ) : (
           <div style={{width:"100%",height:"100%",backgroundColor:"#E8E8E8",display:"flex",alignItems:"center",justifyContent:"center",opacity:inStock?1:0.4}}>
             <span style={{fontSize:"11px",color:"#A3A3A3"}}>SIN IMAGEN</span>

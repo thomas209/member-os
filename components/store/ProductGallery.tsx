@@ -1,11 +1,10 @@
 "use client";
 import { useState, useRef } from "react";
-import Image from "next/image";
-import { sinFondo } from "@/lib/productImage";
+import ProductPhoto from "@/components/store/ProductPhoto";
 
 type Image = { url: string; altText?: string | null };
 
-export default function ProductGallery({ images, productName, keepBackground = false }: { images: Image[]; productName: string; keepBackground?: boolean }) {
+export default function ProductGallery({ images, productName }: { images: Image[]; productName: string }) {
   const [selected, setSelected] = useState(0);
 
   const touchStartX = useRef(0);
@@ -40,16 +39,14 @@ export default function ProductGallery({ images, productName, keepBackground = f
 
       {/* Imagen principal */}
       <div className="relative aspect-[4/5] bg-[#F5F5F7] rounded-[18px] overflow-hidden" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-        <div className="absolute inset-[7%]">
-        <Image
-          src={sinFondo(images[selected].url, keepBackground)!}
+        <ProductPhoto
+          key={images[selected].url}
+          src={images[selected].url}
           alt={images[selected].altText || productName}
-          fill
           sizes="(max-width: 768px) 100vw, 50vw"
           priority
-          className="object-contain mix-blend-multiply"
+          inset="7%"
         />
-        </div>
 
         {images.length > 1 && (
           <>
@@ -104,12 +101,11 @@ export default function ProductGallery({ images, productName, keepBackground = f
                 selected === i ? "border-neutral-900" : "border-neutral-200"
               }`}
             >
-              <Image
-                src={sinFondo(img.url, keepBackground)!}
+              <ProductPhoto
+                src={img.url}
                 alt={img.altText || productName}
-                fill
                 sizes="64px"
-                className="object-contain p-1 mix-blend-multiply"
+                inset="6%"
               />
             </button>
           ))}
