@@ -174,6 +174,22 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
         )}
       </div>
 
+      {/* ENVIO — estilo Apple: icono de lineas finas + texto */}
+      <div className="flex items-start gap-3 mt-8 md:mt-10">
+        {/* Icono "truck" de Lucide (licencia libre ISC), trazo fino estilo Apple */}
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="shrink-0 mt-[1px]">
+          <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+          <path d="M15 18H9" />
+          <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
+          <circle cx="17" cy="18" r="2" />
+          <circle cx="7" cy="18" r="2" />
+        </svg>
+        <div>
+          <p className="text-[14px] font-semibold text-neutral-900 leading-snug">Envío a todo el país</p>
+          <p className="text-[13px] text-neutral-500 leading-snug mt-0.5">Te lo mandamos a tu casa, estés donde estés.</p>
+        </div>
+      </div>
+
       {/* BOTON STICKY — mobile */}
       <div className="mobile-sticky-cta fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-neutral-100 z-40 px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]">
         {selectedOutOfStock ? (
