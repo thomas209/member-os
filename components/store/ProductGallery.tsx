@@ -1,10 +1,11 @@
 "use client";
 import { useState, useRef } from "react";
 import Image from "next/image";
+import { sinFondo } from "@/lib/productImage";
 
 type Image = { url: string; altText?: string | null };
 
-export default function ProductGallery({ images, productName }: { images: Image[]; productName: string }) {
+export default function ProductGallery({ images, productName, keepBackground = false }: { images: Image[]; productName: string; keepBackground?: boolean }) {
   const [selected, setSelected] = useState(0);
 
   const touchStartX = useRef(0);
@@ -41,7 +42,7 @@ export default function ProductGallery({ images, productName }: { images: Image[
       <div className="relative aspect-[4/5] bg-[#F5F5F7] rounded-[18px] overflow-hidden" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <div className="absolute inset-[7%]">
         <Image
-          src={images[selected].url}
+          src={sinFondo(images[selected].url, keepBackground)!}
           alt={images[selected].altText || productName}
           fill
           sizes="(max-width: 768px) 100vw, 50vw"
@@ -104,7 +105,7 @@ export default function ProductGallery({ images, productName }: { images: Image[
               }`}
             >
               <Image
-                src={img.url}
+                src={sinFondo(img.url, keepBackground)!}
                 alt={img.altText || productName}
                 fill
                 sizes="64px"

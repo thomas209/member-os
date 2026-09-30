@@ -33,6 +33,7 @@ async function getFeaturedProducts() {
     where: { isActive: true, deletedAt: null, isFeatured: true },
     include: {
       brand: { select: { name: true } },
+      category: { select: { slug: true } },
       images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 2 },
       variants: { select: { stock: true } },
     },
@@ -75,6 +76,7 @@ export default async function HomePage() {
                 comparePrice={product.comparePrice?.toString()}
                 inStock={product.variants.some((v) => v.stock > 0)}
                 isEncargo={product.isEncargo}
+                keepBackground={product.category?.slug === "arte"}
               />
             ))}
           </div>

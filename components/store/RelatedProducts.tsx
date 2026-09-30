@@ -12,7 +12,7 @@ export type RelatedProduct = {
   inStock: boolean;
 };
 
-export default function RelatedProducts({ products }: { products: RelatedProduct[] }) {
+export default function RelatedProducts({ products, keepBackground = false }: { products: RelatedProduct[]; keepBackground?: boolean }) {
   if (products.length === 0) return null;
 
   return (
@@ -34,6 +34,7 @@ export default function RelatedProducts({ products }: { products: RelatedProduct
               price={p.price}
               comparePrice={p.comparePrice}
               inStock={p.inStock}
+              keepBackground={keepBackground}
             />
           </div>
         ))}
@@ -52,6 +53,7 @@ export default function RelatedProducts({ products }: { products: RelatedProduct
             price={p.price}
             comparePrice={p.comparePrice}
             inStock={p.inStock}
+            keepBackground={keepBackground}
           />
         ))}
       </div>

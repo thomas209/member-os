@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import { sinFondo } from "@/lib/productImage";
 
 type Product = {
   id: string;
@@ -26,13 +27,13 @@ function ProductTile({ product }: { product: Product }) {
         {product.image ? (
           <div style={{ position: "absolute", inset: "9%" }}>
             <img
-              src={product.image}
+              src={sinFondo(product.image)!}
               alt={product.name}
               style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", mixBlendMode: "multiply", transition: "opacity 0.35s ease", opacity: (hovered && product.secondImage) ? 0 : 1 }}
             />
             {product.secondImage && (
               <img
-                src={product.secondImage}
+                src={sinFondo(product.secondImage)!}
                 alt={product.name}
                 style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", mixBlendMode: "multiply", transition: "opacity 0.35s ease", opacity: hovered ? 1 : 0 }}
               />

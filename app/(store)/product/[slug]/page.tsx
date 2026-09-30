@@ -186,7 +186,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-20">
 
-        <ProductGallery images={product.images} productName={product.name} />
+        <ProductGallery images={product.images} productName={product.name} keepBackground={product.category.slug === "arte"} />
 
         <div className="pt-0 md:pt-6 pb-24 md:pb-0">
           <p className="text-[11px] tracking-widest uppercase text-neutral-400 mb-3">
@@ -239,7 +239,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       </div>
     </div>
 
-    <RelatedProducts products={relatedProducts} />
+    <RelatedProducts products={relatedProducts} keepBackground={product.category.slug === "arte"} />
     </>
   );
 }
