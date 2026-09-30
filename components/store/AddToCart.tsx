@@ -151,7 +151,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
             href={buildStockAlertHref(selectedVariant!)}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full py-5 text-[13px] font-semibold tracking-widest uppercase text-center border border-neutral-900 text-neutral-900 bg-white hover:bg-neutral-900 hover:text-white transition-colors"
+            className="block w-full py-4 rounded-full text-[17px] font-normal text-center border border-neutral-900 text-neutral-900 bg-white hover:bg-neutral-900 hover:text-white active:scale-[0.98] transition-all duration-200"
           >
             Avisame cuando haya stock
           </a>
@@ -160,7 +160,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
             onClick={handleAdd}
             disabled={!hasStock}
             className={`
-              w-full py-5 text-[13px] font-semibold tracking-widest uppercase border-none transition-colors
+              w-full py-4 rounded-full text-[17px] font-normal border-none active:scale-[0.98] transition-all duration-200
               ${added
                 ? "bg-green-600 text-white cursor-pointer"
                 : hasStock
@@ -175,13 +175,13 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
       </div>
 
       {/* BOTON STICKY — mobile */}
-      <div className="mobile-sticky-cta fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 z-40">
+      <div className="mobile-sticky-cta fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-neutral-100 z-40 px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]">
         {selectedOutOfStock ? (
           <a
             href={buildStockAlertHref(selectedVariant!)}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full py-7 text-base font-semibold tracking-widest uppercase text-center border-2 border-neutral-900 text-neutral-900 bg-white hover:bg-neutral-900 hover:text-white active:bg-neutral-800 transition-colors"
+            className="block w-full py-4 rounded-full text-[17px] font-normal text-center border border-neutral-900 text-neutral-900 bg-white active:scale-[0.98] transition-all duration-200"
           >
             Avisame cuando haya stock
           </a>
@@ -190,7 +190,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
             onClick={handleAdd}
             disabled={!hasStock}
             className={`
-              w-full py-7 text-base font-semibold tracking-widest uppercase border-none transition-colors
+              w-full py-4 rounded-full text-[17px] font-normal border-none active:scale-[0.98] transition-all duration-200
               ${added
                 ? "bg-green-600 text-white cursor-pointer"
                 : hasStock
