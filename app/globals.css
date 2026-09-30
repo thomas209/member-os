@@ -265,3 +265,11 @@ a:hover .product-img {
     animation: none;
   }
 }
+
+/* Precios estilo AllSaints: peso medio (no negrita), tamano contenido, numeros parejos */
+.precio {
+  font-family: var(--font-price), 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}

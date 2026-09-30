@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Instrument_Sans } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import MetaPixel from '@/components/MetaPixel'
 import './globals.css'
@@ -7,6 +7,14 @@ import './globals.css'
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+})
+
+// Tipografia de los precios (estilo AllSaints: grotesca limpia, peso medio)
+const priceFont = Instrument_Sans({
+  subsets: ['latin'],
+  weight: ['500'],
+  variable: '--font-price',
   display: 'swap',
 })
 
@@ -40,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es" className={inter.variable}>
+    <html lang="es" className={`${inter.variable} ${priceFont.variable}`}>
       <body className="bg-white text-[#0A0A0A] font-sans antialiased">
         {children}
         <Analytics />

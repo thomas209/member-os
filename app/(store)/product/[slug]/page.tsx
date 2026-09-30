@@ -201,11 +201,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </p>
           )}
           <div className="flex items-baseline gap-3 mb-8">
-            <p className="text-2xl md:text-3xl font-bold">
+            <p className="precio text-lg md:text-xl">
               ${Number(product.price).toLocaleString("es-AR")}
             </p>
             {product.comparePrice && (
-              <p className="text-base text-neutral-400 line-through">
+              <p className="precio text-lg md:text-xl text-neutral-400 line-through">
                 ${Number(product.comparePrice).toLocaleString("es-AR")}
               </p>
             )}
