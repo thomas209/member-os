@@ -91,7 +91,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
   return (
     <>
       {/* SELECTOR DE TALLES */}
-      <div className="mb-10 md:mb-12">
+      <div className="mb-12 md:mb-16">
         <div className="flex items-center justify-between mb-4">
           <p className="text-[11px] font-semibold tracking-widest uppercase text-neutral-400">
             ¿Qué talle estás buscando?
@@ -145,7 +145,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
       </div>
 
       {/* BOTON — desktop */}
-      <div className="desktop-cta">
+      <div className="desktop-cta pt-2">
         {selectedOutOfStock ? (
           <a
             href={buildStockAlertHref(selectedVariant!)}
