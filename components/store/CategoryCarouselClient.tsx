@@ -17,6 +17,9 @@ type Product = {
 function ProductTile({ product }: { product: Product }) {
   const [hovered, setHovered] = useState(false);
   const [fondoColor, setFondoColor] = useState(false);
+  const [fondoColor2, setFondoColor2] = useState(false);
+  // Si cualquiera de las dos fotos tiene fondo de color, la card queda redondeada siempre
+  const redondo = fondoColor || fondoColor2;
   return (
     <a
       href={"/product/" + product.slug}
@@ -24,7 +27,7 @@ function ProductTile({ product }: { product: Product }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div style={{ aspectRatio: "4/5", backgroundColor: "#F4F4F4", borderRadius: fondoColor ? "18px" : 0, overflow: "hidden", marginBottom: "10px", position: "relative" }}>
+      <div style={{ aspectRatio: "4/5", backgroundColor: "#F4F4F4", borderRadius: redondo ? "18px" : 0, transition: "border-radius 0.3s ease", overflow: "hidden", marginBottom: "10px", position: "relative" }}>
         {product.image ? (
           <>
             <ProductPhoto
@@ -41,6 +44,7 @@ function ProductTile({ product }: { product: Product }) {
                 alt={product.name}
                 sizes="260px"
                 unoptimized
+                onFondoColor={setFondoColor2}
                 style={{ transition: "opacity 0.35s ease", opacity: hovered ? 1 : 0 }}
               />
             )}
