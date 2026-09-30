@@ -91,7 +91,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
   return (
     <>
       {/* SELECTOR DE TALLES */}
-      <div className="mb-8">
+      <div className="mb-10 md:mb-12">
         <div className="flex items-center justify-between mb-4">
           <p className="text-[11px] font-semibold tracking-widest uppercase text-neutral-400">
             ¿Qué talle estás buscando?
@@ -151,7 +151,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
             href={buildStockAlertHref(selectedVariant!)}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full py-4 rounded-full text-[17px] font-normal text-center border border-neutral-900 text-neutral-900 bg-white hover:bg-neutral-900 hover:text-white active:scale-[0.98] transition-all duration-200"
+            className="inline-block min-w-[300px] px-10 py-3.5 rounded-full text-[17px] font-normal text-center border border-neutral-900 text-neutral-900 bg-white hover:bg-neutral-900 hover:text-white active:scale-[0.98] transition-all duration-200"
           >
             Avisame cuando haya stock
           </a>
@@ -160,7 +160,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
             onClick={handleAdd}
             disabled={!hasStock}
             className={`
-              w-full py-4 rounded-full text-[17px] font-normal border-none active:scale-[0.98] transition-all duration-200
+              min-w-[300px] px-10 py-3.5 rounded-full text-[17px] font-normal border-none active:scale-[0.98] transition-all duration-200
               ${added
                 ? "bg-green-600 text-white cursor-pointer"
                 : hasStock
@@ -181,7 +181,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
             href={buildStockAlertHref(selectedVariant!)}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full py-4 rounded-full text-[17px] font-normal text-center border border-neutral-900 text-neutral-900 bg-white active:scale-[0.98] transition-all duration-200"
+            className="block w-full py-3.5 rounded-full text-[17px] font-normal text-center border border-neutral-900 text-neutral-900 bg-white active:scale-[0.98] transition-all duration-200"
           >
             Avisame cuando haya stock
           </a>
@@ -190,7 +190,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
             onClick={handleAdd}
             disabled={!hasStock}
             className={`
-              w-full py-4 rounded-full text-[17px] font-normal border-none active:scale-[0.98] transition-all duration-200
+              w-full py-3.5 rounded-full text-[17px] font-normal border-none active:scale-[0.98] transition-all duration-200
               ${added
                 ? "bg-green-600 text-white cursor-pointer"
                 : hasStock
