@@ -82,7 +82,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
         </div>
         {/* Selector tipo "pastilla" (estilo Apple): todas las opciones dentro de una
             pastilla gris y el talle elegido resaltado con su propia pastilla */}
-        <div className="inline-flex flex-wrap gap-1 p-1 rounded-[26px] bg-neutral-100">
+        <div className="flex w-full md:w-auto md:inline-flex flex-wrap gap-1 p-1.5 rounded-[30px] bg-[#1D1D1F] border border-[#2A2A2A]">
           {variants.map((variant) => {
             const isSelected = selectedVariant?.id === variant.id;
             const outOfStock = variant.stock === 0;
@@ -91,14 +91,14 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
                 key={variant.id}
                 onClick={() => { setSelectedVariant(variant); setError(""); }}
                 className={`
-                  min-w-[56px] px-5 py-3 rounded-full text-sm font-medium border-none transition-all duration-200 cursor-pointer
+                  flex-1 basis-[18%] md:flex-none md:basis-auto md:min-w-[64px] px-4 md:px-5 py-3.5 md:py-3 rounded-full text-[15px] md:text-sm border-none transition-all duration-200 cursor-pointer
                   ${isSelected && outOfStock
-                    ? "bg-white text-neutral-900 line-through shadow-sm"
+                    ? "bg-black text-neutral-500 font-semibold line-through"
                     : isSelected
-                    ? "bg-neutral-900 text-white shadow-sm"
+                    ? "bg-black text-white font-semibold"
                     : outOfStock
-                    ? "bg-transparent text-neutral-300 line-through hover:text-neutral-400"
-                    : "bg-transparent text-neutral-900 hover:bg-white"
+                    ? "bg-transparent text-neutral-600 font-medium line-through hover:text-neutral-500"
+                    : "bg-transparent text-neutral-400 font-medium hover:text-white"
                   }
                 `}
               >
