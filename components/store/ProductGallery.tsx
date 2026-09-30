@@ -38,14 +38,14 @@ export default function ProductGallery({ images, productName }: { images: Image[
     <div className="flex flex-col gap-3">
 
       {/* Imagen principal */}
-      <div className="relative aspect-[4/5] bg-neutral-100 overflow-hidden" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      <div className="relative aspect-[4/5] bg-[#F5F5F7] rounded-[20px] overflow-hidden" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <Image
           src={images[selected].url}
           alt={images[selected].altText || productName}
           fill
           sizes="(max-width: 768px) 100vw, 50vw"
           priority
-          className="object-cover"
+          className="object-cover mix-blend-multiply"
         />
 
         {images.length > 1 && (
@@ -97,7 +97,7 @@ export default function ProductGallery({ images, productName }: { images: Image[
             <button
               key={i}
               onClick={() => setSelected(i)}
-              className={`relative w-16 h-20 border flex-shrink-0 overflow-hidden bg-neutral-100 cursor-pointer transition-all ${
+              className={`relative w-16 h-20 border flex-shrink-0 overflow-hidden rounded-lg bg-[#F5F5F7] cursor-pointer transition-all ${
                 selected === i ? "border-neutral-900" : "border-neutral-200"
               }`}
             >
@@ -106,7 +106,7 @@ export default function ProductGallery({ images, productName }: { images: Image[
                 alt={img.altText || productName}
                 fill
                 sizes="64px"
-                className="object-cover"
+                className="object-cover mix-blend-multiply"
               />
             </button>
           ))}

@@ -9,7 +9,7 @@ export default function ProductCard({ href, image, secondImage, brand, name, pri
   const [hovered, setHovered] = useState(false);
   return (
     <Link href={href} prefetch style={{textDecoration:"none",color:"#0A0A0A",display:"block"}} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <div style={{aspectRatio:"4/5",backgroundColor:"#F4F4F4",marginBottom:"16px",overflow:"hidden",position:"relative"}}>
+      <div style={{aspectRatio:"4/5",backgroundColor:"#F5F5F7",borderRadius:"20px",marginBottom:"16px",overflow:"hidden",position:"relative"}}>
         {!inStock && (
           <div style={{position:"absolute",top:"10px",left:"10px",zIndex:1,backgroundColor:"white",color:"#0A0A0A",fontSize:"10px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",padding:"5px 10px",border:"1px solid #0A0A0A"}}>
             Sin stock
@@ -22,7 +22,7 @@ export default function ProductCard({ href, image, secondImage, brand, name, pri
               alt={name}
               fill
               sizes={CARD_SIZES}
-              style={{objectFit:"cover",transition:"opacity 0.35s ease, transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity:(hovered && secondImage) ? 0 : inStock?1:0.4}}
+              style={{objectFit:"cover",mixBlendMode:"multiply",transition:"opacity 0.35s ease, transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity:(hovered && secondImage) ? 0 : inStock?1:0.4}}
             />
             {secondImage && (
               <Image
@@ -30,7 +30,7 @@ export default function ProductCard({ href, image, secondImage, brand, name, pri
                 alt={name}
                 fill
                 sizes={CARD_SIZES}
-                style={{objectFit:"cover",transition:"opacity 0.35s ease, transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity: hovered ? (inStock?1:0.4) : 0}}
+                style={{objectFit:"cover",mixBlendMode:"multiply",transition:"opacity 0.35s ease, transform 0.4s ease",transform:hovered?"scale(1.05)":"scale(1)",opacity: hovered ? (inStock?1:0.4) : 0}}
               />
             )}
           </>
