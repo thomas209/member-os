@@ -80,7 +80,9 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
           </p>
           <SizeGuideModal type={sizeGuideType} />
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        {/* Selector tipo "pastilla" (estilo Apple): todas las opciones dentro de una
+            pastilla gris y el talle elegido resaltado con su propia pastilla */}
+        <div className="inline-flex flex-wrap gap-1 p-1 rounded-[26px] bg-neutral-100">
           {variants.map((variant) => {
             const isSelected = selectedVariant?.id === variant.id;
             const outOfStock = variant.stock === 0;
@@ -89,14 +91,14 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
                 key={variant.id}
                 onClick={() => { setSelectedVariant(variant); setError(""); }}
                 className={`
-                  py-4 text-sm font-medium border transition-all cursor-pointer
+                  min-w-[56px] px-5 py-3 rounded-full text-sm font-medium border-none transition-all duration-200 cursor-pointer
                   ${isSelected && outOfStock
-                    ? "border-neutral-900 text-neutral-900 line-through"
+                    ? "bg-white text-neutral-900 line-through shadow-sm"
                     : isSelected
-                    ? "border-neutral-900 bg-neutral-900 text-white"
+                    ? "bg-neutral-900 text-white shadow-sm"
                     : outOfStock
-                    ? "border-neutral-200 text-neutral-300 line-through hover:border-neutral-400"
-                    : "border-neutral-300 text-neutral-900 hover:border-neutral-900"
+                    ? "bg-transparent text-neutral-300 line-through hover:text-neutral-400"
+                    : "bg-transparent text-neutral-900 hover:bg-white"
                   }
                 `}
               >
