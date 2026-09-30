@@ -1,11 +1,13 @@
-// Mira los bordes de una foto ya cargada y dice si el fondo es blanco
-// (o transparente). Se usa para decidir como mostrarla en la card:
-//  - fondo blanco  -> producto chico y centrado, "flotando" sobre el gris
-//  - fondo de color -> la foto ocupa toda la card
+// Mira las dos esquinas de arriba de una foto ya cargada y dice si el fondo
+// es blanco. Se usan solo las esquinas de arriba porque el producto casi
+// nunca las tapa (en cambio muchas veces llega hasta los costados o abajo).
+//  - esquinas blancas               -> fondo blanco (card como siempre)
+//  - esquinas grises, de color o
+//    transparentes (se ven grises)  -> fondo de color (card redondeada)
 export function fondoEsBlanco(img: HTMLImageElement): boolean {
   try {
-    const w = 32;
-    const h = 40;
+    const w = 40;
+    const h = 50;
     const canvas = document.createElement("canvas");
     canvas.width = w;
     canvas.height = h;
@@ -13,18 +15,23 @@ export function fondoEsBlanco(img: HTMLImageElement): boolean {
     if (!ctx) return true;
     ctx.drawImage(img, 0, 0, w, h);
     const d = ctx.getImageData(0, 0, w, h).data;
-    let total = 0;
-    let blancos = 0;
-    const mirar = (x: number, y: number) => {
-      const i = (y * w + x) * 4;
-      total++;
-      if (d[i + 3] < 20 || Math.min(d[i], d[i + 1], d[i + 2]) >= 250) blancos++;
+
+    const esquinaBlanca = (derecha: boolean) => {
+      let blancos = 0;
+      for (let dx = 0; dx < 3; dx++) {
+        for (let dy = 0; dy < 3; dy++) {
+          const x = derecha ? w - 1 - dx : dx;
+          const i = (dy * w + x) * 4;
+          const opaco = d[i + 3] >= 20;
+          if (opaco && Math.min(d[i], d[i + 1], d[i + 2]) >= 250) blancos++;
+        }
+      }
+      return blancos >= 5; // mayoria de los 9 pixeles
     };
-    for (let x = 0; x < w; x++) { mirar(x, 0); mirar(x, 1); mirar(x, h - 1); mirar(x, h - 2); }
-    for (let y = 2; y < h - 2; y++) { mirar(0, y); mirar(1, y); mirar(w - 1, y); mirar(w - 2, y); }
-    return blancos / total >= 0.85;
+
+    return esquinaBlanca(false) && esquinaBlanca(true);
   } catch {
-    // Si no se puede leer la imagen, queda como antes (centrado sobre gris)
+    // Si no se puede leer la imagen, queda como antes (sin card redondeada)
     return true;
   }
 }
