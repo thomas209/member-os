@@ -280,7 +280,7 @@ a:hover .product-img {
    de espacio de Tailwind (mb-*, py-*...). Por eso los espacios de esta
    seccion van con clases propias.
 ===================== */
-.pdp-info { padding-bottom: 120px; }
+.pdp-info { padding-bottom: 24px; }
 .pdp-marca { margin-bottom: 10px; }
 .pdp-titulo { margin-bottom: 8px; }
 .pdp-color { margin-bottom: 20px; }
@@ -301,4 +301,13 @@ a:hover .product-img {
   .pdp-talles { margin-bottom: 56px; }
   .pdp-talle { padding: 12px 20px; }
   .pdp-envio { margin-top: 40px; }
+}
+
+/* Celular: el boton fijo de "Agregar al carrito" no tiene que tapar el final
+   de la pagina (productos relacionados, footer). Si la pagina lo tiene,
+   dejamos lugar abajo del mismo alto que la barra. */
+@media (max-width: 767px) {
+  body:has(.mobile-sticky-cta) {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
 }
