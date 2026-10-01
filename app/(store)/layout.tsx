@@ -13,7 +13,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div style={{minHeight: "100vh", display: "flex", flexDirection: "column"}}>
+    <div className="store-root" style={{minHeight: "100vh", display: "flex", flexDirection: "column"}}>
       <PromoMarquee />
       <header className="store-header" style={{position: "sticky", top: 0, zIndex: 50, borderBottom: "1px solid #EDEDED"}}>
 
