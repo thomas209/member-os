@@ -86,7 +86,9 @@ export async function POST(request: Request) {
     }
 
     if (paymentMethod === "TRANSFERENCIA") {
-      discountAmount = calculateTransferDiscount(subtotal);
+      discountAmount = calculateTransferDiscount(
+        orderItems.map((i) => ({ price: i.unitPrice, quantity: i.quantity }))
+      );
     }
 
     const shippingCost = calculateShippingCost(subtotal);
