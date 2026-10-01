@@ -26,9 +26,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         where: { id },
         data: {
           ...productData,
-          price: productData.price ? Number(productData.price) : undefined,
-          comparePrice: productData.comparePrice ? Number(productData.comparePrice) : null,
-          costPrice: productData.costPrice ? Number(productData.costPrice) : null,
+          // Solo se tocan los precios que vienen en el pedido. Antes, si no venian,
+          // comparePrice y costPrice se ponian en null (se borraban).
+          ...("price" in productData && { price: productData.price ? Number(productData.price) : undefined }),
+          ...("comparePrice" in productData && { comparePrice: productData.comparePrice ? Number(productData.comparePrice) : null }),
+          ...("costPrice" in productData && { costPrice: productData.costPrice ? Number(productData.costPrice) : null }),
         },
       });
 
