@@ -347,3 +347,11 @@ a:hover .product-img {
 @media (max-width: 767px) {
   .store-header { border-bottom-color: transparent !important; }
 }
+
+/* Nombres de producto: monoespaciada, mayusculas y letras apenas separadas (estilo etiqueta) */
+.nombre-producto {
+  font-family: var(--font-name), ui-monospace, 'SF Mono', Menlo, monospace;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}

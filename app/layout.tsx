@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter, Instrument_Sans } from 'next/font/google'
+import { Inter, Instrument_Sans, DM_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import MetaPixel from '@/components/MetaPixel'
 import './globals.css'
@@ -15,6 +15,14 @@ const priceFont = Instrument_Sans({
   subsets: ['latin'],
   weight: ['500'],
   variable: '--font-price',
+  display: 'swap',
+})
+
+// Tipografia de los nombres de producto (monoespaciada, en mayusculas, estilo "etiqueta")
+const nameFont = DM_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-name',
   display: 'swap',
 })
 
@@ -48,7 +56,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es" className={`${inter.variable} ${priceFont.variable}`}>
+    <html lang="es" className={`${inter.variable} ${priceFont.variable} ${nameFont.variable}`}>
       <body className="bg-white text-[#0A0A0A] font-sans antialiased">
         {children}
         <Analytics />
