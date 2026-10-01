@@ -55,8 +55,9 @@ export default function PromoMarquee() {
           align-items: center;
           white-space: nowrap;
           padding: 10px 20px;
+          font-family: var(--font-name), ui-monospace, 'SF Mono', Menlo, monospace;
           font-size: 11px;
-          font-weight: 600;
+          font-weight: 500;
           letter-spacing: 0.08em;
           text-transform: uppercase;
           color: #0A0A0A;
