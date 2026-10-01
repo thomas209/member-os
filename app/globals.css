@@ -322,7 +322,30 @@ a:hover .product-img {
 }
 .nav-pill { padding: 4px; }
 .nav-pill-item { padding: 8px 18px; font-size: 13px; letter-spacing: 0.01em; white-space: nowrap; }
-.nav-pill-mobile { padding: 0 12px 10px; }
 @media (max-width: 767px) {
   .nav-pill-item { padding: 10px 8px; font-size: 14px; }
+}
+
+/* Menu de secciones en el celular (MobileNav) */
+.nav-float {
+  position: sticky;
+  top: 57px;
+  z-index: 49;
+  padding: 10px 12px;
+  background-color: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+/* En la home flota sobre el hero negro (no ocupa lugar propio) */
+.nav-float-home { margin-bottom: -69px; }
+/* Pegado a la barra del logo: fondo blanco como el header */
+.nav-float-blanco {
+  background-color: rgba(255, 255, 255, 0.88);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  backdrop-filter: saturate(180%) blur(14px);
+  border-bottom-color: #EDEDED;
+}
+/* En el celular la barra del logo no lleva linea: se une con el menu */
+@media (max-width: 767px) {
+  .store-header { border-bottom-color: transparent !important; }
 }

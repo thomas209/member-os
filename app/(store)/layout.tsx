@@ -5,6 +5,7 @@ import CartDrawer from "@/components/store/CartDrawer";
 import CartButton from "@/components/store/CartButton";
 import PromoMarquee from "@/components/store/PromoMarquee";
 import NavPill from "@/components/store/NavPill";
+import MobileNav from "@/components/store/MobileNav";
 
 const LOGO_URL = "https://res.cloudinary.com/dklvmlzds/image/upload/v1783912898/MEMBER_B_1_3_wyfasx.png";
 
@@ -47,12 +48,10 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
 
-        {/* MOBILE: secciones siempre visibles, estilo selector de talles */}
-        <div className="md:hidden nav-pill-mobile">
-          <NavPill full />
-        </div>
-
       </header>
+
+      {/* MOBILE: menu de secciones (flota sobre el hero y se une a la barra al bajar) */}
+      <MobileNav />
 
       {/* OVERLAY */}
       {menuOpen && (
