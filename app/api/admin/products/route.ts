@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, slug, description, brandId, categoryId, gender, price, comparePrice, costPrice, colorName, colorHex, groupSlug, isFeatured, isEncargo, variants, images } = body;
+    const { name, slug, description, brandId, categoryId, gender, price, comparePrice, costPrice, colorName, colorHex, groupSlug, isFeatured, isEncargo, pickupLocation, variants, images } = body;
 
     if (!name || !price || !brandId || !categoryId) {
       return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 });
@@ -26,6 +26,7 @@ export async function POST(request: Request) {
         groupSlug: groupSlug || null,
         isFeatured: isFeatured || false,
         isEncargo: isEncargo || false,
+        pickupLocation: ["PINAMAR", "CABA", "AMBOS"].includes(pickupLocation) ? pickupLocation : "PINAMAR",
         isActive: true,
         variants: {
           create: variants?.map((v: any, i: number) => ({

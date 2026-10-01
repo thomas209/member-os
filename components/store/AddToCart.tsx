@@ -23,9 +23,25 @@ type Props = {
     isEncargo?: boolean;
   };
   sizeGuideType?: "calzado" | "indumentaria";
+  pickupLocation?: string; // "PINAMAR" | "CABA" | "AMBOS"
 };
 
-export default function AddToCart({ variants, product, sizeGuideType = "indumentaria" }: Props) {
+// Lugares de retiro (pick up)
+const PICKUPS = {
+  PINAMAR: {
+    label: "Retiro en Pinamar",
+    address: "Av. Constitución 270, Pinamar",
+    href: "https://www.google.com/maps/search/?api=1&query=Member%20Club%2C%20Av.%20Constituci%C3%B3n%20270%2C%20Pinamar",
+  },
+  CABA: {
+    label: "Retiro en Capital Federal",
+    address: "Av. Callao 1371, Recoleta",
+    href: "https://www.google.com/maps/search/?api=1&query=Av.%20Callao%201371%2C%20Recoleta%2C%20Buenos%20Aires",
+  },
+};
+
+export default function AddToCart({ variants, product, sizeGuideType = "indumentaria", pickupLocation = "PINAMAR" }: Props) {
+  const retiros = pickupLocation === "AMBOS" ? [PICKUPS.PINAMAR, PICKUPS.CABA] : pickupLocation === "CABA" ? [PICKUPS.CABA] : [PICKUPS.PINAMAR];
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
 
   // Pastilla que se desliza hasta el talle elegido (efecto tipo Apple)
@@ -197,21 +213,25 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
             <path d="M3 6h18" />
             <path d="M16 10a4 4 0 0 1-8 0" />
           </svg>
-          <div>
-            <p className="text-[14px] font-semibold text-neutral-900 leading-snug">
-              Pick up:{" "}
-              <a
-                href="https://www.google.com/maps/search/?api=1&query=Member%20Club%2C%20Av.%20Constituci%C3%B3n%20270%2C%20Pinamar"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-normal text-[#0066CC] no-underline hover:underline underline-offset-2"
-              >
-                Retiro en Pinamar
-              </a>
-            </p>
-            <p className="text-[13px] text-neutral-500 leading-snug" style={{ marginTop: 2 }}>
-              Av. Constitución 270, Pinamar
-            </p>
+          <div className="flex flex-col" style={{ gap: 8 }}>
+            {retiros.map((r, i) => (
+              <div key={r.label}>
+                <p className="text-[14px] font-semibold text-neutral-900 leading-snug">
+                  {i === 0 ? "Pick up: " : ""}
+                  <a
+                    href={r.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-normal text-[#0066CC] no-underline hover:underline underline-offset-2"
+                  >
+                    {r.label}
+                  </a>
+                </p>
+                <p className="text-[13px] text-neutral-500 leading-snug" style={{ marginTop: 2 }}>
+                  {r.address}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
 

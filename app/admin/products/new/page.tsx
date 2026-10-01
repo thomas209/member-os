@@ -21,6 +21,7 @@ export default function NewProductPage() {
     colorName: "", colorHex: "#000000",
     isFeatured: false,
     isEncargo: false,
+    pickupLocation: "PINAMAR",
   });
 
   if (typeof window !== "undefined" && brands.length === 0 && categories.length === 0) {
@@ -170,6 +171,14 @@ export default function NewProductPage() {
             <input type="checkbox" name="isEncargo" checked={form.isEncargo} onChange={handleChange} />
             Es un encargo (aparece en la seccion Encargos)
           </label>
+          <div style={{marginTop:"16px"}}>
+            <label style={labelStyle}>Retiro (pick up)</label>
+            <select name="pickupLocation" value={form.pickupLocation} onChange={handleChange} style={inputStyle}>
+              <option value="PINAMAR">Pinamar</option>
+              <option value="CABA">Capital Federal (Recoleta)</option>
+              <option value="AMBOS">Pinamar y Capital Federal</option>
+            </select>
+          </div>
         </div>
       </div>
 

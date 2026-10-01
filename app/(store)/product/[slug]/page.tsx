@@ -222,6 +222,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               image: product.images[0]?.url ?? null,
               isEncargo: product.isEncargo,
             }}
+            pickupLocation={product.pickupLocation}
             sizeGuideType={sizeGuideType}
           />
 

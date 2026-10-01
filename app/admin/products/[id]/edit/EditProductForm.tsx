@@ -26,6 +26,7 @@ export default function EditProductForm({ product, brands, categories }: any) {
     isFeatured: product.isFeatured || false,
     isEncargo: product.isEncargo || false,
     isActive: product.isActive ?? true,
+    pickupLocation: product.pickupLocation || "PINAMAR",
   });
 
   const handleChange = (e: any) => {
@@ -184,6 +185,14 @@ export default function EditProductForm({ product, brands, categories }: any) {
             <input type="checkbox" name="isEncargo" checked={form.isEncargo} onChange={handleChange} />
             Es un encargo
           </label>
+          <div style={{marginTop:"16px"}}>
+            <label style={labelStyle}>Retiro (pick up)</label>
+            <select name="pickupLocation" value={form.pickupLocation} onChange={handleChange} style={inputStyle}>
+              <option value="PINAMAR">Pinamar</option>
+              <option value="CABA">Capital Federal (Recoleta)</option>
+              <option value="AMBOS">Pinamar y Capital Federal</option>
+            </select>
+          </div>
         </div>
       </div>
 

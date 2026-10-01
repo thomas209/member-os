@@ -103,6 +103,8 @@ model Product {
   isActive    Boolean   @default(true)
   isFeatured  Boolean   @default(false)
   isEncargo   Boolean   @default(false)
+  // Donde se puede retirar: "PINAMAR", "CABA" o "AMBOS"
+  pickupLocation String @default("PINAMAR")
   deletedAt   DateTime?
 
   mlProductId String?   @unique
@@ -198,6 +200,7 @@ model Customer {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   orders      Order[]
+  quoteRequests QuoteRequest[]
 
   // Login por link magico (sin contraseña). Un solo token activo a la vez:
   // se pisa cada vez que se pide uno nuevo y se borra al usarse.
@@ -380,4 +383,37 @@ model CashRegisterSession {
   orders                Order[]
 
   @@index([status])
+}
+
+// ============================================================
+// QUOTE REQUESTS (pedidos de cotizacion)
+// ============================================================
+// La tabla existe en produccion desde el 13/8 (migracion
+// 20260813180000_add_quote_request). El feature que la usaba se revirtio,
+// pero el modelo se mantiene para que schema, migraciones y base coincidan.
+// NO borrar este modelo: generaria una migracion que borra la tabla.
+enum QuoteRequestStatus {
+  PENDING
+  QUOTED
+  REJECTED
+}
+
+model QuoteRequest {
+  id          String             @id @default(cuid())
+  customerId  String?
+  customer    Customer?          @relation(fields: [customerId], references: [id])
+  guestEmail  String?
+  guestPhone  String?
+  description String
+  imageUrl    String?
+  productLink String?
+  size        String?
+  status      QuoteRequestStatus @default(PENDING)
+  quotedPrice Decimal?           @db.Decimal(10, 2)
+  adminNote   String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([status, createdAt])
+  @@index([customerId])
 }
