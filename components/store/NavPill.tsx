@@ -63,12 +63,12 @@ export default function NavPill({ full = false, dark = false }: { full?: boolean
       aria-label="Secciones"
       style={{
         // flotante (celu): gris claro translucido con sombra suave para despegarse del contenido
-        backgroundColor: dark ? "rgba(255,255,255,0.12)" : full ? "rgba(245,245,245,0.86)" : "#F5F5F5",
+        backgroundColor: dark ? "rgba(255,255,255,0.12)" : full ? "rgba(255,255,255,0.42)" : "#F5F5F5",
         boxShadow: dark
           ? "inset 0 0 0 1px rgba(255,255,255,0.18)"
-          : full ? "0 6px 24px rgba(0,0,0,0.10), inset 0 0 0 1px rgba(0,0,0,0.04)" : "none",
-        backdropFilter: dark || full ? "blur(16px) saturate(160%)" : undefined,
-        WebkitBackdropFilter: dark || full ? "blur(16px) saturate(160%)" : undefined,
+          : full ? "0 8px 28px rgba(0,0,0,0.10), inset 0 0 0 1px rgba(255,255,255,0.6), inset 0 0 0 1.5px rgba(0,0,0,0.05)" : "none",
+        backdropFilter: dark ? "blur(16px) saturate(160%)" : full ? "blur(22px) saturate(180%)" : undefined,
+        WebkitBackdropFilter: dark ? "blur(16px) saturate(160%)" : full ? "blur(22px) saturate(180%)" : undefined,
         transition: "background-color 0.45s ease, box-shadow 0.45s ease",
       }}
     >
