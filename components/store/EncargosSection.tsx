@@ -252,7 +252,7 @@ function PokerCard({ product, rotation, background, duplicate = false }: { produ
             </div>
             <div style={{ textAlign: "center", zIndex: 1 }}>
               <p style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)", marginBottom: "12px" }}>Exclusivo</p>
-              <p style={{ fontSize: "32px", fontWeight: "800", color: "white", letterSpacing: "-0.02em", lineHeight: 1 }}>ENCARGO</p>
+              <p className="nombre-producto" style={{ fontSize: "24px", fontWeight: 500, color: "white", letterSpacing: "0.1em", lineHeight: 1 }}>ENCARGO</p>
               <p style={{ fontSize: "36px", color: "rgba(255,255,255,0.05)", margin: "8px 0" }}>♠</p>
               <p style={{ fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.15)" }}>Member Club</p>
             </div>
@@ -336,7 +336,7 @@ function SimpleFlipCard({ product, background }: { product: EncargoProduct; back
           display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
           gap: "10px", padding: "16px",
         }}>
-          <p style={{ fontSize: "20px", fontWeight: "800", color: "white", letterSpacing: "-0.02em" }}>ENCARGO</p>
+          <p className="nombre-producto" style={{ fontSize: "16px", fontWeight: 500, color: "white", letterSpacing: "0.1em" }}>ENCARGO</p>
         </div>
         <div style={{
           position: "absolute", inset: 0,
