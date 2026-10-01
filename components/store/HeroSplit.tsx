@@ -31,7 +31,7 @@ export default function HeroSplit() {
   });
 
   return (
-    <div style={{position: "relative", height: "60svh", backgroundColor: "#0A0A0A", overflow: "hidden"}}>
+    <div data-nav-oscuro style={{position: "relative", height: "60svh", backgroundColor: "#0A0A0A", overflow: "hidden"}}>
 
       <a href="/catalog?gender=HOMBRE" style={btnStyle("left")} onMouseEnter={() => setHoveredSide("left")} onMouseLeave={() => setHoveredSide(null)}>
         <span style={{fontSize: "32px", display: "block", marginBottom: "8px", opacity: 0.6}}>♂</span>

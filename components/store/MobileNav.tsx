@@ -4,8 +4,8 @@ import { usePathname } from "next/navigation";
 import NavPill from "@/components/store/NavPill";
 
 // Menu de secciones en el celular.
-// En la home arranca flotando sobre la parte negra del hero; al bajar, se
-// queda pegado abajo de la barra del logo y pasa a fondo blanco (se "une").
+// En la home flota sobre la parte negra del hero (version oscura) y recien
+// cuando termina el hero pasa a fondo blanco, unido a la barra del logo.
 // En el resto de las paginas va siempre pegado, con fondo blanco.
 const ALTO_HEADER = 57; // barra del logo (56px) + linea
 
@@ -15,10 +15,15 @@ export default function MobileNav() {
   const [pegado, setPegado] = useState(false);
 
   useEffect(() => {
+    // "pegado" = ya no hay fondo negro debajo del menu (termino el hero)
     const revisar = () => {
       const el = ref.current;
       if (!el) return;
-      setPegado(el.getBoundingClientRect().top <= ALTO_HEADER + 0.5);
+      const hero = document.querySelector("[data-nav-oscuro]");
+      if (!hero) { setPegado(el.getBoundingClientRect().top <= ALTO_HEADER + 0.5); return; }
+      const finHero = hero.getBoundingClientRect().bottom;
+      const finMenu = el.getBoundingClientRect().bottom;
+      setPegado(finHero <= finMenu);
     };
     revisar();
     window.addEventListener("scroll", revisar, { passive: true });

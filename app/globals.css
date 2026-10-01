@@ -334,7 +334,7 @@ a:hover .product-img {
   padding: 10px 12px;
   background-color: transparent;
   border-bottom: 1px solid transparent;
-  transition: background-color 0.25s ease, border-color 0.25s ease;
+  transition: background-color 0.45s ease, border-color 0.45s ease, backdrop-filter 0.45s ease;
 }
 /* En la home flota sobre el hero negro (no ocupa lugar propio) */
 .nav-float-home { margin-bottom: -69px; }

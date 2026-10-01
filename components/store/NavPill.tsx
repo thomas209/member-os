@@ -66,7 +66,7 @@ export default function NavPill({ full = false, dark = false }: { full?: boolean
         boxShadow: dark ? "inset 0 0 0 1px rgba(255,255,255,0.18)" : "none",
         backdropFilter: dark ? "blur(16px) saturate(160%)" : undefined,
         WebkitBackdropFilter: dark ? "blur(16px) saturate(160%)" : undefined,
-        transition: "background-color 0.3s ease, box-shadow 0.3s ease",
+        transition: "background-color 0.45s ease, box-shadow 0.45s ease",
       }}
     >
       {listo && rect && (
@@ -79,7 +79,7 @@ export default function NavPill({ full = false, dark = false }: { full?: boolean
             left: rect.left,
             width: rect.width,
             backgroundColor: enArte ? ROJO : dark ? "#FFFFFF" : NEGRO,
-            transition: animar ? `left 0.3s ${EASE}, width 0.3s ${EASE}, background-color 0.3s ease` : "none",
+            transition: animar ? `left 0.3s ${EASE}, width 0.3s ${EASE}, background-color 0.45s ease` : "none",
           }}
         />
       )}
@@ -92,7 +92,7 @@ export default function NavPill({ full = false, dark = false }: { full?: boolean
             ref={(el) => { refs.current[i] = el; }}
             href={it.href}
             onClick={(e) => ir(e, i, it.href)}
-            className={`nav-pill-item relative z-[1] rounded-full text-center no-underline transition-colors duration-300 ${full ? "flex-1" : ""}`}
+            className={`nav-pill-item relative z-[1] rounded-full text-center no-underline transition-colors duration-[450ms] ${full ? "flex-1" : ""}`}
             style={{
               color: on
                 ? (dark && !esArte ? NEGRO : "#FFFFFF")
