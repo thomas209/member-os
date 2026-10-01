@@ -62,10 +62,13 @@ export default function NavPill({ full = false, dark = false }: { full?: boolean
       className={`nav-pill relative ${full ? "flex w-full" : "inline-flex"} rounded-full`}
       aria-label="Secciones"
       style={{
-        backgroundColor: dark ? "rgba(255,255,255,0.12)" : "#F5F5F5",
-        boxShadow: dark ? "inset 0 0 0 1px rgba(255,255,255,0.18)" : "none",
-        backdropFilter: dark ? "blur(16px) saturate(160%)" : undefined,
-        WebkitBackdropFilter: dark ? "blur(16px) saturate(160%)" : undefined,
+        // flotante (celu): gris claro translucido con sombra suave para despegarse del contenido
+        backgroundColor: dark ? "rgba(255,255,255,0.12)" : full ? "rgba(245,245,245,0.86)" : "#F5F5F5",
+        boxShadow: dark
+          ? "inset 0 0 0 1px rgba(255,255,255,0.18)"
+          : full ? "0 6px 24px rgba(0,0,0,0.10), inset 0 0 0 1px rgba(0,0,0,0.04)" : "none",
+        backdropFilter: dark || full ? "blur(16px) saturate(160%)" : undefined,
+        WebkitBackdropFilter: dark || full ? "blur(16px) saturate(160%)" : undefined,
         transition: "background-color 0.45s ease, box-shadow 0.45s ease",
       }}
     >
