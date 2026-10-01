@@ -2,8 +2,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 // Menu principal con el mismo diseno que el selector de talles.
-// La pastilla arranca en Arte (roja) y se desliza a la seccion elegida,
-// volviendose negra. Si vuelve a Arte, se pone roja de nuevo.
+// Al tocar una seccion, la pastilla se desliza hasta ahi (negra; roja en Arte).
+// Al cargar la pagina aparece quieta en la seccion actual.
 const ITEMS = [
   { label: "Catálogo", href: "/catalog", match: (p: string, q: URLSearchParams) => p === "/catalog" && !q.get("gender") && q.get("category") !== "arte" },
   { label: "Hombre", href: "/catalog?gender=HOMBRE", match: (p: string, q: URLSearchParams) => p === "/catalog" && q.get("gender") === "HOMBRE" },
@@ -19,6 +19,7 @@ export default function NavPill({ full = false }: { full?: boolean }) {
   // Donde esta la pastilla: arranca en Arte
   const [pos, setPos] = useState<number>(ARTE);
   const [animar, setAnimar] = useState(false);
+  const [listo, setListo] = useState(false); // no se muestra hasta saber la seccion
   const refs = useRef<(HTMLAnchorElement | null)[]>([]);
   const [rect, setRect] = useState<{ left: number; width: number } | null>(null);
 
@@ -32,15 +33,16 @@ export default function NavPill({ full = false }: { full?: boolean }) {
     return () => window.removeEventListener("resize", medir);
   }); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Al cargar: si estas en otra seccion, la pastilla viaja desde Arte hasta ahi
+  // Al cargar: la pastilla aparece directo en la seccion actual, sin animacion.
+  // (En paginas sin seccion, como la home, queda en Arte.)
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     const i = ITEMS.findIndex((it) => it.match(window.location.pathname, q));
-    if (i >= 0 && i !== ARTE) {
-      const t = setTimeout(() => { setAnimar(true); setPos(i); }, 120);
-      return () => clearTimeout(t);
-    }
-    requestAnimationFrame(() => setAnimar(true));
+    if (i >= 0) setPos(i);
+    setListo(true);
+    // La animacion se activa recien despues de ubicarla (solo para los toques)
+    const t = setTimeout(() => setAnimar(true), 50);
+    return () => clearTimeout(t);
   }, []);
 
   // Al tocar: la pastilla se desliza y despues cambia de pagina
@@ -56,7 +58,7 @@ export default function NavPill({ full = false }: { full?: boolean }) {
 
   return (
     <nav className={`nav-pill relative ${full ? "flex w-full" : "inline-flex"} rounded-full bg-neutral-100`} aria-label="Secciones">
-      {rect && (
+      {listo && rect && (
         <span
           aria-hidden
           className="absolute rounded-full shadow-sm pointer-events-none"
@@ -71,7 +73,7 @@ export default function NavPill({ full = false }: { full?: boolean }) {
         />
       )}
       {ITEMS.map((it, i) => {
-        const on = pos === i;
+        const on = listo && pos === i;
         const esArte = i === ARTE;
         return (
           <a
