@@ -15,7 +15,8 @@ const ROJO = "#DC2626";
 const NEGRO = "#0A0A0A";
 const EASE = "cubic-bezier(0.32,0.72,0,1)";
 
-export default function NavPill({ full = false }: { full?: boolean }) {
+// dark: version para usar sobre fondo negro (vidrio oscuro translucido)
+export default function NavPill({ full = false, dark = false }: { full?: boolean; dark?: boolean }) {
   // Donde esta la pastilla: arranca en Arte
   const [pos, setPos] = useState<number>(ARTE);
   const [animar, setAnimar] = useState(false);
@@ -57,7 +58,17 @@ export default function NavPill({ full = false }: { full?: boolean }) {
   const enArte = pos === ARTE;
 
   return (
-    <nav className={`nav-pill relative ${full ? "flex w-full" : "inline-flex"} rounded-full bg-neutral-100`} aria-label="Secciones">
+    <nav
+      className={`nav-pill relative ${full ? "flex w-full" : "inline-flex"} rounded-full`}
+      aria-label="Secciones"
+      style={{
+        backgroundColor: dark ? "rgba(255,255,255,0.12)" : "#F5F5F5",
+        boxShadow: dark ? "inset 0 0 0 1px rgba(255,255,255,0.18)" : "none",
+        backdropFilter: dark ? "blur(16px) saturate(160%)" : undefined,
+        WebkitBackdropFilter: dark ? "blur(16px) saturate(160%)" : undefined,
+        transition: "background-color 0.3s ease, box-shadow 0.3s ease",
+      }}
+    >
       {listo && rect && (
         <span
           aria-hidden
@@ -67,7 +78,7 @@ export default function NavPill({ full = false }: { full?: boolean }) {
             bottom: 4,
             left: rect.left,
             width: rect.width,
-            backgroundColor: enArte ? ROJO : NEGRO,
+            backgroundColor: enArte ? ROJO : dark ? "#FFFFFF" : NEGRO,
             transition: animar ? `left 0.3s ${EASE}, width 0.3s ${EASE}, background-color 0.3s ease` : "none",
           }}
         />
@@ -83,7 +94,9 @@ export default function NavPill({ full = false }: { full?: boolean }) {
             onClick={(e) => ir(e, i, it.href)}
             className={`nav-pill-item relative z-[1] rounded-full text-center no-underline transition-colors duration-300 ${full ? "flex-1" : ""}`}
             style={{
-              color: on ? "#FFFFFF" : esArte ? ROJO : "#404040",
+              color: on
+                ? (dark && !esArte ? NEGRO : "#FFFFFF")
+                : esArte ? (dark ? "#FF5A5A" : ROJO) : dark ? "rgba(255,255,255,0.85)" : "#404040",
               fontWeight: on || esArte ? 600 : 500,
             }}
           >

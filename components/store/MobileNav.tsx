@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import NavPill from "@/components/store/NavPill";
 
 // Menu de secciones en el celular.
@@ -10,11 +11,10 @@ const ALTO_HEADER = 57; // barra del logo (56px) + linea
 
 export default function MobileNav() {
   const ref = useRef<HTMLDivElement>(null);
-  const [esHome, setEsHome] = useState(false);
+  const esHome = usePathname() === "/";
   const [pegado, setPegado] = useState(false);
 
   useEffect(() => {
-    setEsHome(window.location.pathname === "/");
     const revisar = () => {
       const el = ref.current;
       if (!el) return;
@@ -36,7 +36,7 @@ export default function MobileNav() {
       ref={ref}
       className={`md:hidden nav-float ${esHome ? "nav-float-home" : ""} ${blanco ? "nav-float-blanco" : ""}`}
     >
-      <NavPill full />
+      <NavPill full dark={!blanco} />
     </div>
   );
 }
