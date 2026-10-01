@@ -4,6 +4,7 @@ import Image from "next/image";
 import CartDrawer from "@/components/store/CartDrawer";
 import CartButton from "@/components/store/CartButton";
 import PromoMarquee from "@/components/store/PromoMarquee";
+import NavPill from "@/components/store/NavPill";
 
 const LOGO_URL = "https://res.cloudinary.com/dklvmlzds/image/upload/v1783912898/MEMBER_B_1_3_wyfasx.png";
 
@@ -13,19 +14,14 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
   return (
     <div style={{minHeight: "100vh", display: "flex", flexDirection: "column"}}>
       <PromoMarquee />
-      <header style={{position: "sticky", top: 0, zIndex: 50, backgroundColor: "white", borderBottom: "1px solid #E8E8E8"}}>
+      <header className="store-header" style={{position: "sticky", top: 0, zIndex: 50, borderBottom: "1px solid #EDEDED"}}>
 
         {/* DESKTOP */}
         <div className="hidden md:flex" style={{maxWidth: "1440px", margin: "0 auto", padding: "0 48px", height: "56px", alignItems: "center", justifyContent: "space-between"}}>
           <a href="/" className="hover-fade" style={{display: "flex", alignItems: "center"}}>
             <Image src={LOGO_URL} alt="Member Club" width={140} height={32} style={{height: "24px", width: "auto", objectFit: "contain"}} priority />
           </a>
-          <nav style={{display: "flex", gap: "32px"}}>
-            <a href="/catalog" className="hover-fade" style={{fontSize: "13px", color: "#737373", textDecoration: "none", letterSpacing: "0.04em"}}>Catálogo</a>
-            <a href="/catalog?gender=HOMBRE" className="hover-fade" style={{fontSize: "13px", color: "#737373", textDecoration: "none", letterSpacing: "0.04em"}}>Hombre</a>
-            <a href="/catalog?gender=MUJER" className="hover-fade" style={{fontSize: "13px", color: "#737373", textDecoration: "none", letterSpacing: "0.04em"}}>Mujer</a>
-            <a href="/catalog?category=arte" className="hover-fade" style={{fontSize: "12px", color: "white", backgroundColor: "#DC2626", textDecoration: "none", letterSpacing: "0.04em", padding: "4px 14px", borderRadius: "999px", fontWeight: "600"}}>Arte</a>
-          </nav>
+          <NavPill />
           <div style={{display: "flex", alignItems: "center", gap: "24px"}}>
             <a href="/cuenta" aria-label="Mi cuenta" className="hover-fade" style={{display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#737373", textDecoration: "none", letterSpacing: "0.04em"}}>
               <Image src="https://res.cloudinary.com/dklvmlzds/image/upload/v1783879145/people-icon-4777671-512_unddlt.png" alt="" width={18} height={18} style={{ objectFit: "contain" }} />
@@ -49,6 +45,11 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
               </svg>
             </button>
           </div>
+        </div>
+
+        {/* MOBILE: secciones siempre visibles, estilo selector de talles */}
+        <div className="md:hidden nav-pill-mobile">
+          <NavPill full />
         </div>
 
       </header>
