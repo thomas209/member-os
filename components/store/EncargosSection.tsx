@@ -279,7 +279,7 @@ function PokerCard({ product, rotation, background, duplicate = false }: { produ
               transition: "transform 0.5s ease 0.4s, opacity 0.5s ease 0.4s",
             }}>
               <p style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.8)", marginBottom: "4px" }}>{product.brand.name}</p>
-              <p style={{ fontSize: "16px", fontWeight: "700", marginBottom: "4px", letterSpacing: "-0.01em", color: "white" }}>{product.name}</p>
+              <p className="nombre-producto" style={{ fontSize: "14px", marginBottom: "4px", lineHeight: 1.3, color: "white" }}>{product.name}</p>
               <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)" }}>Por encargo · 14 días · ${Number(product.price).toLocaleString("es-AR")}</p>
             </div>
             <a
@@ -357,7 +357,7 @@ function SimpleFlipCard({ product, background }: { product: EncargoProduct; back
             background: "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 70%, transparent 100%)",
           }}>
             <p style={{ fontSize: "9px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.75)", marginBottom: "3px" }}>{product.brand.name}</p>
-            <p style={{ fontSize: "13px", fontWeight: "700", marginBottom: "3px", lineHeight: 1.2, color: "white" }}>{product.name}</p>
+            <p className="nombre-producto" style={{ fontSize: "12px", marginBottom: "3px", lineHeight: 1.3, color: "white" }}>{product.name}</p>
             <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.8)" }}>Por encargo</p>
           </div>
           {flipped && (
