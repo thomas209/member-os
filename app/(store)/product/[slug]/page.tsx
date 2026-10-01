@@ -188,19 +188,19 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         <ProductGallery images={product.images} productName={product.name} />
 
-        <div className="pt-0 md:pt-6 pb-24 md:pb-0">
-          <p className="text-[11px] tracking-widest uppercase text-neutral-400 mb-3">
+        <div className="pdp-info">
+          <p className="text-[11px] tracking-widest uppercase text-neutral-400 pdp-marca">
             {product.brand.name}
           </p>
-          <h1 className="text-2xl md:text-4xl font-bold tracking-tight mb-2">
+          <h1 className="text-2xl md:text-4xl font-bold tracking-tight pdp-titulo">
             {product.name}
           </h1>
           {product.colorName && (
-            <p className="text-sm text-neutral-400 mb-6">
+            <p className="text-sm text-neutral-400 pdp-color">
               Color: {product.colorName}
             </p>
           )}
-          <div className="flex items-baseline gap-3 mb-8">
+          <div className="flex items-baseline gap-3 pdp-precio">
             <p className="precio text-lg md:text-xl">
               ${Number(product.price).toLocaleString("es-AR")}
             </p>

@@ -273,3 +273,32 @@ a:hover .product-img {
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
+
+/* =====================
+   PAGINA DE PRODUCTO — espacios
+   Ojo: la regla "* { margin:0; padding:0 }" de arriba le gana a las clases
+   de espacio de Tailwind (mb-*, py-*...). Por eso los espacios de esta
+   seccion van con clases propias.
+===================== */
+.pdp-info { padding-bottom: 120px; }
+.pdp-marca { margin-bottom: 10px; }
+.pdp-titulo { margin-bottom: 8px; }
+.pdp-color { margin-bottom: 20px; }
+.pdp-precio { margin-bottom: 40px; }
+.pdp-talles { margin-bottom: 40px; }
+.pdp-talles-head { margin-bottom: 16px; }
+.pdp-talles-pill { padding: 6px; }
+.pdp-talle { padding: 14px 16px; }
+.pdp-cta { padding: 15px 40px; }
+.pdp-envio { margin-top: 32px; padding-top: 28px; border-top: 1px solid #F0F0F0; }
+.pdp-cta-bar { padding: 12px 16px max(12px, env(safe-area-inset-bottom)); }
+.pdp-cta-mobile { padding-top: 15px; padding-bottom: 15px; }
+
+@media (min-width: 768px) {
+  .pdp-info { padding-top: 24px; padding-bottom: 0; }
+  .pdp-titulo { margin-bottom: 10px; }
+  .pdp-precio { margin-bottom: 48px; }
+  .pdp-talles { margin-bottom: 56px; }
+  .pdp-talle { padding: 12px 20px; }
+  .pdp-envio { margin-top: 40px; }
+}

@@ -91,8 +91,8 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
   return (
     <>
       {/* SELECTOR DE TALLES */}
-      <div className="mb-12 md:mb-16">
-        <div className="flex items-center justify-between mb-4">
+      <div className="pdp-talles">
+        <div className="flex items-center justify-between pdp-talles-head">
           <p className="text-[11px] font-semibold tracking-widest uppercase text-neutral-400">
             ¿Qué talle estás buscando?
           </p>
@@ -100,7 +100,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
         </div>
         {/* Selector tipo "pastilla" (estilo Apple): todas las opciones dentro de una
             pastilla gris y el talle elegido resaltado con su propia pastilla */}
-        <div className="relative flex w-full md:w-auto md:inline-flex flex-wrap gap-1 p-1.5 rounded-[30px] bg-neutral-100">
+        <div className="relative flex w-full md:w-auto md:inline-flex flex-wrap gap-1 pdp-talles-pill rounded-[30px] bg-neutral-100">
           {pill && (
             <span
               aria-hidden
@@ -123,7 +123,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
                 ref={(el) => { sizeRefs.current[variant.id] = el; }}
                 onClick={() => { setSelectedVariant(variant); setError(""); }}
                 className={`
-                  flex-1 basis-[18%] md:flex-none md:basis-auto md:min-w-[64px] px-4 md:px-5 py-3.5 md:py-3 relative z-[1] rounded-full text-[15px] md:text-sm border-none bg-transparent transition-colors duration-300 cursor-pointer
+                  flex-1 basis-[18%] md:flex-none md:basis-auto md:min-w-[64px] pdp-talle relative z-[1] rounded-full text-[15px] md:text-sm border-none bg-transparent transition-colors duration-300 cursor-pointer
                   ${isSelected && outOfStock
                     ? "text-neutral-400 font-semibold line-through"
                     : isSelected
@@ -140,18 +140,18 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
           })}
         </div>
         {error && (
-          <p className="text-xs text-red-500 mt-3">{error}</p>
+          <p className="text-xs text-red-500" style={{ marginTop: 12 }}>{error}</p>
         )}
       </div>
 
       {/* BOTON — desktop */}
-      <div className="desktop-cta pt-2">
+      <div className="desktop-cta">
         {selectedOutOfStock ? (
           <a
             href={buildStockAlertHref(selectedVariant!)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block min-w-[300px] px-10 py-3.5 rounded-full text-[17px] font-normal text-center border border-neutral-900 text-neutral-900 bg-white hover:bg-neutral-900 hover:text-white active:scale-[0.98] transition-all duration-200"
+            className="inline-block min-w-[300px] pdp-cta rounded-full text-[17px] font-normal text-center border border-neutral-900 text-neutral-900 bg-white hover:bg-neutral-900 hover:text-white active:scale-[0.98] transition-all duration-200"
           >
             Avisame cuando haya stock
           </a>
@@ -160,7 +160,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
             onClick={handleAdd}
             disabled={!hasStock}
             className={`
-              min-w-[300px] px-10 py-3.5 rounded-full text-[17px] font-normal border-none active:scale-[0.98] transition-all duration-200
+              min-w-[300px] pdp-cta rounded-full text-[17px] font-normal border-none active:scale-[0.98] transition-all duration-200
               ${added
                 ? "bg-green-600 text-white cursor-pointer"
                 : hasStock
@@ -175,7 +175,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
       </div>
 
       {/* ENVIO — estilo Apple: icono de lineas finas + texto */}
-      <div className="flex items-start gap-3 mt-8 md:mt-10">
+      <div className="flex items-start gap-3 pdp-envio">
         {/* Icono "truck" de Lucide (licencia libre ISC), trazo fino estilo Apple */}
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="shrink-0 mt-[1px]">
           <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
@@ -186,18 +186,18 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
         </svg>
         <div>
           <p className="text-[14px] font-semibold text-neutral-900 leading-snug">Envío a todo el país</p>
-          <p className="text-[13px] text-neutral-500 leading-snug mt-0.5">Te lo mandamos a tu casa, estés donde estés.</p>
+          <p className="text-[13px] text-neutral-500 leading-snug" style={{ marginTop: 2 }}>Te lo mandamos a tu casa, estés donde estés.</p>
         </div>
       </div>
 
       {/* BOTON STICKY — mobile */}
-      <div className="mobile-sticky-cta fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-neutral-100 z-40 px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]">
+      <div className="mobile-sticky-cta fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-neutral-100 z-40 pdp-cta-bar">
         {selectedOutOfStock ? (
           <a
             href={buildStockAlertHref(selectedVariant!)}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full py-3.5 rounded-full text-[17px] font-normal text-center border border-neutral-900 text-neutral-900 bg-white active:scale-[0.98] transition-all duration-200"
+            className="block w-full pdp-cta-mobile rounded-full text-[17px] font-normal text-center border border-neutral-900 text-neutral-900 bg-white active:scale-[0.98] transition-all duration-200"
           >
             Avisame cuando haya stock
           </a>
@@ -206,7 +206,7 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
             onClick={handleAdd}
             disabled={!hasStock}
             className={`
-              w-full py-3.5 rounded-full text-[17px] font-normal border-none active:scale-[0.98] transition-all duration-200
+              w-full pdp-cta-mobile rounded-full text-[17px] font-normal border-none active:scale-[0.98] transition-all duration-200
               ${added
                 ? "bg-green-600 text-white cursor-pointer"
                 : hasStock
