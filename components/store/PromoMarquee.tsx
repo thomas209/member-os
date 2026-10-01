@@ -1,4 +1,4 @@
-import { TRANSFER_DISCOUNT_PERCENT } from "@/lib/bankDetails";
+import { TRANSFER_DISCOUNT_PERCENT, TRANSFER_DISCOUNT_MIN_PRICE } from "@/lib/bankDetails";
 
 // Icono de camion de reparto (linea, mismo lenguaje visual que los demas
 // iconos del sitio) para el mensaje de envio gratis.
@@ -16,7 +16,7 @@ function TruckIcon() {
 
 const MESSAGES: { text: string; icon?: React.ReactNode }[] = [
   { text: "ENVÍOS GRATIS superando los $180.000", icon: <TruckIcon /> },
-  { text: `${TRANSFER_DISCOUNT_PERCENT}% OFF pagando por TRANSFERENCIA` },
+  { text: `${TRANSFER_DISCOUNT_PERCENT}% OFF pagando por TRANSFERENCIA en productos de más de $${TRANSFER_DISCOUNT_MIN_PRICE.toLocaleString("es-AR")}` },
   { text: "PAGÁ HASTA EN 3 CUOTAS SIN INTERÉS con Visa, Mastercard y Amex" },
 ];
 

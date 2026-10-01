@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useCartStore } from "@/store/cart";
 import { calculateShippingCost, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
-import { calculateTransferDiscount, TRANSFER_DISCOUNT_PERCENT } from "@/lib/bankDetails";
+import { calculateTransferDiscount, TRANSFER_DISCOUNT_PERCENT, TRANSFER_DISCOUNT_MIN_PRICE } from "@/lib/bankDetails";
 import { PROVINCES } from "@/lib/argentina";
 import Autocomplete from "@/components/store/Autocomplete";
 
@@ -113,7 +113,7 @@ export default function CheckoutPage() {
 
   const shippingCost = calculateShippingCost(totalPrice());
   const missingForFreeShipping = FREE_SHIPPING_THRESHOLD - totalPrice();
-  const transferDiscount = calculateTransferDiscount(totalPrice());
+  const transferDiscount = calculateTransferDiscount(items.map((i) => ({ price: i.price, quantity: i.quantity })));
   const appliedDiscount = paymentMethod === "TRANSFERENCIA" ? transferDiscount : (couponStatus === "valid" ? couponDiscount : 0);
   const finalTotal = totalPrice() - appliedDiscount + shippingCost;
 
@@ -254,7 +254,15 @@ export default function CheckoutPage() {
             }}
           >
             <p style={{fontSize:"13px",fontWeight:"600",marginBottom:"4px"}}>Transferencia bancaria</p>
-            <p style={{fontSize:"11px",color:"#16A34A",fontWeight:"600"}}>{TRANSFER_DISCOUNT_PERCENT}% de descuento</p>
+            {transferDiscount > 0 ? (
+              <p style={{fontSize:"11px",color:"#16A34A",fontWeight:"600"}}>
+                {TRANSFER_DISCOUNT_PERCENT}% OFF en productos de más de ${TRANSFER_DISCOUNT_MIN_PRICE.toLocaleString("es-AR")} (−${Math.round(transferDiscount).toLocaleString("es-AR")})
+              </p>
+            ) : (
+              <p style={{fontSize:"11px",color:"#737373"}}>
+                El {TRANSFER_DISCOUNT_PERCENT}% OFF aplica a productos de más de ${TRANSFER_DISCOUNT_MIN_PRICE.toLocaleString("es-AR")}
+              </p>
+            )}
           </div>
         </div>
         {items.some((i) => i.isEncargo) && (
