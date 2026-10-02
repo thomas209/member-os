@@ -45,7 +45,7 @@ export default function ProductCard({ href, image, secondImage, brand, name, pri
         )}
       </div>
       <p style={{fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#737373",marginBottom:"6px"}}>{brand}</p>
-      <p style={{fontSize:"15px",fontWeight:"500",marginBottom:"8px",color:inStock?"#0A0A0A":"#A3A3A3"}}>{name}</p>
+      <p className="nombre-producto" style={{fontSize:"13px",lineHeight:1.35,marginBottom:"8px",color:inStock?"#0A0A0A":"#A3A3A3"}}>{name}</p>
       <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:isEncargo?"4px":"32px"}}>
         <p className="precio" style={{fontSize:"14px",color:inStock?"#0A0A0A":"#A3A3A3"}}>${Number(price).toLocaleString("es-AR")}</p>
         {comparePrice && <p className="precio" style={{fontSize:"14px",color:"#A3A3A3",textDecoration:"line-through"}}>${Number(comparePrice).toLocaleString("es-AR")}</p>}

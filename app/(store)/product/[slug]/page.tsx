@@ -192,7 +192,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <p className="text-[11px] tracking-widest uppercase text-neutral-400 pdp-marca">
             {product.brand.name}
           </p>
-          <h1 className="text-2xl md:text-4xl font-bold tracking-tight pdp-titulo">
+          <h1 className="nombre-producto text-xl md:text-[26px] leading-snug pdp-titulo">
             {product.name}
           </h1>
           {product.colorName && (

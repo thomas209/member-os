@@ -347,3 +347,45 @@ a:hover .product-img {
 @media (max-width: 767px) {
   .store-header { border-bottom-color: transparent !important; }
 }
+
+/* Nombres de producto: monoespaciada, mayusculas y letras apenas separadas (estilo etiqueta) */
+.nombre-producto {
+  font-family: var(--font-name), ui-monospace, 'SF Mono', Menlo, monospace;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* =====================
+   SISTEMA TIPOGRAFICO DE LA TIENDA
+   - Rotulos cortos en MAYUSCULAS (marcas, titulos de seccion, etiquetas, botones
+     en mayusculas...) -> monoespaciada ("voz de etiqueta").
+   - Textos para leer (descripciones, formularios, menu) -> Inter, como siempre.
+   - Precios -> .precio (no se tocan).
+   La regla agarra cualquier elemento de la tienda que este en mayusculas, sea por
+   estilo en linea o por la clase "uppercase". No afecta al admin.
+===================== */
+.store-root [style*="text-transform: uppercase"],
+.store-root [style*="text-transform:uppercase"],
+.store-root .uppercase {
+  font-family: var(--font-name), ui-monospace, 'SF Mono', Menlo, monospace;
+}
+/* DM Mono llega hasta peso 500: evitamos la negrita "falsa" en los rotulos */
+.store-root [style*="text-transform: uppercase"][style*="font-weight: 6"],
+.store-root [style*="text-transform: uppercase"][style*="font-weight: 7"],
+.store-root [style*="text-transform: uppercase"][style*="font-weight: 8"],
+.store-root [style*="text-transform: uppercase"][style*="font-weight:6"],
+.store-root [style*="text-transform: uppercase"][style*="font-weight:7"],
+.store-root [style*="text-transform: uppercase"][style*="font-weight:8"],
+.store-root [style*="text-transform:uppercase"][style*="font-weight: 6"],
+.store-root [style*="text-transform:uppercase"][style*="font-weight: 7"],
+.store-root [style*="text-transform:uppercase"][style*="font-weight: 8"],
+.store-root [style*="text-transform:uppercase"][style*="font-weight:6"],
+.store-root [style*="text-transform:uppercase"][style*="font-weight:7"],
+.store-root [style*="text-transform:uppercase"][style*="font-weight:8"],
+.store-root .uppercase.font-semibold,
+.store-root .uppercase.font-bold {
+  font-weight: 500 !important;
+}
+/* Los precios nunca cambian de letra, aunque esten dentro de un rotulo */
+.store-root .precio { font-family: var(--font-price), 'Helvetica Neue', Arial, sans-serif; }

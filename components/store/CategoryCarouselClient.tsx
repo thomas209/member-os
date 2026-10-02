@@ -56,7 +56,7 @@ function ProductTile({ product }: { product: Product }) {
         )}
       </div>
       <p style={{ fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", color: "#737373", marginBottom: "3px" }}>{product.brand}</p>
-      <p style={{ fontSize: "12px", fontWeight: "500", marginBottom: "3px", lineHeight: 1.2 }}>{product.name}</p>
+      <p className="nombre-producto" style={{ fontSize: "11.5px", marginBottom: "4px", lineHeight: 1.3 }}>{product.name}</p>
       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
         <p className="precio" style={{ fontSize: "13px" }}>${product.price.toLocaleString("es-AR")}</p>
         {product.comparePrice && (
