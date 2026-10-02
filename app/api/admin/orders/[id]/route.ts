@@ -92,6 +92,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
               })),
             total: Number(order.total),
             partial: !allShipped,
+            trackingPageUrl: (process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com") + "/seguimiento/" + order.id,
           });
           emailSent = true;
         } catch (emailError) {

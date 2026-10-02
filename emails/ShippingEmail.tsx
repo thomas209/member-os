@@ -20,6 +20,9 @@ type ShippingEmailProps = {
   items: OrderItem[];
   total: number;
   partial?: boolean;
+  // Link a la pagina de seguimiento propia (memberclubargentina.com/seguimiento/...).
+  // Si no viene, el boton va directo a Andreani como antes.
+  trackingPageUrl?: string;
 };
 
 export default function ShippingEmail({
@@ -29,8 +32,10 @@ export default function ShippingEmail({
   items,
   total,
   partial,
+  trackingPageUrl,
 }: ShippingEmailProps) {
-  const trackingUrl = "https://www.andreani.com/#!/informacionEnvio/" + trackingNumber;
+  const andreaniUrl = "https://www.andreani.com/#!/informacionEnvio/" + trackingNumber;
+  const trackingUrl = trackingPageUrl || andreaniUrl;
 
   return (
     <Html>
@@ -78,8 +83,13 @@ export default function ShippingEmail({
                 href={trackingUrl}
                 style={{backgroundColor:"#0A0A0A",color:"white",padding:"14px 32px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",textDecoration:"none",display:"inline-block"}}
               >
-                Trackear mi pedido
+                Seguir mi pedido
               </Button>
+              {trackingPageUrl && (
+                <Text style={{fontSize:"12px",color:"#737373",margin:"16px 0 0 0"}}>
+                  o seguilo directo en <Link href={andreaniUrl} style={{color:"#0A0A0A",textDecoration:"underline"}}>Andreani</Link>
+                </Text>
+              )}
             </Section>
 
             {/* Productos */}

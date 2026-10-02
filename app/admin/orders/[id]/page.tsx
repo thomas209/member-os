@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import OrderActions from "./OrderActions";
 import ShareReceipt from "./ShareReceipt";
+import ShareTracking from "./ShareTracking";
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: "Pendiente",
@@ -162,6 +163,16 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             guestFirstName={order.guestFirstName}
             guestPhone={order.guestPhone}
             guestEmail={order.guestEmail}
+          />
+
+          {/* Seguimiento: link a la pagina publica + aviso por WhatsApp */}
+          <ShareTracking
+            trackingUrl={(process.env.NEXT_PUBLIC_URL || "http://localhost:3000") + "/seguimiento/" + order.id}
+            orderNumber={order.orderNumber}
+            status={order.status}
+            guestFirstName={order.guestFirstName}
+            guestPhone={order.guestPhone}
+            trackingNumbers={[...new Set(order.items.map((i) => i.trackingNumber).filter((t): t is string => !!t))]}
           />
 
           {/* Direccion */}
