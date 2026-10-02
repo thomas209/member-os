@@ -42,6 +42,32 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 const PASOS = ["Confirmado", "Preparando", "Despachado", "Entregado"];
 
+// Icono animado del estado actual (trazo fino, mismo estilo que los de la pagina de producto)
+function IconoEstado({ status }: { status: string }) {
+  const p = { width: 30, height: 30, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.5, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  if (status === "DELIVERED" || status === "PAID")
+    return (<svg {...p}><circle cx="12" cy="12" r="9" className="sg-draw" pathLength={1} /><polyline points="8 12.5 11 15.5 16.5 9.5" className="sg-draw sg-draw-2" pathLength={1} /></svg>);
+  if (status === "SHIPPED")
+    return (
+      <svg {...p} className="sg-truck">
+        <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" /><path d="M15 18H9" />
+        <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
+        <circle cx="17" cy="18" r="2" /><circle cx="7" cy="18" r="2" />
+      </svg>
+    );
+  if (status === "PROCESSING")
+    return (
+      <svg {...p}>
+        <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+        <path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" className="sg-blink" />
+      </svg>
+    );
+  if (status === "CANCELLED" || status === "REFUNDED")
+    return (<svg {...p}><circle cx="12" cy="12" r="9" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>);
+  // PENDING: reloj con la aguja girando
+  return (<svg {...p}><circle cx="12" cy="12" r="9" /><path d="M12 7v5" /><path d="M12 12l3.5 2" className="sg-hand" /></svg>);
+}
+
 export default async function SeguimientoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const order = await getOrder(id);
@@ -95,6 +121,12 @@ export default async function SeguimientoPage({ params }: { params: Promise<{ id
     null,
   ];
 
+  const chip =
+    order.status === "DELIVERED" ? "Completado" :
+    cancelado ? "Finalizado" :
+    order.status === "PENDING" ? "Pendiente" : "En curso";
+  const vivo = !cancelado && order.status !== "DELIVERED";
+
   const wa = buildWhatsappLink(
     STORE_WHATSAPP_NUMBER,
     `Hola! Tengo una consulta sobre mi pedido ${nro(order.orderNumber)}.`
@@ -119,22 +151,30 @@ export default async function SeguimientoPage({ params }: { params: Promise<{ id
       <div className="sg-inner">
 
         {/* Encabezado */}
-        <p className="sg-label">Seguimiento de pedido · {nro(order.orderNumber)}</p>
-        <h1 className="sg-title">{titulo}</h1>
-        <p className="sg-sub">
-          {order.guestFirstName ? `${order.guestFirstName}, ` : ""}{bajada.charAt(0).toLowerCase() + bajada.slice(1)}
-        </p>
+        <div className="sg-in" style={{ ["--i" as string]: 0 }}>
+          <div className="sg-top">
+            <p className="sg-label">Seguimiento de pedido · {nro(order.orderNumber)}</p>
+            <span className={`sg-chip ${vivo ? "is-live" : ""}`}><i />{chip}</span>
+          </div>
+          <div className="sg-hero">
+            <span className={`sg-icon sg-icon-${order.status.toLowerCase()}`}><IconoEstado status={order.status} /></span>
+            <h1 className="sg-title">{titulo}</h1>
+          </div>
+          <p className="sg-sub">
+            {order.guestFirstName ? `${order.guestFirstName}, ` : ""}{bajada.charAt(0).toLowerCase() + bajada.slice(1)}
+          </p>
+        </div>
 
         {/* Linea de tiempo */}
         {!cancelado && (
-          <div className="sg-card sg-steps-card">
+          <div className="sg-card sg-steps-card sg-in" style={{ ["--i" as string]: 1 }}>
             <div className="sg-steps">
               <div className="sg-rail"><div className="sg-rail-fill" style={{ ["--sg-p" as string]: Math.max(0, paso) / (PASOS.length - 1) }} /></div>
               {PASOS.map((p, i) => {
                 const hecho = i < paso || (i === paso && order.status === "DELIVERED");
                 const actual = i === paso && order.status !== "DELIVERED";
                 return (
-                  <div key={p} className={`sg-step ${hecho ? "is-done" : ""} ${actual ? "is-now" : ""}`}>
+                  <div key={p} className={`sg-step ${hecho ? "is-done" : ""} ${actual ? "is-now" : ""}`} style={{ ["--s" as string]: i }}>
                     <span className="sg-dot">
                       {hecho && (
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
@@ -153,7 +193,7 @@ export default async function SeguimientoPage({ params }: { params: Promise<{ id
 
         {/* Envios despachados */}
         {[...envios.entries()].map(([tracking, items], idx) => (
-          <div key={tracking} className="sg-card">
+          <div key={tracking} className="sg-card sg-in" style={{ ["--i" as string]: 2 + idx }}>
             <div className="sg-card-head">
               <p className="sg-label">{envios.size > 1 ? `Envío ${idx + 1} de ${envios.size}` : "Tu envío"} · Andreani</p>
               <p className="sg-muted">Despachado el {fecha(items[0].shippedAt as Date)}{destino ? ` · a ${destino}` : ""}</p>
@@ -177,7 +217,7 @@ export default async function SeguimientoPage({ params }: { params: Promise<{ id
 
         {/* Lo que todavia no salio */}
         {pendientes.length > 0 && (
-          <div className="sg-card">
+          <div className="sg-card sg-in" style={{ ["--i" as string]: 2 + envios.size }}>
             <div className="sg-card-head">
               <p className="sg-label">{enviados.length ? "Todavía por despachar" : "Tu pedido"}</p>
               {!cancelado && pendientes.some((i) => i.isEncargo) && (
@@ -189,7 +229,7 @@ export default async function SeguimientoPage({ params }: { params: Promise<{ id
         )}
 
         {/* Ayuda */}
-        <div className="sg-help">
+        <div className="sg-help sg-in" style={{ ["--i" as string]: 3 + envios.size }}>
           <p className="sg-muted">¿Alguna duda con tu pedido?</p>
           <div className="sg-help-actions">
             <a className="sg-btn sg-btn-ghost" href={wa} target="_blank" rel="noopener noreferrer">Escribinos por WhatsApp</a>
@@ -209,20 +249,55 @@ const CSS = `
 .sg-wrap { background: #FAFAFA; min-height: 70vh; padding: 48px 16px 72px; }
 .sg-inner { max-width: 720px; margin: 0 auto; }
 .sg-label { font-family: var(--font-name, ui-monospace), ui-monospace, 'SF Mono', Menlo, monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #737373; }
-.sg-title { font-size: 40px; line-height: 1.05; font-weight: 600; letter-spacing: -0.03em; color: #0A0A0A; margin: 14px 0 12px; }
+.sg-title { font-size: 40px; line-height: 1.05; font-weight: 600; letter-spacing: -0.03em; color: #0A0A0A; }
+
+/* Entrada escalonada: cada bloque sube y aparece, uno atras del otro */
+.sg-in { opacity: 0; transform: translateY(14px); animation: sg-in 0.55s cubic-bezier(0.22,1,0.36,1) both; animation-delay: calc(var(--i, 0) * 90ms); }
+@keyframes sg-in { to { opacity: 1; transform: none; } }
+
+/* Encabezado: etiqueta + chip de estado, icono animado + titulo */
+.sg-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.sg-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: #fff; box-shadow: inset 0 0 0 1px #E8E8E8; font-size: 12px; font-weight: 500; color: #0A0A0A; }
+.sg-chip i { width: 7px; height: 7px; border-radius: 999px; background: #A3A3A3; position: relative; }
+.sg-chip.is-live i { background: #16A34A; }
+.sg-chip.is-live i::after { content: ""; position: absolute; inset: 0; border-radius: 999px; background: #16A34A; animation: sg-ping 1.8s ease-out infinite; }
+@keyframes sg-ping { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(3.2); opacity: 0; } }
+.sg-hero { display: flex; align-items: center; gap: 16px; margin: 22px 0 14px; }
+.sg-icon { width: 60px; height: 60px; border-radius: 18px; background: #0A0A0A; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 10px 24px rgba(0,0,0,0.16); animation: sg-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) both; animation-delay: 120ms; overflow: hidden; }
+.sg-icon-cancelled, .sg-icon-refunded { background: #737373; box-shadow: none; }
+.sg-icon-delivered { background: #16A34A; box-shadow: 0 10px 24px rgba(22,163,74,0.28); }
+@keyframes sg-pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+/* tilde que se dibuja */
+.sg-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: sg-draw 0.6s ease forwards; animation-delay: 0.45s; }
+.sg-draw-2 { animation-delay: 0.85s; animation-duration: 0.35s; }
+@keyframes sg-draw { to { stroke-dashoffset: 0; } }
+/* camion que avanza y vuelve a entrar */
+.sg-truck { animation: sg-drive 2.8s cubic-bezier(0.65,0,0.35,1) infinite; animation-delay: 0.7s; }
+@keyframes sg-drive { 0%, 55% { transform: translateX(0); } 70% { transform: translateX(46px); opacity: 1; } 71% { transform: translateX(46px); opacity: 0; } 72% { transform: translateX(-46px); opacity: 0; } 73% { opacity: 1; } 100% { transform: translateX(0); } }
+/* caja "latiendo" mientras se prepara / aguja del reloj */
+.sg-blink { animation: sg-blink 1.6s ease-in-out infinite; }
+@keyframes sg-blink { 50% { opacity: 0.25; } }
+.sg-hand { transform-origin: 12px 12px; animation: sg-spin 4s linear infinite; }
+@keyframes sg-spin { to { transform: rotate(360deg); } }
 .sg-sub { font-size: 16px; line-height: 1.5; color: #525252; max-width: 520px; margin-bottom: 32px; }
 .sg-muted { font-size: 13px; line-height: 1.45; color: #737373; }
-.sg-card { background: #fff; border-radius: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.04); padding: 24px; margin-bottom: 16px; }
+.sg-card { background: #fff; border-radius: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.04); padding: 24px; margin-bottom: 16px; transition: box-shadow 0.3s ease; }
+.sg-card:hover { box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 14px 36px rgba(0,0,0,0.07); }
 .sg-card-head { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
 
 /* Linea de tiempo */
 .sg-steps-card { padding: 28px 24px; }
 .sg-steps { position: relative; display: flex; justify-content: space-between; }
 .sg-rail { position: absolute; left: 12%; right: 12%; top: 11px; height: 2px; background: #E8E8E8; border-radius: 2px; overflow: hidden; }
-.sg-rail-fill { height: 100%; width: calc(var(--sg-p) * 100%); background: #0A0A0A; border-radius: 2px; transform-origin: left; animation: sg-grow 0.9s cubic-bezier(0.32,0.72,0,1) both; }
+.sg-rail-fill { height: 100%; width: calc(var(--sg-p) * 100%); background: #0A0A0A; border-radius: 2px; transform-origin: left; animation: sg-grow 1s cubic-bezier(0.32,0.72,0,1) both; animation-delay: 0.35s; }
 @keyframes sg-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .sg-step { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
 .sg-dot { width: 24px; height: 24px; border-radius: 999px; background: #fff; border: 2px solid #D4D4D4; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
+/* cada paso "aparece" cuando la barra llega a el */
+.sg-step.is-done .sg-dot, .sg-step.is-now .sg-dot { animation: sg-dot 0.4s cubic-bezier(0.34,1.56,0.64,1) both; animation-delay: calc(0.35s + var(--s, 0) * 0.28s); }
+@keyframes sg-dot { from { transform: scale(0.4); background: #fff; border-color: #D4D4D4; } }
+.sg-step .sg-step-txt { animation: sg-fade 0.4s ease both; animation-delay: calc(0.45s + var(--s, 0) * 0.28s); }
+@keyframes sg-fade { from { opacity: 0; transform: translateY(4px); } }
 .sg-step.is-done .sg-dot { background: #0A0A0A; border-color: #0A0A0A; }
 .sg-step.is-now .sg-dot { border-color: #0A0A0A; border-width: 7px; }
 .sg-step.is-now .sg-dot::after { content: ""; position: absolute; inset: -11px; border-radius: 999px; border: 2px solid #0A0A0A; opacity: 0; animation: sg-pulse 1.8s ease-out infinite; }
@@ -239,6 +314,10 @@ const CSS = `
 .sg-track-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .sg-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 999px; background: #0A0A0A; color: #fff; font-size: 13px; font-weight: 500; text-decoration: none; transition: opacity 0.2s ease, transform 0.2s ease; white-space: nowrap; }
 .sg-btn:hover { opacity: 0.85; }
+.sg-btn svg { transition: transform 0.25s ease; }
+.sg-btn:hover svg { transform: translate(2px, -2px); }
+.sg-prod-img img { transition: transform 0.4s ease; }
+.sg-prod:hover .sg-prod-img img { transform: scale(1.06); }
 .sg-btn:active { transform: scale(0.98); }
 .sg-btn-ghost { background: #fff; color: #0A0A0A; border: 1px solid #D4D4D4; }
 
@@ -257,7 +336,9 @@ const CSS = `
 
 @media (max-width: 600px) {
   .sg-wrap { padding: 32px 14px 56px; }
-  .sg-title { font-size: 32px; }
+  .sg-title { font-size: 30px; }
+  .sg-icon { width: 52px; height: 52px; border-radius: 16px; }
+  .sg-hero { gap: 14px; margin: 18px 0 12px; }
   .sg-card { padding: 20px; border-radius: 18px; }
   /* En el celular la linea de tiempo va vertical */
   .sg-steps { flex-direction: column; gap: 22px; }
@@ -274,6 +355,7 @@ const CSS = `
   .sg-help { flex-direction: column; align-items: flex-start; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .sg-rail-fill, .sg-step.is-now .sg-dot::after { animation: none; }
+  .sg-in, .sg-icon, .sg-rail-fill, .sg-dot, .sg-step-txt, .sg-truck, .sg-blink, .sg-hand, .sg-chip i::after, .sg-step.is-now .sg-dot::after { animation: none !important; opacity: 1; transform: none; }
+  .sg-draw { stroke-dashoffset: 0; animation: none; }
 }
 `;
