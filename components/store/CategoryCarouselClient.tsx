@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import ProductPhoto from "@/components/store/ProductPhoto";
+import FavHeart from "@/components/store/FavHeart";
 
 type Product = {
   id: string;
@@ -28,6 +29,7 @@ function ProductTile({ product }: { product: Product }) {
       onMouseLeave={() => setHovered(false)}
     >
       <div style={{ aspectRatio: "4/5", backgroundColor: "#F4F4F4", borderRadius: redondo ? "18px" : 0, transition: "border-radius 0.3s ease", overflow: "hidden", marginBottom: "10px", position: "relative" }}>
+        <FavHeart slug={product.slug} name={product.name} brand={product.brand} compact />
         {product.image ? (
           <>
             <ProductPhoto

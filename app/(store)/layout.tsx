@@ -6,6 +6,8 @@ import CartButton from "@/components/store/CartButton";
 import PromoMarquee from "@/components/store/PromoMarquee";
 import NavPill from "@/components/store/NavPill";
 import MobileNav from "@/components/store/MobileNav";
+import FavButton from "@/components/store/FavButton";
+import FavSheet from "@/components/store/FavSheet";
 
 const LOGO_URL = "https://res.cloudinary.com/dklvmlzds/image/upload/v1783912898/MEMBER_B_1_3_wyfasx.png";
 
@@ -28,13 +30,14 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
               <Image src="https://res.cloudinary.com/dklvmlzds/image/upload/v1783879145/people-icon-4777671-512_unddlt.png" alt="" width={18} height={18} style={{ objectFit: "contain" }} />
               Mi cuenta
             </a>
+            <FavButton />
             <CartButton />
           </div>
         </div>
 
         {/* MOBILE NAVBAR */}
         <div className="flex md:hidden items-center justify-between px-4 relative" style={{height: "56px"}}>
-          <div style={{width: "40px"}} />
+          <div style={{minWidth: "40px", display: "flex", alignItems: "center"}}><FavButton /></div>
           <a href="/" className="absolute left-1/2 -translate-x-1/2 hover-fade" style={{display: "flex", alignItems: "center"}}>
             <Image src={LOGO_URL} alt="Member Club" width={130} height={30} style={{height: "22px", width: "auto", objectFit: "contain"}} priority />
           </a>
@@ -112,6 +115,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
       </footer>
 
       <CartDrawer />
+      <FavSheet />
     </div>
   );
 }

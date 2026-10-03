@@ -389,3 +389,87 @@ a:hover .product-img {
 }
 /* Los precios nunca cambian de letra, aunque esten dentro de un rotulo */
 .store-root .precio { font-family: var(--font-price), 'Helvetica Neue', Arial, sans-serif; }
+
+/* ============ FAVORITOS ============
+   Clases propias (sin layer) porque la regla global * { margin:0; padding:0 }
+   le gana a las utilidades de Tailwind. */
+@keyframes favIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes favPop { 0% { transform: scale(0.6); } 45% { transform: scale(1.28); } 100% { transform: scale(1); } }
+@keyframes favDraw { to { stroke-dashoffset: 0; } }
+@keyframes favPing { to { transform: scale(3.2); opacity: 0; } }
+@keyframes favFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes favSube { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+.fav-in { animation: favIn 0.6s cubic-bezier(0.32,0.72,0,1) both; }
+
+/* Corazon en las cards */
+.fav-cora { position: absolute; top: 10px; right: 10px; z-index: 2; width: 38px; height: 38px; border-radius: 50%; border: none; background: rgba(255,255,255,0.72); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 2px 10px rgba(0,0,0,0.08); display: grid; place-items: center; cursor: pointer; transition: transform 0.2s cubic-bezier(0.32,0.72,0,1); }
+.fav-cora:active { transform: scale(0.9); }
+.fav-cora svg { width: 18px; height: 18px; fill: none; stroke: #0A0A0A; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: fill 0.2s, stroke 0.2s; }
+.fav-cora.on svg { fill: #DC2626; stroke: #DC2626; }
+.fav-cora.pop svg { animation: favPop 0.5s cubic-bezier(0.32,0.72,0,1); }
+.fav-cora-chico { width: 32px; height: 32px; top: 8px; right: 8px; }
+.fav-cora-chico svg { width: 15px; height: 15px; }
+.fav-talle-tag { position: absolute; left: 10px; bottom: 10px; z-index: 2; background: rgba(10,10,10,0.78); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); color: white; font-family: var(--font-name), ui-monospace, monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 999px; padding: 6px 10px; animation: favIn 0.4s cubic-bezier(0.32,0.72,0,1) both; }
+
+/* Hoja de vidrio */
+.fav-velo { position: fixed; inset: 0; z-index: 80; background: rgba(10,10,10,0.28); display: grid; align-items: end; justify-items: center; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); animation: favFade 0.25s both; }
+@media (min-width: 768px) { .fav-velo { align-items: center; } }
+.fav-hoja { width: 100%; max-width: 400px; background: rgba(255,255,255,0.88); -webkit-backdrop-filter: blur(26px) saturate(1.5); backdrop-filter: blur(26px) saturate(1.5); border: 1px solid rgba(255,255,255,0.7); border-radius: 30px; box-shadow: 0 30px 80px rgba(0,0,0,0.28); padding: 26px 22px 20px; display: flex; flex-direction: column; gap: 14px; align-items: center; text-align: center; animation: favSube 0.45s cubic-bezier(0.32,0.72,0,1) both; }
+.fav-rotulo { font-family: var(--font-name), ui-monospace, monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #6E6E73; }
+.fav-rotulo-rojo { color: #DC2626; }
+.fav-hoja-titulo { font-family: var(--font-price), 'Helvetica Neue', Arial, sans-serif; font-weight: 600; font-size: 21px; letter-spacing: -0.02em; line-height: 1.15; color: #0A0A0A; }
+.fav-hoja-texto { font-size: 13px; line-height: 1.5; color: #6E6E73; }
+.fav-talles { position: relative; display: flex; flex-wrap: wrap; gap: 4px; width: 100%; background: rgba(10,10,10,0.06); border-radius: 26px; padding: 5px; }
+.fav-talles-pill { position: absolute; border-radius: 999px; background: #0A0A0A; transition: left 0.3s cubic-bezier(0.32,0.72,0,1), top 0.3s cubic-bezier(0.32,0.72,0,1), width 0.3s cubic-bezier(0.32,0.72,0,1); }
+.fav-talle { position: relative; z-index: 1; flex: 1 1 18%; min-width: 52px; height: 42px; padding: 0 10px; border: none; background: transparent; border-radius: 999px; font-size: 15px; font-weight: 500; color: #0A0A0A; cursor: pointer; transition: color 0.25s; }
+.fav-talle.agotado { color: #A3A3A3; }
+.fav-talle.on { color: white; }
+.fav-campo { width: 100%; height: 52px; border-radius: 999px; border: 1px solid rgba(10,10,10,0.1); background: white; padding: 0 22px; font-size: 16px; color: #0A0A0A; text-align: center; outline: none; }
+.fav-campo:focus { border-color: #0A0A0A; }
+.fav-cta { width: 100%; height: 52px; border-radius: 999px; border: none; background: #0A0A0A; color: white; font-weight: 500; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+.fav-cta:disabled { opacity: 0.45; cursor: default; }
+.fav-luego { border: none; background: none; color: #6E6E73; font-size: 14px; cursor: pointer; padding: 4px; }
+.fav-error { font-size: 13px; color: #DC2626; }
+.fav-listo { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: rgba(22,163,74,0.12); animation: favPop 0.5s cubic-bezier(0.32,0.72,0,1); }
+.fav-listo svg { width: 30px; height: 30px; fill: none; stroke: #16A34A; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.fav-listo path { stroke-dasharray: 30; stroke-dashoffset: 30; animation: favDraw 0.45s 0.2s ease-out forwards; }
+.fav-burbuja { align-self: stretch; text-align: left; background: #E7F8DC; border-radius: 18px 18px 4px 18px; padding: 12px 14px; font-size: 14px; line-height: 1.45; color: #0A0A0A; }
+.fav-burbuja span { display: block; margin-top: 6px; font-size: 12px; color: #6E6E73; }
+
+/* Paginas /favoritos y /lista */
+.fav-page { max-width: 760px; margin: 0 auto; padding: 36px 20px 72px; display: flex; flex-direction: column; gap: 28px; }
+.fav-head { display: flex; flex-direction: column; gap: 8px; }
+.fav-head-centro { align-items: center; text-align: center; }
+.fav-h1 { font-family: var(--font-price), 'Helvetica Neue', Arial, sans-serif; font-weight: 600; font-size: 34px; letter-spacing: -0.02em; line-height: 1.08; color: #0A0A0A; }
+.fav-sub { font-size: 14px; line-height: 1.5; color: #6E6E73; max-width: 46ch; }
+.fav-lista { display: flex; flex-direction: column; border-top: 1px solid #EDEDED; }
+.fav-fila { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid #EDEDED; }
+.fav-mini { flex: 0 0 76px; height: 95px; border-radius: 14px; background: #F4F4F4; overflow: hidden; display: block; }
+.fav-mini img, .fav-card-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fav-info { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; text-decoration: none; color: #0A0A0A; }
+.fav-marca { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #737373; }
+.fav-nombre { font-size: 13px; line-height: 1.35; }
+.fav-precio { font-size: 14px; }
+.fav-talle-txt { color: #6E6E73; }
+.fav-chip { margin-top: 3px; font-family: var(--font-name), ui-monospace, monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 999px; padding: 6px 10px; display: inline-flex; align-items: center; gap: 7px; }
+.fav-chip-ok { background: rgba(22,163,74,0.1); color: #15803D; }
+.fav-chip-poco { background: rgba(220,38,38,0.09); color: #DC2626; }
+.fav-chip-no { background: #F4F4F4; color: #6E6E73; }
+.fav-punto { position: relative; width: 6px; height: 6px; border-radius: 50%; background: #16A34A; }
+.fav-punto::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: #16A34A; animation: favPing 1.8s ease-out infinite; }
+.fav-quitar { border: none; background: none; color: #6E6E73; font-size: 13px; cursor: pointer; padding: 8px; }
+.fav-acciones { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.fav-acciones-centro { align-items: center; }
+.fav-pastilla { display: inline-flex; align-items: center; gap: 9px; border: none; border-radius: 999px; background: #0A0A0A; color: white; padding: 14px 24px; font-size: 15px; font-weight: 500; cursor: pointer; text-decoration: none; transition: transform 0.2s cubic-bezier(0.32,0.72,0,1); }
+.fav-pastilla:active { transform: scale(0.97); }
+.fav-link { color: #0066CC; font-size: 14px; text-decoration: none; }
+.fav-vacio { font-size: 14px; line-height: 1.5; color: #6E6E73; max-width: 40ch; }
+.fav-vacio-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; padding: 40px 0; }
+.fav-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (min-width: 768px) { .fav-grid { grid-template-columns: repeat(3, 1fr); } .fav-h1 { font-size: 44px; } }
+.fav-card { display: flex; flex-direction: column; gap: 5px; text-decoration: none; color: #0A0A0A; min-width: 0; }
+.fav-card-foto { position: relative; aspect-ratio: 4/5; background: #F4F4F4; border-radius: 18px; overflow: hidden; margin-bottom: 7px; }
+@media (prefers-reduced-motion: reduce) {
+  .fav-in, .fav-cora.pop svg, .fav-talle-tag, .fav-velo, .fav-hoja, .fav-listo, .fav-punto::after { animation: none; }
+  .fav-listo path { animation: none; stroke-dashoffset: 0; }
+}
