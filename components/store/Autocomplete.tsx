@@ -41,23 +41,21 @@ export default function Autocomplete({ name, value, onChange, suggestions, place
         onFocus={() => setOpen(true)}
         placeholder={placeholder}
         autoComplete="off"
-        style={{
-          width: "100%", padding: "12px", border: "1px solid #D1D1D1", fontSize: "16px", outline: "none",
-          backgroundColor: disabled ? "#F4F4F4" : "white", boxSizing: "border-box",
-        }}
+        className="co-campo"
+        style={{ opacity: disabled ? 0.5 : 1 }}
       />
       {open && !disabled && filtered.length > 0 && (
         <div style={{
-          position: "absolute", top: "calc(100% + 2px)", left: 0, right: 0, zIndex: 20,
-          backgroundColor: "white", border: "1px solid #D1D1D1", maxHeight: "220px", overflowY: "auto",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+          position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 20,
+          backgroundColor: "white", border: "1px solid rgba(10,10,10,0.08)", borderRadius: "14px", maxHeight: "220px", overflowY: "auto",
+          boxShadow: "0 12px 32px rgba(0,0,0,0.12)",
         }}>
           {filtered.map((s) => (
             <div
               key={s}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => { onChange(s); setOpen(false); }}
-              style={{ padding: "10px 12px", fontSize: "13px", cursor: "pointer" }}
+              style={{ padding: "12px 16px", fontSize: "15px", cursor: "pointer" }}
             >
               {s}
             </div>

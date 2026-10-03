@@ -1,91 +1,82 @@
 "use client";
+import Link from "next/link";
 import { useCartStore } from "@/store/cart";
 import { FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 
+// Carrito: hoja de vidrio. En el celular sube desde abajo; en compu entra
+// desde la derecha. La logica (cantidades, tope de stock, total) no cambia.
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, totalPrice } = useCartStore();
 
   if (!isOpen) return null;
 
+  const total = totalPrice();
+  const unidades = items.reduce((a, i) => a + i.quantity, 0);
+
   return (
     <>
-      <div onClick={closeCart} style={{position:"fixed",inset:0,backgroundColor:"rgba(0,0,0,0.5)",zIndex:100}} />
-      <div style={{position:"fixed",top:0,right:0,bottom:0,width:"min(420px, 100vw)",backgroundColor:"white",zIndex:101,display:"flex",flexDirection:"column"}}>
-        <div style={{padding:"24px",borderBottom:"1px solid #E8E8E8",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <p style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase"}}>Carrito ({items.length})</p>
-          <button onClick={closeCart} className="hover-fade" aria-label="Cerrar carrito" style={{background:"none",border:"none",cursor:"pointer",fontSize:"24px",color:"#0A0A0A",width:"44px",height:"44px"}}>x</button>
+      <div onClick={closeCart} className="cart-velo" />
+      <div className="cart-hoja" role="dialog" aria-label="Carrito">
+        <div className="cart-cab">
+          <p className="cart-titulo">Carrito {unidades > 0 && <span className="cart-n">{unidades}</span>}</p>
+          <button onClick={closeCart} className="cart-cerrar" aria-label="Cerrar carrito">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19" /><line x1="19" y1="5" x2="5" y2="19" /></svg>
+          </button>
         </div>
-        <div style={{flex:1,overflowY:"auto",padding:"24px"}}>
+
+        <div className="cart-cuerpo">
           {items.length === 0 ? (
-            <div style={{textAlign:"center",paddingTop:"80px"}}>
-              <p style={{fontSize:"14px",color:"#737373"}}>Tu carrito esta vacio</p>
+            <div className="cart-vacio">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#A3A3A3" strokeWidth="1.5" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
+              <p>Tu carrito está vacío</p>
+              <Link href="/catalog" onClick={closeCart} className="cart-cta cart-cta-chico">Ver el catálogo</Link>
             </div>
           ) : (
-            <div style={{display:"flex",flexDirection:"column",gap:"24px"}}>
-              {items.map((item) => (
-                <div key={item.variantId} style={{display:"flex",gap:"16px"}}>
-                  <div style={{width:"80px",height:"100px",backgroundColor:"#F4F4F4",flexShrink:0,overflow:"hidden"}}>
-                    {item.image ? (
-                      <img src={item.image} alt={item.name} style={{width:"100%",height:"100%",objectFit:"cover"}} />
-                    ) : (
-                      <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                        <span style={{fontSize:"10px",color:"#A3A3A3"}}>IMG</span>
+            <div className="cart-items">
+              {items.map((item) => {
+                const tope = item.quantity >= item.maxStock;
+                return (
+                  <div key={item.variantId} className="cart-item">
+                    <Link href={"/product/" + item.slug} onClick={closeCart} className="cart-foto">
+                      {item.image && <img src={item.image} alt={item.name} />}
+                    </Link>
+                    <div className="cart-info">
+                      <p className="cart-marca">{item.brand}</p>
+                      <p className="cart-nombre">{item.name}</p>
+                      <p className="cart-detalle">Talle {item.size}{item.isEncargo ? " · Por encargo" : ""}</p>
+                      <div className="cart-fila">
+                        <div className="cart-cant">
+                          <button onClick={() => updateQuantity(item.variantId, item.quantity - 1)} aria-label="Quitar una unidad">−</button>
+                          <span>{item.quantity}</span>
+                          <button onClick={() => updateQuantity(item.variantId, item.quantity + 1)} disabled={tope} aria-label="Sumar una unidad">+</button>
+                        </div>
+                        <p className="precio cart-precio">${(item.price * item.quantity).toLocaleString("es-AR")}</p>
                       </div>
-                    )}
-                  </div>
-                  <div style={{flex:1}}>
-                    <p style={{fontSize:"10px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"4px"}}>{item.brand}</p>
-                    <p style={{fontSize:"14px",fontWeight:"500",marginBottom:"4px"}}>{item.name}</p>
-                    <p style={{fontSize:"12px",color:"#737373",marginBottom:item.isEncargo?"4px":"12px"}}>Talle {item.size}</p>
-                    {item.isEncargo && (
-                      <p style={{fontSize:"11px",color:"#737373",marginBottom:"12px"}}>Por encargo</p>
-                    )}
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-                        <button onClick={() => updateQuantity(item.variantId, item.quantity - 1)} className="hover-pill" aria-label="Quitar una unidad" style={{width:"36px",height:"36px",border:"1px solid #E8E8E8",backgroundColor:"white",cursor:"pointer"}}>-</button>
-                        <span style={{fontSize:"13px"}}>{item.quantity}</span>
-                        <button
-                          onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
-                          disabled={item.quantity >= item.maxStock}
-                          className="hover-pill"
-                          style={{
-                            width:"36px",height:"36px",border:"1px solid #E8E8E8",
-                            backgroundColor: item.quantity >= item.maxStock ? "#F4F4F4" : "white",
-                            color: item.quantity >= item.maxStock ? "#D1D1D1" : "#0A0A0A",
-                            cursor: item.quantity >= item.maxStock ? "not-allowed" : "pointer",
-                          }}
-                        >+</button>
-                      </div>
-                      <p style={{fontSize:"14px",fontWeight:"700"}}>${(item.price * item.quantity).toLocaleString("es-AR")}</p>
+                      {tope && (
+                        <p className="cart-aviso">
+                          {item.maxStock === 1 ? "Es la última unidad disponible" : `Ya tenés las ${item.maxStock} unidades disponibles`}
+                        </p>
+                      )}
+                      <button onClick={() => removeItem(item.variantId)} className="cart-quitar">Quitar</button>
                     </div>
-                    {item.quantity >= item.maxStock && (
-                      <p style={{fontSize:"11px",color:"#A3A3A3",marginTop:"6px"}}>
-                        {item.maxStock === 1
-                          ? "Es la última unidad disponible — ya la tenés en tu carrito"
-                          : `Ya tenés las ${item.maxStock} unidades disponibles en tu carrito`}
-                      </p>
-                    )}
                   </div>
-                  <button onClick={() => removeItem(item.variantId)} className="hover-fade" aria-label={"Quitar " + item.name} style={{background:"none",border:"none",cursor:"pointer",color:"#A3A3A3",fontSize:"18px",alignSelf:"flex-start",width:"36px",height:"36px"}}>x</button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
+
         {items.length > 0 && (
-          <div style={{padding:"24px",borderTop:"1px solid #E8E8E8"}}>
-            {totalPrice() < FREE_SHIPPING_THRESHOLD && (
-              <p style={{fontSize:"11px",color:"#A3A3A3",marginBottom:"12px"}}>
-                Te faltan ${(FREE_SHIPPING_THRESHOLD - totalPrice()).toLocaleString("es-AR")} para envío gratis
-              </p>
+          <div className="cart-pie">
+            {total < FREE_SHIPPING_THRESHOLD && (
+              <p className="cart-aviso">Te faltan ${(FREE_SHIPPING_THRESHOLD - total).toLocaleString("es-AR")} para el envío gratis</p>
             )}
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:"16px"}}>
-              <p style={{fontSize:"13px",color:"#737373"}}>Total</p>
-              <p style={{fontSize:"16px",fontWeight:"700"}}>${totalPrice().toLocaleString("es-AR")}</p>
+            <div className="cart-total">
+              <p>Total</p>
+              <p className="precio">${total.toLocaleString("es-AR")}</p>
             </div>
-            <a href="/checkout" onClick={closeCart} className="hover-btn-dark" style={{display:"block",width:"100%",padding:"16px",backgroundColor:"#0A0A0A",color:"white",textAlign:"center",fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",textDecoration:"none"}}>
-              Ir al checkout
-            </a>
+            <Link href="/checkout" onClick={closeCart} className="cart-cta">Finalizar compra</Link>
+            <button onClick={closeCart} className="cart-seguir">Seguir comprando</button>
           </div>
         )}
       </div>

@@ -537,3 +537,67 @@ body.nav-cargando .store-root > main { opacity: 0.4; transition: opacity 0.3s ea
   .cat-filtrar { display: none; }
   .cat-filtros { display: block; margin-top: 0; }
 }
+
+/* ============ TANDA 2: carrito y checkout con el lenguaje de la tienda ============ */
+@keyframes cartSube { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes cartEntra { from { transform: translateX(100%); } to { transform: none; } }
+.cart-velo { position: fixed; inset: 0; z-index: 100; background: rgba(10,10,10,0.32); animation: favFade 0.25s both; }
+.cart-hoja { position: fixed; z-index: 101; left: 0; right: 0; bottom: 0; max-height: 88dvh; display: flex; flex-direction: column; background: rgba(255,255,255,0.92); -webkit-backdrop-filter: blur(28px) saturate(1.6); backdrop-filter: blur(28px) saturate(1.6); border-radius: 28px 28px 0 0; box-shadow: 0 -20px 60px rgba(0,0,0,0.22); animation: cartSube 0.45s cubic-bezier(0.32,0.72,0,1) both; }
+.cart-cab { display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 14px; }
+.cart-titulo { font-family: var(--font-price), 'Helvetica Neue', Arial, sans-serif; font-weight: 600; font-size: 22px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+.cart-n, .co-n { display: inline-grid; place-items: center; min-width: 22px; height: 22px; border-radius: 999px; background: #0A0A0A; color: white; font-family: var(--font-inter), sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0; padding: 0 6px; }
+.cart-cerrar { width: 36px; height: 36px; border-radius: 50%; border: none; background: rgba(10,10,10,0.07); color: #0A0A0A; display: grid; place-items: center; cursor: pointer; }
+.cart-cuerpo { flex: 1; overflow-y: auto; padding: 6px 20px 20px; overscroll-behavior: contain; }
+.cart-items { display: flex; flex-direction: column; gap: 20px; }
+.cart-item { display: flex; gap: 14px; }
+.cart-foto { flex: 0 0 88px; height: 110px; border-radius: 14px; background: #F4F4F4; overflow: hidden; display: block; }
+.cart-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cart-info { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+.cart-marca { font-family: var(--font-name), ui-monospace, monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #737373; }
+.cart-nombre { font-size: 15px; font-weight: 500; line-height: 1.3; }
+.cart-detalle { font-size: 13px; color: #737373; }
+.cart-fila { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+.cart-cant { display: inline-flex; align-items: center; background: rgba(10,10,10,0.06); border-radius: 999px; padding: 3px; }
+.cart-cant button { width: 34px; height: 34px; border-radius: 50%; border: none; background: transparent; color: #0A0A0A; font-size: 18px; line-height: 1; cursor: pointer; }
+.cart-cant button:disabled { color: #C7C7CC; cursor: default; }
+.cart-cant span { min-width: 22px; text-align: center; font-size: 15px; font-weight: 500; }
+.cart-precio { font-size: 15px; }
+.cart-aviso { font-size: 12px; color: #8E8E93; margin-top: 4px; }
+.cart-quitar { border: none; background: none; color: #0066CC; font-size: 13px; cursor: pointer; padding: 6px 0 0; }
+.cart-pie { padding: 16px 20px calc(18px + env(safe-area-inset-bottom)); border-top: 1px solid rgba(10,10,10,0.08); display: flex; flex-direction: column; gap: 12px; }
+.cart-total { display: flex; align-items: baseline; justify-content: space-between; font-size: 15px; font-weight: 500; }
+.cart-total .precio { font-size: 22px; }
+.cart-cta { display: flex; align-items: center; justify-content: center; width: 100%; height: 54px; border-radius: 999px; border: none; background: #0A0A0A; color: white; font-size: 17px; font-weight: 500; text-decoration: none; cursor: pointer; transition: transform 0.2s cubic-bezier(0.32,0.72,0,1); }
+.cart-cta:active { transform: scale(0.98); }
+.cart-cta-chico { width: auto; height: 48px; padding: 0 26px; font-size: 15px; }
+.cart-seguir { border: none; background: none; color: #6E6E73; font-size: 14px; cursor: pointer; padding: 2px; }
+.cart-vacio { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; padding: 48px 0 56px; font-size: 15px; color: #6E6E73; }
+@media (min-width: 768px) {
+  .cart-hoja { left: auto; top: 12px; right: 12px; bottom: 12px; width: 420px; max-height: none; border-radius: 28px; box-shadow: 0 30px 80px rgba(0,0,0,0.25); animation-name: cartEntra; }
+  .cart-pie { padding-bottom: 20px; }
+}
+
+/* Checkout */
+.co-titulo { font-family: var(--font-price), 'Helvetica Neue', Arial, sans-serif; font-weight: 600; font-size: 22px; letter-spacing: -0.02em; margin-bottom: 18px; color: #0A0A0A; }
+.co-label { display: block; font-family: var(--font-name), ui-monospace, monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #6E6E73; margin-bottom: 7px; }
+.co-campo { width: 100%; height: 52px; padding: 0 16px; border-radius: 14px; border: 1px solid transparent; background: #F5F5F7; color: #0A0A0A; font-size: 16px; outline: none; box-sizing: border-box; transition: background-color 0.2s ease, border-color 0.2s ease; }
+.co-campo::placeholder { color: #AEAEB2; }
+.co-campo:focus { background: #FFFFFF; border-color: #0A0A0A; }
+.co-campo-blanco { background: #FFFFFF; }
+.co-fila { margin-bottom: 14px; }
+.co-fila-fin { margin-bottom: 36px; }
+.co-fila-calle > div:first-child { grid-column: 1 / -1; }
+.co-resumen { background: #F5F5F7; border-radius: 22px; padding: 20px; align-self: start; }
+.co-resumen-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; border: none; background: none; padding: 0; margin-bottom: 16px; cursor: pointer; color: #0A0A0A; }
+.co-titulo-resumen { margin-bottom: 0; font-size: 19px; display: flex; align-items: center; gap: 10px; }
+.co-resumen-ver { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #0066CC; }
+.co-items { display: none; flex-direction: column; gap: 16px; margin-bottom: 20px; }
+.co-items.abierto { display: flex; }
+@media (min-width: 768px) {
+  .co-fila-calle > div:first-child { grid-column: auto; }
+  .co-resumen { padding: 24px; position: sticky; top: 88px; }
+  .co-resumen-toggle { cursor: default; pointer-events: none; }
+  .co-resumen-ver { display: none; }
+  .co-items { display: flex; }
+}
+@media (prefers-reduced-motion: reduce) { .cart-hoja, .cart-velo { animation: none; } }

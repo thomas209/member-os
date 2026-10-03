@@ -13,6 +13,7 @@ export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resumenAbierto, setResumenAbierto] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"MERCADOPAGO" | "TRANSFERENCIA">("MERCADOPAGO");
   const [couponCode, setCouponCode] = useState("");
   const [couponStatus, setCouponStatus] = useState<"idle" | "checking" | "valid" | "invalid">("idle");
@@ -160,8 +161,8 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div style={{maxWidth:"600px",margin:"80px auto",textAlign:"center",padding:"48px"}}>
-        <p style={{fontSize:"16px",color:"#737373",marginBottom:"24px"}}>Tu carrito esta vacio</p>
-        <a href="/catalog" className="hover-pill" style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",textDecoration:"none",color:"#0A0A0A",border:"1px solid #0A0A0A",padding:"14px 32px"}}>Ver catalogo</a>
+        <p style={{fontSize:"16px",color:"#737373",marginBottom:"24px"}}>Tu carrito está vacío</p>
+        <a href="/catalog" className="cart-cta cart-cta-chico" style={{display:"inline-flex"}}>Ver el catálogo</a>
       </div>
     );
   }
@@ -169,48 +170,48 @@ export default function CheckoutPage() {
   return (
     <div className="co-wrap flex flex-col-reverse md:grid md:grid-cols-[1fr_400px] gap-8 md:gap-20">
       <div>
-        <h1 style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"8px",paddingBottom:"16px",borderBottom:"1px solid #E8E8E8"}}>Datos de envio</h1>
+        <h1 className="co-titulo">Datos de envío</h1>
         {loggedInEmail && (
-          <p style={{fontSize:"12px",color:"#737373",marginBottom:"40px"}}>
+          <p style={{fontSize:"13px",color:"#737373",marginBottom:"24px"}}>
             Ingresaste como <strong style={{color:"#0A0A0A"}}>{loggedInEmail}</strong> · usamos tus datos guardados
           </p>
         )}
-        {!loggedInEmail && <div style={{marginBottom:"40px"}} />}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        
+        <div className="grid grid-cols-2 gap-3 co-fila">
           <div>
-            <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Nombre *</label>
-            <input name="firstName" autoComplete="given-name" value={form.firstName} onChange={handleChange} placeholder="Thomas" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
+            <label className="co-label">Nombre *</label>
+            <input name="firstName" autoComplete="given-name" value={form.firstName} onChange={handleChange} placeholder="Thomas" className="co-campo" />
           </div>
           <div>
-            <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Apellido *</label>
-            <input name="lastName" autoComplete="family-name" value={form.lastName} onChange={handleChange} placeholder="Caronia" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
+            <label className="co-label">Apellido *</label>
+            <input name="lastName" autoComplete="family-name" value={form.lastName} onChange={handleChange} placeholder="Caronia" className="co-campo" />
           </div>
         </div>
         <div style={{marginBottom:"16px"}}>
-          <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Email *</label>
-          <input name="email" autoComplete="email" inputMode="email" type="email" value={form.email} onChange={handleChange} placeholder="thomas@example.com" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
+          <label className="co-label">Email *</label>
+          <input name="email" autoComplete="email" inputMode="email" type="email" value={form.email} onChange={handleChange} placeholder="thomas@example.com" className="co-campo" />
         </div>
         <div style={{marginBottom:"16px"}}>
-          <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Telefono</label>
-          <input name="phone" type="tel" autoComplete="tel" inputMode="tel" value={form.phone} onChange={handleChange} placeholder="1122334455" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
+          <label className="co-label">Telefono</label>
+          <input name="phone" type="tel" autoComplete="tel" inputMode="tel" value={form.phone} onChange={handleChange} placeholder="1122334455" className="co-campo" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr] gap-4 mb-4">
+        <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr] gap-3 co-fila co-fila-calle">
           <div>
-            <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Calle *</label>
-            <input name="street" autoComplete="address-line1" value={form.street} onChange={handleChange} placeholder="Av. Corrientes" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
+            <label className="co-label">Calle *</label>
+            <input name="street" autoComplete="address-line1" value={form.street} onChange={handleChange} placeholder="Av. Corrientes" className="co-campo" />
           </div>
           <div>
-            <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Numero *</label>
-            <input name="number" inputMode="numeric" value={form.number} onChange={handleChange} placeholder="1234" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
+            <label className="co-label">Numero *</label>
+            <input name="number" inputMode="numeric" value={form.number} onChange={handleChange} placeholder="1234" className="co-campo" />
           </div>
           <div>
-            <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Piso</label>
-            <input name="floor" value={form.floor} onChange={handleChange} placeholder="3B" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
+            <label className="co-label">Piso</label>
+            <input name="floor" value={form.floor} onChange={handleChange} placeholder="3B" className="co-campo" />
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 co-fila-fin">
           <div>
-            <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Provincia *</label>
+            <label className="co-label">Provincia *</label>
             <Autocomplete
               name="province"
               value={form.province}
@@ -220,7 +221,7 @@ export default function CheckoutPage() {
             />
           </div>
           <div>
-            <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Ciudad *</label>
+            <label className="co-label">Ciudad *</label>
             <Autocomplete
               name="city"
               value={form.city}
@@ -230,32 +231,32 @@ export default function CheckoutPage() {
             />
           </div>
           <div>
-            <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>CP *</label>
-            <input name="postalCode" autoComplete="postal-code" inputMode="numeric" value={form.postalCode} onChange={handleChange} placeholder="1043" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
+            <label className="co-label">CP *</label>
+            <input name="postalCode" autoComplete="postal-code" inputMode="numeric" value={form.postalCode} onChange={handleChange} placeholder="1043" className="co-campo" />
           </div>
         </div>
-        <h2 style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"16px",paddingBottom:"16px",borderBottom:"1px solid #E8E8E8"}}>Método de pago</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
+        <h2 className="co-titulo">Método de pago</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 co-fila-fin">
           <div
             onClick={() => setPaymentMethod("MERCADOPAGO")}
             className="hover-pill"
             style={{
-              cursor:"pointer",padding:"16px",border: paymentMethod === "MERCADOPAGO" ? "2px solid #0A0A0A" : "1px solid #D1D1D1",
+              cursor:"pointer",padding:"18px",borderRadius:"18px",border: paymentMethod === "MERCADOPAGO" ? "2px solid #0A0A0A" : "1px solid #D1D1D1",
             }}
           >
-            <p style={{fontSize:"13px",fontWeight:"600",marginBottom:"4px"}}>Mercado Pago</p>
-            <p style={{fontSize:"11px",color:"#737373"}}>Tarjeta, dinero en cuenta y más</p>
+            <p style={{fontSize:"15px",fontWeight:"600",marginBottom:"4px"}}>Mercado Pago</p>
+            <p style={{fontSize:"13px",color:"#737373"}}>Tarjeta, dinero en cuenta y más</p>
           </div>
           <div
             onClick={() => setPaymentMethod("TRANSFERENCIA")}
             className="hover-pill"
             style={{
-              cursor:"pointer",padding:"16px",border: paymentMethod === "TRANSFERENCIA" ? "2px solid #0A0A0A" : "1px solid #D1D1D1",
+              cursor:"pointer",padding:"18px",borderRadius:"18px",border: paymentMethod === "TRANSFERENCIA" ? "2px solid #0A0A0A" : "1px solid #D1D1D1",
             }}
           >
-            <p style={{fontSize:"13px",fontWeight:"600",marginBottom:"4px"}}>Transferencia bancaria</p>
+            <p style={{fontSize:"15px",fontWeight:"600",marginBottom:"4px"}}>Transferencia bancaria</p>
             {transferDiscount > 0 ? (
-              <p style={{fontSize:"11px",color:"#16A34A",fontWeight:"600"}}>
+              <p style={{fontSize:"13px",color:"#16A34A",fontWeight:"600"}}>
                 {TRANSFER_DISCOUNT_PERCENT}% OFF en productos de más de ${TRANSFER_DISCOUNT_MIN_PRICE.toLocaleString("es-AR")} (−${Math.round(transferDiscount).toLocaleString("es-AR")})
               </p>
             ) : (
@@ -271,16 +272,22 @@ export default function CheckoutPage() {
           </p>
         )}
         {error && <p style={{fontSize:"13px",color:"#DC2626",marginBottom:"16px"}}>{error}</p>}
-        <button onClick={handleSubmit} disabled={loading} className="hover-btn-dark" style={{width:"100%",padding:"18px",backgroundColor:loading?"#E8E8E8":"#0A0A0A",color:loading?"#A3A3A3":"white",fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",border:"none",cursor:loading?"not-allowed":"pointer"}}>
+        <button onClick={handleSubmit} disabled={loading} className="hover-btn-dark" style={{width:"100%",height:"56px",borderRadius:"999px",backgroundColor:loading?"#E8E8E8":"#0A0A0A",color:loading?"#A3A3A3":"white",fontSize:"17px",fontWeight:"500",border:"none",cursor:loading?"not-allowed":"pointer"}}>
           {loading ? "Procesando..." : paymentMethod === "TRANSFERENCIA" ? "Continuar con transferencia" : "Pagar con Mercado Pago"}
         </button>
       </div>
-      <div>
-        <h2 style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"24px",paddingBottom:"16px",borderBottom:"1px solid #E8E8E8"}}>Resumen</h2>
-        <div style={{display:"flex",flexDirection:"column",gap:"16px",marginBottom:"24px"}}>
+      <div className="co-resumen">
+        <button type="button" className="co-resumen-toggle" aria-expanded={resumenAbierto} onClick={() => setResumenAbierto(!resumenAbierto)}>
+          <span className="co-titulo co-titulo-resumen">Tu pedido <span className="co-n">{items.reduce((a, i) => a + i.quantity, 0)}</span></span>
+          <span className="co-resumen-ver">
+            {resumenAbierto ? "Ocultar" : "Ver detalle"}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{transform: resumenAbierto ? "rotate(180deg)" : "none", transition: "transform 0.3s ease"}} aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
+          </span>
+        </button>
+        <div className={"co-items" + (resumenAbierto ? " abierto" : "")}>
           {items.map((item) => (
-            <div key={item.variantId} style={{display:"flex",gap:"12px",alignItems:"center",marginBottom:"16px"}}>
-              <div style={{width:"64px",height:"80px",backgroundColor:"#F4F4F4",flexShrink:0,overflow:"hidden"}}>
+            <div key={item.variantId} style={{display:"flex",gap:"12px",alignItems:"center"}}>
+              <div style={{width:"64px",height:"80px",backgroundColor:"#FFFFFF",borderRadius:"12px",flexShrink:0,overflow:"hidden"}}>
                 {item.image ? (
                   <img src={item.image} alt={item.name} style={{width:"100%",height:"100%",objectFit:"cover"}} />
                 ) : (
@@ -288,18 +295,18 @@ export default function CheckoutPage() {
                 )}
               </div>
               <div style={{flex:1}}>
-                <p style={{fontSize:"13px",fontWeight:"500"}}>{item.name}</p>
-                <p style={{fontSize:"11px",color:"#737373"}}>Talle {item.size} x {item.quantity}</p>
+                <p style={{fontSize:"14px",fontWeight:"500"}}>{item.name}</p>
+                <p style={{fontSize:"13px",color:"#737373"}}>Talle {item.size} · {item.quantity} {item.quantity === 1 ? "unidad" : "unidades"}</p>
                 {item.isEncargo && (
                   <p style={{fontSize:"11px",color:"#737373",marginTop:"2px"}}>Por encargo</p>
                 )}
               </div>
-              <p style={{fontSize:"13px",fontWeight:"700"}}>${(item.price * item.quantity).toLocaleString("es-AR")}</p>
+              <p className="precio" style={{fontSize:"14px"}}>${(item.price * item.quantity).toLocaleString("es-AR")}</p>
             </div>
           ))}
         </div>
-        <div style={{marginBottom:"16px",paddingBottom:"16px",borderBottom:"1px solid #E8E8E8"}}>
-          <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Cupon</label>
+        <div style={{marginBottom:"16px",paddingBottom:"16px",borderBottom:"1px solid rgba(10,10,10,0.08)"}}>
+          <label className="co-label">Cupon</label>
           {paymentMethod === "TRANSFERENCIA" ? (
             <p style={{fontSize:"12px",color:"#A3A3A3"}}>No se puede combinar con el descuento por transferencia</p>
           ) : (
@@ -310,13 +317,13 @@ export default function CheckoutPage() {
                   onChange={(e) => handleCouponChange(e.target.value)}
                   placeholder="WELCOME10"
                   disabled={couponStatus === "valid"}
-                  style={{flex:1,padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none",textTransform:"uppercase",backgroundColor:couponStatus==="valid"?"#F4F4F4":"white"}}
+                  className="co-campo co-campo-blanco" style={{flex:1,minWidth:0,textTransform:"uppercase",opacity:couponStatus==="valid"?0.6:1}}
                 />
                 {couponStatus === "valid" ? (
                   <button
                     onClick={() => { setCouponStatus("idle"); setCouponCode(""); setCouponDiscount(0); setCouponMessage(""); }}
                     className="hover-pill"
-                    style={{padding:"12px 16px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",border:"1px solid #0A0A0A",backgroundColor:"white",color:"#0A0A0A",cursor:"pointer"}}
+                    style={{padding:"0 20px",fontSize:"14px",fontWeight:"500",borderRadius:"999px",border:"1px solid transparent",backgroundColor:"white",color:"#0A0A0A",cursor:"pointer"}}
                   >
                     Quitar
                   </button>
@@ -325,7 +332,7 @@ export default function CheckoutPage() {
                     onClick={handleApplyCoupon}
                     disabled={couponStatus === "checking" || !couponCode.trim()}
                     className="hover-btn-dark"
-                    style={{padding:"12px 16px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",border:"1px solid #0A0A0A",backgroundColor: !couponCode.trim() ? "#F4F4F4" : "#0A0A0A",color: !couponCode.trim() ? "#A3A3A3" : "white",cursor: !couponCode.trim() ? "not-allowed":"pointer"}}
+                    style={{padding:"0 20px",fontSize:"14px",fontWeight:"500",borderRadius:"999px",border:"1px solid transparent",backgroundColor: !couponCode.trim() ? "#F4F4F4" : "#0A0A0A",color: !couponCode.trim() ? "#A3A3A3" : "white",cursor: !couponCode.trim() ? "not-allowed":"pointer"}}
                   >
                     {couponStatus === "checking" ? "..." : "Aplicar"}
                   </button>
@@ -363,8 +370,8 @@ export default function CheckoutPage() {
           </p>
         )}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:"8px"}}>
-          <p style={{fontSize:"14px",color:"#737373"}}>Total</p>
-          <p style={{fontSize:"20px",fontWeight:"700"}}>${finalTotal.toLocaleString("es-AR")}</p>
+          <p style={{fontSize:"15px",color:"#0A0A0A",fontWeight:"500"}}>Total</p>
+          <p className="precio" style={{fontSize:"22px"}}>${finalTotal.toLocaleString("es-AR")}</p>
         </div>
       </div>
     </div>
