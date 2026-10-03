@@ -10,10 +10,10 @@ export default function CartDrawer() {
   return (
     <>
       <div onClick={closeCart} style={{position:"fixed",inset:0,backgroundColor:"rgba(0,0,0,0.5)",zIndex:100}} />
-      <div style={{position:"fixed",top:0,right:0,bottom:0,width:"420px",backgroundColor:"white",zIndex:101,display:"flex",flexDirection:"column"}}>
+      <div style={{position:"fixed",top:0,right:0,bottom:0,width:"min(420px, 100vw)",backgroundColor:"white",zIndex:101,display:"flex",flexDirection:"column"}}>
         <div style={{padding:"24px",borderBottom:"1px solid #E8E8E8",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <p style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase"}}>Carrito ({items.length})</p>
-          <button onClick={closeCart} className="hover-fade" style={{background:"none",border:"none",cursor:"pointer",fontSize:"24px",color:"#0A0A0A"}}>x</button>
+          <button onClick={closeCart} className="hover-fade" aria-label="Cerrar carrito" style={{background:"none",border:"none",cursor:"pointer",fontSize:"24px",color:"#0A0A0A",width:"44px",height:"44px"}}>x</button>
         </div>
         <div style={{flex:1,overflowY:"auto",padding:"24px"}}>
           {items.length === 0 ? (
@@ -42,14 +42,14 @@ export default function CartDrawer() {
                     )}
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                       <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-                        <button onClick={() => updateQuantity(item.variantId, item.quantity - 1)} className="hover-pill" style={{width:"28px",height:"28px",border:"1px solid #E8E8E8",backgroundColor:"white",cursor:"pointer"}}>-</button>
+                        <button onClick={() => updateQuantity(item.variantId, item.quantity - 1)} className="hover-pill" aria-label="Quitar una unidad" style={{width:"36px",height:"36px",border:"1px solid #E8E8E8",backgroundColor:"white",cursor:"pointer"}}>-</button>
                         <span style={{fontSize:"13px"}}>{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
                           disabled={item.quantity >= item.maxStock}
                           className="hover-pill"
                           style={{
-                            width:"28px",height:"28px",border:"1px solid #E8E8E8",
+                            width:"36px",height:"36px",border:"1px solid #E8E8E8",
                             backgroundColor: item.quantity >= item.maxStock ? "#F4F4F4" : "white",
                             color: item.quantity >= item.maxStock ? "#D1D1D1" : "#0A0A0A",
                             cursor: item.quantity >= item.maxStock ? "not-allowed" : "pointer",
@@ -66,7 +66,7 @@ export default function CartDrawer() {
                       </p>
                     )}
                   </div>
-                  <button onClick={() => removeItem(item.variantId)} className="hover-fade" style={{background:"none",border:"none",cursor:"pointer",color:"#A3A3A3",fontSize:"18px",alignSelf:"flex-start"}}>x</button>
+                  <button onClick={() => removeItem(item.variantId)} className="hover-fade" aria-label={"Quitar " + item.name} style={{background:"none",border:"none",cursor:"pointer",color:"#A3A3A3",fontSize:"18px",alignSelf:"flex-start",width:"36px",height:"36px"}}>x</button>
                 </div>
               ))}
             </div>

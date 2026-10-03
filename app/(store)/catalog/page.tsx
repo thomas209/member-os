@@ -5,6 +5,7 @@ import { TAG_TIENDA } from "@/lib/storeCache";
 import type { Metadata } from "next";
 import ProductCard from "@/components/store/ProductCard";
 import CatalogToolbar from "@/components/store/CatalogToolbar";
+import FiltrosPlegables from "@/components/store/FiltrosPlegables";
 
 const PAGE_SIZE = 24;
 
@@ -161,7 +162,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
   };
 
   return (
-    <div style={{maxWidth:"1440px",margin:"0 auto",padding:"48px"}}>
+    <div className="cat-wrap">
 
       {/* HEADER + FILTROS */}
       <div style={{marginBottom:"48px",paddingBottom:"24px",borderBottom:"1px solid #E8E8E8"}}>
@@ -173,6 +174,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
 
         <CatalogToolbar category={category} brand={brand} gender={gender} q={q} sort={sort} encargo={encargo} />
 
+        <FiltrosPlegables activos={[gender, category, brand].filter(Boolean).length}>
         {/* Filtros genero */}
         <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"12px"}}>
           <Link href={buildUrl({ category, brand, q, sort, encargo })} className="hover-pill" style={!gender ? activeStyle : inactiveStyle}>Todos</Link>
@@ -200,6 +202,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
             </Link>
           ))}
         </div>
+        </FiltrosPlegables>
       </div>
 
       {/* GRID */}

@@ -44,9 +44,9 @@ export default async function CategoryCarousel({
   if (products.length === 0) return null;
 
   return (
-    <section className="bg-white px-4 py-12 md:px-12 md:py-20">
-      <div className="max-w-[1440px] mx-auto">
-        <div className="flex justify-between items-baseline mb-6">
+    <section className="bg-white sec sec-carrusel">
+      <div className="sec-in">
+        <div className="flex justify-between items-baseline sec-head">
           <h2 className="text-[13px] font-semibold tracking-widest uppercase">{title}</h2>
           <Link href={"/catalog?category=" + categorySlug} className="text-[12px] text-neutral-400 no-underline hover:text-neutral-900 transition-colors">Ver todo</Link>
         </div>

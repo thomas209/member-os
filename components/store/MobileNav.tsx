@@ -14,12 +14,19 @@ export default function MobileNav() {
   const pathname = usePathname();
   const esHome = pathname === "/";
   const [pegado, setPegado] = useState(false);
+  // Se esconde al bajar (para no tapar el contenido) y vuelve al subir
+  const [oculto, setOculto] = useState(false);
+  const ultimoY = useRef(0);
 
   useEffect(() => {
     // "pegado" = ya no hay fondo negro debajo del menu (termino el hero)
     const revisar = () => {
       const el = ref.current;
       if (!el) return;
+      const y = window.scrollY;
+      if (y < 160 || y < ultimoY.current - 6) setOculto(false);
+      else if (y > ultimoY.current + 6) setOculto(true);
+      ultimoY.current = y;
       const hero = document.querySelector("[data-nav-oscuro]");
       if (!hero) { setPegado(el.getBoundingClientRect().top <= ALTO_HEADER + 0.5); return; }
       const finHero = hero.getBoundingClientRect().bottom;
@@ -37,11 +44,19 @@ export default function MobileNav() {
   }, [pathname]);
 
   const blanco = !esHome || pegado;
+  // En el checkout no va el menu de secciones: distrae del pago
+  if (pathname.startsWith("/checkout")) return null;
 
   return (
     <div
       ref={ref}
       className={`md:hidden nav-float ${esHome ? "nav-float-home" : ""} ${blanco ? "nav-float-blanco" : ""}`}
+      style={{
+        transform: oculto ? "translateY(-140%)" : "none",
+        opacity: oculto ? 0 : 1,
+        pointerEvents: oculto ? "none" : "auto",
+        transition: "transform 0.4s cubic-bezier(0.32,0.72,0,1), opacity 0.3s ease, background-color 0.45s ease",
+      }}
     >
       <NavPill full dark={!blanco} />
     </div>

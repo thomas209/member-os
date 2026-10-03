@@ -58,9 +58,9 @@ export default async function HomePage() {
       <EncargosSection products={encargos} />
 
       {/* DESTACADOS */}
-      <section className="bg-white px-4 py-12 md:px-12 md:py-20">
-        <div className="max-w-[1440px] mx-auto">
-          <div className="flex justify-between items-baseline mb-8 pb-4 border-b border-neutral-200 overflow-hidden">
+      <section className="bg-white sec">
+        <div className="sec-in">
+          <div className="flex justify-between items-baseline border-b border-neutral-200 overflow-hidden sec-head-linea">
             <h2 className="text-[13px] font-semibold tracking-widest uppercase">Destacados</h2>
             <Link href="/catalog" className="text-[12px] text-neutral-400 no-underline hover:text-neutral-900 transition-colors">Ver todo</Link>
           </div>

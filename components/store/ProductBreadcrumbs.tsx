@@ -7,7 +7,7 @@ type Props = {
 
 export default function ProductBreadcrumbs({ categoryName, categorySlug, productName }: Props) {
   return (
-    <div className="mb-4 md:mb-6">
+    <div className="pdp-migas">
       {/* Mobile — reemplaza breadcrumbs por volver al catálogo */}
       <Link
         href="/catalog"

@@ -42,7 +42,7 @@ export default function Autocomplete({ name, value, onChange, suggestions, place
         placeholder={placeholder}
         autoComplete="off"
         style={{
-          width: "100%", padding: "12px", border: "1px solid #D1D1D1", fontSize: "14px", outline: "none",
+          width: "100%", padding: "12px", border: "1px solid #D1D1D1", fontSize: "16px", outline: "none",
           backgroundColor: disabled ? "#F4F4F4" : "white", boxSizing: "border-box",
         }}
       />

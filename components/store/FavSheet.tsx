@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useFavStore } from "@/store/favorites";
+import { ordenarTalles } from "@/lib/sizes";
 
 type SizeInfo = { size: string; stock: number };
 
@@ -21,12 +22,12 @@ export default function FavSheet() {
     if (!sheet) return;
     setSelected(null); setDone(false); setError(false); setPill(null);
     // Si la card ya trajo los talles, se muestran al instante
-    if (sheet.sizes) { setSizes(sheet.sizes); return; }
+    if (sheet.sizes) { setSizes(ordenarTalles(sheet.sizes)); return; }
     setSizes(null);
     let cancelled = false;
     fetch("/api/favoritos?slugs=" + encodeURIComponent(sheet.slug))
       .then((r) => r.json())
-      .then((d) => { if (!cancelled) setSizes(d.products?.[0]?.sizes ?? []); })
+      .then((d) => { if (!cancelled) setSizes(ordenarTalles(d.products?.[0]?.sizes ?? [])); })
       .catch(() => { if (!cancelled) setSizes([]); });
     return () => { cancelled = true; };
   }, [sheet]);

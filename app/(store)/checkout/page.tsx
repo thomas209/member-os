@@ -167,7 +167,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-[1200px] mx-auto px-6 py-8 md:px-12 md:py-12 flex flex-col-reverse md:grid md:grid-cols-[1fr_400px] gap-8 md:gap-20">
+    <div className="co-wrap flex flex-col-reverse md:grid md:grid-cols-[1fr_400px] gap-8 md:gap-20">
       <div>
         <h1 style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"8px",paddingBottom:"16px",borderBottom:"1px solid #E8E8E8"}}>Datos de envio</h1>
         {loggedInEmail && (
@@ -179,33 +179,33 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Nombre *</label>
-            <input name="firstName" value={form.firstName} onChange={handleChange} placeholder="Thomas" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none"}} />
+            <input name="firstName" autoComplete="given-name" value={form.firstName} onChange={handleChange} placeholder="Thomas" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
           </div>
           <div>
             <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Apellido *</label>
-            <input name="lastName" value={form.lastName} onChange={handleChange} placeholder="Caronia" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none"}} />
+            <input name="lastName" autoComplete="family-name" value={form.lastName} onChange={handleChange} placeholder="Caronia" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
           </div>
         </div>
         <div style={{marginBottom:"16px"}}>
           <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Email *</label>
-          <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="thomas@example.com" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none"}} />
+          <input name="email" autoComplete="email" inputMode="email" type="email" value={form.email} onChange={handleChange} placeholder="thomas@example.com" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
         </div>
         <div style={{marginBottom:"16px"}}>
           <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Telefono</label>
-          <input name="phone" value={form.phone} onChange={handleChange} placeholder="1122334455" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none"}} />
+          <input name="phone" type="tel" autoComplete="tel" inputMode="tel" value={form.phone} onChange={handleChange} placeholder="1122334455" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr] gap-4 mb-4">
           <div>
             <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Calle *</label>
-            <input name="street" value={form.street} onChange={handleChange} placeholder="Av. Corrientes" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none"}} />
+            <input name="street" autoComplete="address-line1" value={form.street} onChange={handleChange} placeholder="Av. Corrientes" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
           </div>
           <div>
             <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Numero *</label>
-            <input name="number" value={form.number} onChange={handleChange} placeholder="1234" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none"}} />
+            <input name="number" inputMode="numeric" value={form.number} onChange={handleChange} placeholder="1234" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
           </div>
           <div>
             <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>Piso</label>
-            <input name="floor" value={form.floor} onChange={handleChange} placeholder="3B" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none"}} />
+            <input name="floor" value={form.floor} onChange={handleChange} placeholder="3B" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -231,7 +231,7 @@ export default function CheckoutPage() {
           </div>
           <div>
             <label style={{display:"block",fontSize:"11px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",color:"#737373",marginBottom:"8px"}}>CP *</label>
-            <input name="postalCode" value={form.postalCode} onChange={handleChange} placeholder="1043" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none"}} />
+            <input name="postalCode" autoComplete="postal-code" inputMode="numeric" value={form.postalCode} onChange={handleChange} placeholder="1043" style={{width:"100%",padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none"}} />
           </div>
         </div>
         <h2 style={{fontSize:"13px",fontWeight:"600",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"16px",paddingBottom:"16px",borderBottom:"1px solid #E8E8E8"}}>Método de pago</h2>
@@ -310,7 +310,7 @@ export default function CheckoutPage() {
                   onChange={(e) => handleCouponChange(e.target.value)}
                   placeholder="WELCOME10"
                   disabled={couponStatus === "valid"}
-                  style={{flex:1,padding:"12px",border:"1px solid #D1D1D1",fontSize:"14px",outline:"none",textTransform:"uppercase",backgroundColor:couponStatus==="valid"?"#F4F4F4":"white"}}
+                  style={{flex:1,padding:"12px",border:"1px solid #D1D1D1",fontSize:"16px",outline:"none",textTransform:"uppercase",backgroundColor:couponStatus==="valid"?"#F4F4F4":"white"}}
                 />
                 {couponStatus === "valid" ? (
                   <button

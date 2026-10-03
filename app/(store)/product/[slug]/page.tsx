@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import AddToCart from "@/components/store/AddToCart";
 import ProductGallery from "@/components/store/ProductGallery";
 import FavHeart from "@/components/store/FavHeart";
+import { ordenarTalles } from "@/lib/sizes";
 import ProductBreadcrumbs from "@/components/store/ProductBreadcrumbs";
 import RelatedProducts, { type RelatedProduct } from "@/components/store/RelatedProducts";
 import ViewContentTracker from "@/components/ViewContentTracker";
@@ -109,7 +110,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const url = `${SITE_URL}/product/${product.slug}`;
 
   return {
-    title,
+    // absolute: el titulo ya termina en "| Member Club"; sin esto se repetia
+    title: { absolute: title },
     description,
     alternates: { canonical: url },
     openGraph: {
@@ -186,7 +188,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       price={Number(product.price)}
       category={product.category.name}
     />
-    <div className="max-w-[1440px] mx-auto px-4 py-6 md:px-12 md:py-12">
+    <div className="pdp-wrap">
       <ProductBreadcrumbs
         categoryName={product.category.name}
         categorySlug={product.category.slug}
@@ -224,7 +226,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
 
           <AddToCart
-            variants={product.variants}
+            variants={ordenarTalles(product.variants)}
             product={{
               id: product.id,
               slug: product.slug,

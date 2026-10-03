@@ -499,3 +499,41 @@ body.nav-cargando .store-root > main { opacity: 0.4; transition: opacity 0.3s ea
 @keyframes catalogIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .catalog-in { animation: catalogIn 0.45s cubic-bezier(0.32,0.72,0,1) both; }
 @media (prefers-reduced-motion: reduce) { .catalog-in { animation: none; } }
+
+/* ============ TANDA 1: margenes y celular ============
+   Clases propias porque la regla global * { margin:0; padding:0 } anula los
+   margenes y paddings de Tailwind. */
+.sec { padding: 40px 16px; }
+.sec-in { max-width: 1440px; margin: 0 auto; }
+.sec-head { margin-bottom: 20px; }
+.sec-head-linea { margin-bottom: 24px; padding-bottom: 14px; }
+.rel-wrap { max-width: 1440px; margin: 0 auto; padding: 24px 16px 64px; }
+.rel-title { margin-bottom: 20px; }
+.pdp-wrap { max-width: 1440px; margin: 0 auto; }
+.pdp-migas { padding: 14px 16px; }
+.co-wrap { max-width: 1200px; margin: 0 auto; padding: 28px 16px 48px; }
+.cat-wrap { max-width: 1440px; margin: 0 auto; padding: 20px 16px 56px; }
+.cat-wrap .catalog-grid { padding: 0; }
+.cat-filtrar { display: inline-flex; align-items: center; gap: 8px; border: none; border-radius: 999px; background: #F4F4F4; color: #0A0A0A; padding: 12px 18px; font-size: 14px; font-weight: 500; cursor: pointer; }
+.cat-filtrar-n { display: grid; place-items: center; min-width: 20px; height: 20px; border-radius: 999px; background: #0A0A0A; color: white; font-size: 11px; font-weight: 600; padding: 0 6px; }
+.cat-filtros { display: none; margin-top: 16px; }
+.cat-filtros.abierto { display: block; }
+@media (max-width: 767px) {
+  /* En el celular la foto del producto va de borde a borde; el texto lleva margen */
+  .pdp-info { padding-left: 16px; padding-right: 16px; }
+  /* El carrusel sigue de largo hacia la derecha, como invitando a deslizar */
+  .sec-carrusel { padding-right: 0; }
+  .sec-carrusel .sec-head { padding-right: 16px; }
+}
+@media (min-width: 768px) {
+  .sec { padding: 72px 48px; }
+  .sec-head { margin-bottom: 24px; }
+  .sec-head-linea { margin-bottom: 32px; padding-bottom: 16px; }
+  .rel-wrap { padding: 24px 48px 96px; }
+  .pdp-wrap { padding: 40px 48px 48px; }
+  .pdp-migas { padding: 0 0 24px; }
+  .co-wrap { padding: 48px; }
+  .cat-wrap { padding: 48px; }
+  .cat-filtrar { display: none; }
+  .cat-filtros { display: block; margin-top: 0; }
+}
