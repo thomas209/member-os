@@ -11,7 +11,8 @@ const ALTO_HEADER = 57; // barra del logo (56px) + linea
 
 export default function MobileNav() {
   const ref = useRef<HTMLDivElement>(null);
-  const esHome = usePathname() === "/";
+  const pathname = usePathname();
+  const esHome = pathname === "/";
   const [pegado, setPegado] = useState(false);
 
   useEffect(() => {
@@ -32,7 +33,8 @@ export default function MobileNav() {
       window.removeEventListener("scroll", revisar);
       window.removeEventListener("resize", revisar);
     };
-  }, []);
+    // Se vuelve a revisar al cambiar de pagina (ahora se navega sin recargar)
+  }, [pathname]);
 
   const blanco = !esHome || pegado;
 

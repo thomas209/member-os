@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
+import { TAG_TIENDA } from "@/lib/storeCache";
 import type { Metadata } from "next";
 import ProductCard from "@/components/store/ProductCard";
 import CatalogToolbar from "@/components/store/CatalogToolbar";
@@ -58,49 +60,75 @@ const SORT_OPTIONS: Record<string, { createdAt?: "asc" | "desc"; price?: "asc" |
   price_desc: { price: "desc" },
 };
 
+// Listado del catalogo, guardado 1 minuto por combinacion de filtros. Asi el
+// cambio entre secciones (Hombre, Mujer, Arte...) responde al instante en vez
+// de consultar la base cada vez. Se refresca solo al guardar un producto en
+// el admin. El stock real se vuelve a validar siempre en el checkout.
+const getCatalogo = unstable_cache(
+  async (clave: string) => {
+    const { category, brand, gender, q, sort, page, encargo } = JSON.parse(clave) as CatalogSearchParams & { page: number };
+    const orderBy = SORT_OPTIONS[sort || "newest"] || SORT_OPTIONS.newest;
+    const where = {
+      isActive: true,
+      deletedAt: null,
+      ...(encargo === "1" && { isEncargo: true }),
+      ...(category && { category: { slug: category } }),
+      ...(brand && { brand: { slug: brand } }),
+      ...(gender && { gender: gender as any }),
+      ...(q && {
+        OR: [
+          { name: { contains: q, mode: "insensitive" as const } },
+          { brand: { name: { contains: q, mode: "insensitive" as const } } },
+        ],
+      }),
+    };
+    const [rows, totalCount] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: {
+          brand: { select: { name: true } },
+          images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 2, select: { url: true } },
+          variants: { select: { size: true, stock: true }, orderBy: { sortOrder: "asc" } },
+        },
+        orderBy,
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+      }),
+      prisma.product.count({ where }),
+    ]);
+    // Datos simples (sin Decimal ni fechas) para poder guardarlos en cache
+    const products = rows.map((p) => ({
+      id: p.id,
+      slug: p.slug,
+      name: p.name,
+      price: p.price.toString(),
+      comparePrice: p.comparePrice ? p.comparePrice.toString() : null,
+      isEncargo: p.isEncargo,
+      brand: { name: p.brand.name },
+      images: p.images.map((i) => ({ url: i.url })),
+      variants: p.variants.map((v) => ({ size: v.size, stock: v.stock })),
+    }));
+    return { products, totalCount };
+  },
+  ["catalogo-v1"],
+  { revalidate: 60, tags: [TAG_TIENDA] }
+);
+
+
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<CatalogSearchParams> }) {
   const { category, brand, gender, q, sort, page: pageParam, encargo } = await searchParams;
   const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
-  const orderBy = SORT_OPTIONS[sort || "newest"] || SORT_OPTIONS.newest;
-
-  const where = {
-    isActive: true,
-    deletedAt: null,
-    ...(encargo === "1" && { isEncargo: true }),
-    ...(category && { category: { slug: category } }),
-    ...(brand && { brand: { slug: brand } }),
-    ...(gender && { gender: gender as any }),
-    ...(q && {
-      OR: [
-        { name: { contains: q, mode: "insensitive" as const } },
-        { brand: { name: { contains: q, mode: "insensitive" as const } } },
-      ],
-    }),
-  };
-
-  const [products, totalCount, categories, brands] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      include: {
-        brand: { select: { name: true, slug: true } },
-        category: { select: { name: true, slug: true } },
-        images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 2 },
-        variants: { select: { size: true, stock: true }, orderBy: { sortOrder: "asc" } },
-      },
-      orderBy,
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-    }),
-    prisma.product.count({ where }),
+  const [{ products, totalCount }, categories, brands] = await Promise.all([
+    getCatalogo(JSON.stringify({ category, brand, gender, q, sort: sort || "newest", page, encargo })),
     unstable_cache(
       () => prisma.category.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
       ["categories"],
-      { revalidate: 300 }
+      { revalidate: 300, tags: [TAG_TIENDA] }
     )(),
     unstable_cache(
       () => prisma.brand.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),
       ["brands"],
-      { revalidate: 300 }
+      { revalidate: 300, tags: [TAG_TIENDA] }
     )(),
   ]);
 
@@ -147,29 +175,29 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
 
         {/* Filtros genero */}
         <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"12px"}}>
-          <a href={buildUrl({ category, brand, q, sort, encargo })} className="hover-pill" style={!gender ? activeStyle : inactiveStyle}>Todos</a>
-          <a href={buildUrl({ category, brand, q, sort, encargo, gender: "HOMBRE" })} className="hover-pill" style={gender === "HOMBRE" ? activeStyle : inactiveStyle}>Hombre</a>
-          <a href={buildUrl({ category, brand, q, sort, encargo, gender: "MUJER" })} className="hover-pill" style={gender === "MUJER" ? activeStyle : inactiveStyle}>Mujer</a>
-          <a href={buildUrl({ category, brand, q, sort, encargo, gender: "UNISEX" })} className="hover-pill" style={gender === "UNISEX" ? activeStyle : inactiveStyle}>Unisex</a>
+          <Link href={buildUrl({ category, brand, q, sort, encargo })} className="hover-pill" style={!gender ? activeStyle : inactiveStyle}>Todos</Link>
+          <Link href={buildUrl({ category, brand, q, sort, encargo, gender: "HOMBRE" })} className="hover-pill" style={gender === "HOMBRE" ? activeStyle : inactiveStyle}>Hombre</Link>
+          <Link href={buildUrl({ category, brand, q, sort, encargo, gender: "MUJER" })} className="hover-pill" style={gender === "MUJER" ? activeStyle : inactiveStyle}>Mujer</Link>
+          <Link href={buildUrl({ category, brand, q, sort, encargo, gender: "UNISEX" })} className="hover-pill" style={gender === "UNISEX" ? activeStyle : inactiveStyle}>Unisex</Link>
         </div>
 
         {/* Filtros categoria */}
         <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"12px"}}>
-          <a href={buildUrl({ brand, gender, q, sort, encargo })} className="hover-pill" style={!category ? activeStyle : inactiveStyle}>Todas las categorias</a>
+          <Link href={buildUrl({ brand, gender, q, sort, encargo })} className="hover-pill" style={!category ? activeStyle : inactiveStyle}>Todas las categorias</Link>
           {categories.map((cat) => (
-            <a key={cat.id} href={buildUrl({ category: cat.slug, brand, gender, q, sort, encargo })} className="hover-pill" style={category === cat.slug ? activeStyle : inactiveStyle}>
+            <Link key={cat.id} href={buildUrl({ category: cat.slug, brand, gender, q, sort, encargo })} className="hover-pill" style={category === cat.slug ? activeStyle : inactiveStyle}>
               {cat.name}
-            </a>
+            </Link>
           ))}
         </div>
 
         {/* Filtros marca */}
         <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
-          <a href={buildUrl({ category, gender, q, sort, encargo })} className="hover-pill" style={!brand ? activeStyle : inactiveStyle}>Todas las marcas</a>
+          <Link href={buildUrl({ category, gender, q, sort, encargo })} className="hover-pill" style={!brand ? activeStyle : inactiveStyle}>Todas las marcas</Link>
           {brands.map((b) => (
-            <a key={b.id} href={buildUrl({ category, brand: b.slug, gender, q, sort, encargo })} className="hover-pill" style={brand === b.slug ? activeStyle : inactiveStyle}>
+            <Link key={b.id} href={buildUrl({ category, brand: b.slug, gender, q, sort, encargo })} className="hover-pill" style={brand === b.slug ? activeStyle : inactiveStyle}>
               {b.name}
-            </a>
+            </Link>
           ))}
         </div>
       </div>
@@ -191,8 +219,8 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
               secondImage={product.images[1]?.url ?? null}
               brand={product.brand.name}
               name={product.name}
-              price={product.price.toString()}
-              comparePrice={product.comparePrice?.toString()}
+              price={product.price}
+              comparePrice={product.comparePrice}
               inStock={product.variants.some((v) => v.stock > 0)}
               isEncargo={product.isEncargo}
               sizes={product.variants.map((v) => ({ size: v.size, stock: v.stock }))}

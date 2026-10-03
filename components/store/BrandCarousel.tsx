@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 type Brand = {
@@ -75,7 +76,7 @@ export default function BrandCarousel({ brands }: { brands: Brand[] }) {
         style={{display: "flex", gap: "64px", overflowX: "hidden", userSelect: "none", paddingLeft: "32px"}}
       >
         {duplicated.map((brand, i) => (
-          <a
+          <Link
             key={i}
             href={"/catalog?brand=" + brand.slug}
             style={{flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none"}}
@@ -91,7 +92,7 @@ export default function BrandCarousel({ brands }: { brands: Brand[] }) {
                 {brand.name}
               </span>
             )}
-          </a>
+          </Link>
         ))}
       </div>
     </div>

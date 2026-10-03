@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
+import { refrescarTienda } from "@/lib/storeCache";
 
 // Anula una venta del POS: repone el stock vendido, marca la orden
 // como CANCELLED y revierte el uso del cupon si tenia. Solo se permite
@@ -72,6 +73,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       }
     });
 
+    refrescarTienda();
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Error anulando venta:", error);

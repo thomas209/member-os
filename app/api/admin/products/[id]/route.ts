@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { refrescarTienda } from "@/lib/storeCache";
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -8,6 +9,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       where: { id },
       data: { deletedAt: new Date(), isActive: false },
     });
+    refrescarTienda();
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Error al archivar producto" }, { status: 500 });
@@ -66,6 +68,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       }
     });
 
+    refrescarTienda();
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);

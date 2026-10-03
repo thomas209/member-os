@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
+import { refrescarTienda } from "@/lib/storeCache";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 
 // Confirma a mano que la transferencia llego (no hay forma automatica de
@@ -118,6 +119,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       }
     }
 
+    refrescarTienda();
     return NextResponse.json({ ok: true, oversold: oversoldItems });
   } catch (error) {
     console.error("Error confirmando transferencia:", error);

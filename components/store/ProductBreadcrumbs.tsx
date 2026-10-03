@@ -1,3 +1,4 @@
+import Link from "next/link";
 type Props = {
   categoryName: string;
   categorySlug: string;
@@ -8,7 +9,7 @@ export default function ProductBreadcrumbs({ categoryName, categorySlug, product
   return (
     <div className="mb-4 md:mb-6">
       {/* Mobile — reemplaza breadcrumbs por volver al catálogo */}
-      <a
+      <Link
         href="/catalog"
         className="flex md:hidden items-center gap-1 text-[12px] text-neutral-500 hover:text-neutral-900 transition-colors w-fit"
       >
@@ -16,15 +17,15 @@ export default function ProductBreadcrumbs({ categoryName, categorySlug, product
           <polyline points="15 18 9 12 15 6" />
         </svg>
         Volver al catálogo
-      </a>
+      </Link>
 
       {/* Desktop — breadcrumbs */}
       <nav aria-label="Breadcrumb" className="hidden md:flex items-center gap-2 text-[11px] tracking-wide text-neutral-400">
-        <a href="/" className="hover:text-neutral-900 transition-colors">Inicio</a>
+        <Link href="/" className="hover:text-neutral-900 transition-colors">Inicio</Link>
         <span aria-hidden="true">/</span>
-        <a href={`/catalog?category=${categorySlug}`} className="hover:text-neutral-900 transition-colors">
+        <Link href={`/catalog?category=${categorySlug}`} className="hover:text-neutral-900 transition-colors">
           {categoryName}
-        </a>
+        </Link>
         <span aria-hidden="true">/</span>
         <span className="text-neutral-600 truncate max-w-[320px]" aria-current="page">
           {productName}

@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { Suspense, useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 // Menu principal con el mismo diseno que el selector de talles.
 // Al tocar una seccion, la pastilla se desliza hasta ahi (negra; roja en Arte).
@@ -16,6 +16,13 @@ const ROJO = "#DC2626";
 const NEGRO = "#0A0A0A";
 const EASE = "cubic-bezier(0.32,0.72,0,1)";
 
+// Avisa cuando cambian los filtros de la direccion (?gender=..., ?category=...)
+function AlCambiarFiltros({ onChange }: { onChange: () => void }) {
+  const q = useSearchParams().toString();
+  useEffect(onChange, [q]); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
+
 // dark: version para usar sobre fondo negro (vidrio oscuro translucido)
 export default function NavPill({ full = false, dark = false }: { full?: boolean; dark?: boolean }) {
   // Donde esta la pastilla: arranca en Arte
@@ -27,6 +34,7 @@ export default function NavPill({ full = false, dark = false }: { full?: boolean
   const router = useRouter();
   const pathname = usePathname();
   const [cargando, startTransition] = useTransition();
+  const ubicarRef = useRef<() => void>(() => {});
 
   const medir = () => {
     const el = refs.current[pos];
@@ -63,6 +71,7 @@ export default function NavPill({ full = false, dark = false }: { full?: boolean
       const i = ITEMS.findIndex((it) => it.match(window.location.pathname, q));
       if (i >= 0) setPos(i);
     };
+    ubicarRef.current = ubicar;
     if (listo) ubicar();
     const alVolver = () => setTimeout(ubicar, 0);
     window.addEventListener("popstate", alVolver);
@@ -104,6 +113,7 @@ export default function NavPill({ full = false, dark = false }: { full?: boolean
         transition: "background-color 0.45s ease, box-shadow 0.45s ease",
       }}
     >
+      <Suspense fallback={null}><AlCambiarFiltros onChange={() => { if (listo) ubicarRef.current(); }} /></Suspense>
       {listo && rect && (
         <span
           aria-hidden

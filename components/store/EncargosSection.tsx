@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRef, useEffect, useState } from "react";
 
 type EncargoProduct = {
@@ -282,7 +283,7 @@ function PokerCard({ product, rotation, background, duplicate = false }: { produ
               <p className="nombre-producto" style={{ fontSize: "14px", marginBottom: "4px", lineHeight: 1.3, color: "white" }}>{product.name}</p>
               <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)" }}>Por encargo · 14 días · ${Number(product.price).toLocaleString("es-AR")}</p>
             </div>
-            <a
+            <Link
               href={"/product/" + product.slug}
               onClick={(e) => e.stopPropagation()}
               tabIndex={duplicate ? -1 : undefined}
@@ -299,7 +300,7 @@ function PokerCard({ product, rotation, background, duplicate = false }: { produ
               }}
             >
               Ver producto →
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -361,7 +362,7 @@ function SimpleFlipCard({ product, background }: { product: EncargoProduct; back
             <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.8)" }}>Por encargo</p>
           </div>
           {flipped && (
-            <a
+            <Link
               href={"/product/" + product.slug}
               onClick={(e) => e.stopPropagation()}
               className="hover-fade"
@@ -373,7 +374,7 @@ function SimpleFlipCard({ product, background }: { product: EncargoProduct; back
               }}
             >
               Ver producto →
-            </a>
+            </Link>
           )}
         </div>
       </div>
@@ -427,7 +428,7 @@ export default function EncargosSection({ products }: Props) {
           </div>
           <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.3)", marginTop: "6px" }}>Productos exclusivos traídos especialmente para vos.</p>
           <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)", marginTop: "4px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Tiempo de entrega estimado: 14 días</p>
-          <a href="/catalog?encargo=1" className="hover-fade" style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginTop: "12px", textDecoration: "underline" }}>Ver todo</a>
+          <Link href="/catalog?encargo=1" className="hover-fade" style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginTop: "12px", textDecoration: "underline" }}>Ver todo</Link>
         </div>
 
         <div className="encargos-desktop" style={{ overflow: "hidden", width: "100%", padding: "60px 0" }}>

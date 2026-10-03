@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import Image from "next/image";
 import CartDrawer from "@/components/store/CartDrawer";
@@ -21,15 +22,15 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
 
         {/* DESKTOP */}
         <div className="hidden md:flex" style={{maxWidth: "1440px", margin: "0 auto", padding: "0 48px", height: "56px", alignItems: "center", justifyContent: "space-between"}}>
-          <a href="/" className="hover-fade" style={{display: "flex", alignItems: "center"}}>
+          <Link href="/" className="hover-fade" style={{display: "flex", alignItems: "center"}}>
             <Image src={LOGO_URL} alt="Member Club" width={140} height={32} style={{height: "24px", width: "auto", objectFit: "contain"}} priority />
-          </a>
+          </Link>
           <NavPill />
           <div style={{display: "flex", alignItems: "center", gap: "24px"}}>
-            <a href="/cuenta" aria-label="Mi cuenta" className="hover-fade" style={{display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#737373", textDecoration: "none", letterSpacing: "0.04em"}}>
+            <Link href="/cuenta" aria-label="Mi cuenta" className="hover-fade" style={{display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#737373", textDecoration: "none", letterSpacing: "0.04em"}}>
               <Image src="https://res.cloudinary.com/dklvmlzds/image/upload/v1783879145/people-icon-4777671-512_unddlt.png" alt="" width={18} height={18} style={{ objectFit: "contain" }} />
               Mi cuenta
-            </a>
+            </Link>
             <FavButton />
             <CartButton />
           </div>
@@ -38,9 +39,9 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         {/* MOBILE NAVBAR */}
         <div className="flex md:hidden items-center justify-between px-4 relative" style={{height: "56px"}}>
           <div style={{minWidth: "40px", display: "flex", alignItems: "center"}}><FavButton /></div>
-          <a href="/" className="absolute left-1/2 -translate-x-1/2 hover-fade" style={{display: "flex", alignItems: "center"}}>
+          <Link href="/" className="absolute left-1/2 -translate-x-1/2 hover-fade" style={{display: "flex", alignItems: "center"}}>
             <Image src={LOGO_URL} alt="Member Club" width={130} height={30} style={{height: "22px", width: "auto", objectFit: "contain"}} priority />
-          </a>
+          </Link>
           <div style={{display: "flex", alignItems: "center", gap: "16px"}}>
             <CartButton />
             <button onClick={() => setMenuOpen(true)} className="hover-fade" style={{background: "none", border: "none", cursor: "pointer", padding: "4px"}}>
@@ -66,9 +67,9 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
 
         {/* Header drawer */}
         <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", height: "56px", borderBottom: "1px solid #F4F4F4"}}>
-          <a href="/" onClick={() => setMenuOpen(false)} className="hover-fade" style={{display: "flex", alignItems: "center"}}>
+          <Link href="/" onClick={() => setMenuOpen(false)} className="hover-fade" style={{display: "flex", alignItems: "center"}}>
             <Image src={LOGO_URL} alt="Member Club" width={130} height={30} style={{height: "22px", width: "auto", objectFit: "contain"}} />
-          </a>
+          </Link>
           <button onClick={() => setMenuOpen(false)} className="hover-fade" style={{background: "none", border: "none", cursor: "pointer", padding: "4px"}}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -78,30 +79,30 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
 
         {/* Links principales */}
         <div style={{display: "flex", flexDirection: "column"}}>
-          <a href="/catalog" onClick={() => setMenuOpen(false)} className="hover-fade" style={{padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#0A0A0A", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>Catálogo</a>
-          <a href="/catalog?gender=HOMBRE" onClick={() => setMenuOpen(false)} className="hover-fade" style={{padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#0A0A0A", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>Hombre</a>
-          <a href="/catalog?gender=MUJER" onClick={() => setMenuOpen(false)} className="hover-fade" style={{padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#0A0A0A", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>Mujer</a>
-          <a href="/catalog?category=arte" onClick={() => setMenuOpen(false)} className="hover-fade" style={{padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#DC2626", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>Arte</a>
-          <a href="/cuenta" onClick={() => setMenuOpen(false)} className="hover-fade" style={{display: "flex", alignItems: "center", gap: "12px", padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#0A0A0A", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>
+          <Link href="/catalog" onClick={() => setMenuOpen(false)} className="hover-fade" style={{padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#0A0A0A", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>Catálogo</Link>
+          <Link href="/catalog?gender=HOMBRE" onClick={() => setMenuOpen(false)} className="hover-fade" style={{padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#0A0A0A", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>Hombre</Link>
+          <Link href="/catalog?gender=MUJER" onClick={() => setMenuOpen(false)} className="hover-fade" style={{padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#0A0A0A", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>Mujer</Link>
+          <Link href="/catalog?category=arte" onClick={() => setMenuOpen(false)} className="hover-fade" style={{padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#DC2626", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>Arte</Link>
+          <Link href="/cuenta" onClick={() => setMenuOpen(false)} className="hover-fade" style={{display: "flex", alignItems: "center", gap: "12px", padding: "20px", fontSize: "20px", fontWeight: "400", fontFamily: "Georgia, serif", color: "#0A0A0A", textDecoration: "none", borderBottom: "1px solid #F4F4F4"}}>
             <Image src="https://res.cloudinary.com/dklvmlzds/image/upload/v1783879145/people-icon-4777671-512_unddlt.png" alt="" width={20} height={20} style={{ objectFit: "contain" }} />
             Mi cuenta
-          </a>
+          </Link>
         </div>
 
         {/* Links secundarios */}
         <div style={{borderTop: "1px solid #E8E8E8", marginTop: "8px"}}>
-          <a href="/stores" onClick={() => setMenuOpen(false)} className="hover-fade" style={{display: "flex", alignItems: "center", gap: "12px", padding: "16px 20px", fontSize: "14px", fontWeight: "400", color: "#737373", textDecoration: "none", borderBottom: "1px solid #F4F4F4", letterSpacing: "0.06em", textTransform: "uppercase"}}>
+          <Link href="/stores" onClick={() => setMenuOpen(false)} className="hover-fade" style={{display: "flex", alignItems: "center", gap: "12px", padding: "16px 20px", fontSize: "14px", fontWeight: "400", color: "#737373", textDecoration: "none", borderBottom: "1px solid #F4F4F4", letterSpacing: "0.06em", textTransform: "uppercase"}}>
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#737373" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18.977 14C19.6 12.701 20 11.343 20 10a8 8 0 0 0-16 0c0 4.993 5.539 10.193 7.399 11.799a1 1 0 0 0 1.202 0 32 32 0 0 0 .824-.738"/><circle cx="12" cy="10" r="3"/><path d="M16 18h6"/></svg>
             Stores
-          </a>
-          <a href="/catalog?encargo=1" onClick={() => setMenuOpen(false)} className="hover-fade" style={{display: "flex", alignItems: "center", gap: "12px", padding: "16px 20px", fontSize: "14px", fontWeight: "400", color: "#737373", textDecoration: "none", borderBottom: "1px solid #F4F4F4", letterSpacing: "0.06em", textTransform: "uppercase"}}>
+          </Link>
+          <Link href="/catalog?encargo=1" onClick={() => setMenuOpen(false)} className="hover-fade" style={{display: "flex", alignItems: "center", gap: "12px", padding: "16px 20px", fontSize: "14px", fontWeight: "400", color: "#737373", textDecoration: "none", borderBottom: "1px solid #F4F4F4", letterSpacing: "0.06em", textTransform: "uppercase"}}>
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#737373" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
             Encargos
-          </a>
-          <a href="/catalog?category=arte" onClick={() => setMenuOpen(false)} className="hover-fade" style={{display: "flex", alignItems: "center", gap: "12px", padding: "16px 20px", fontSize: "14px", fontWeight: "700", color: "#DC2626", textDecoration: "none", letterSpacing: "0.06em"}}>
+          </Link>
+          <Link href="/catalog?category=arte" onClick={() => setMenuOpen(false)} className="hover-fade" style={{display: "flex", alignItems: "center", gap: "12px", padding: "16px 20px", fontSize: "14px", fontWeight: "700", color: "#DC2626", textDecoration: "none", letterSpacing: "0.06em"}}>
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="#DC2626"/><circle cx="17.5" cy="10.5" r=".5" fill="#DC2626"/><circle cx="6.5" cy="12.5" r=".5" fill="#DC2626"/><circle cx="8.5" cy="7.5" r=".5" fill="#DC2626"/></svg>
             BIG.BOY.OK
-          </a>
+          </Link>
         </div>
 
       </div>

@@ -1,4 +1,8 @@
-export const revalidate = 0;
+// La home se guarda armada y se refresca sola cada 2 minutos (y al guardar
+// un producto en el admin). Asi responde al instante en vez de consultar la
+// base en cada visita.
+export const revalidate = 120;
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import BrandCarousel from "@/components/store/BrandCarousel";
 import CategoryCarousel from "@/components/store/CategoryCarousel";
@@ -43,9 +47,7 @@ async function getFeaturedProducts() {
 }
 
 export default async function HomePage() {
-  const featured = await getFeaturedProducts();
-  const encargos = await getEncargos();
-  const brands = await getBrands();
+  const [featured, encargos, brands] = await Promise.all([getFeaturedProducts(), getEncargos(), getBrands()]);
 
   return (
     <main>
@@ -60,7 +62,7 @@ export default async function HomePage() {
         <div className="max-w-[1440px] mx-auto">
           <div className="flex justify-between items-baseline mb-8 pb-4 border-b border-neutral-200 overflow-hidden">
             <h2 className="text-[13px] font-semibold tracking-widest uppercase">Destacados</h2>
-            <a href="/catalog" className="text-[12px] text-neutral-400 no-underline hover:text-neutral-900 transition-colors">Ver todo</a>
+            <Link href="/catalog" className="text-[12px] text-neutral-400 no-underline hover:text-neutral-900 transition-colors">Ver todo</Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {featured.map((product) => (

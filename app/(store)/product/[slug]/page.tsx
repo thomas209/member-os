@@ -1,5 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
+import { TAG_TIENDA } from "@/lib/storeCache";
 import type { Metadata } from "next";
 import AddToCart from "@/components/store/AddToCart";
 import ProductGallery from "@/components/store/ProductGallery";
@@ -11,7 +14,8 @@ import ViewContentTracker from "@/components/ViewContentTracker";
 const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com";
 const RELATED_PRODUCTS_LIMIT = 8;
 
-async function getProduct(slug: string) {
+// cache(): el titulo de la pagina y la pagina comparten una sola consulta
+const getProduct = cache(async (slug: string) => {
   return prisma.product.findFirst({
     where: { slug, isActive: true, deletedAt: null },
     include: {
@@ -21,7 +25,7 @@ async function getProduct(slug: string) {
       variants: { orderBy: { sortOrder: "asc" } },
     },
   });
-}
+});
 
 const RELATED_INCLUDE = {
   brand: { select: { name: true } },
@@ -74,6 +78,9 @@ async function getRelatedProducts(product: { id: string; categoryId: string; bra
     sizes: p.variants.map((v) => ({ size: v.size, stock: v.stock })),
   }));
 }
+
+// Los relacionados cambian poco: se guardan 5 minutos
+const getRelatedCached = unstable_cache(getRelatedProducts, ["relacionados-v1"], { revalidate: 300, tags: [TAG_TIENDA] });
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -129,7 +136,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   if (!product) notFound();
 
-  const relatedProducts = await getRelatedProducts({
+  const relatedProducts = await getRelatedCached({
     id: product.id,
     categoryId: product.categoryId,
     brandId: product.brandId,

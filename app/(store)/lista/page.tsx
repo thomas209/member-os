@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
@@ -59,12 +60,12 @@ export default async function ListaPage({ searchParams }: { searchParams: Promis
       {filas.length === 0 ? (
         <div className="fav-vacio-box">
           <p className="fav-vacio">Esta lista está vacía o los productos ya no están disponibles.</p>
-          <a href="/catalog" className="fav-pastilla">Ver el catálogo</a>
+          <Link href="/catalog" className="fav-pastilla">Ver el catálogo</Link>
         </div>
       ) : (
         <div className="fav-grid">
           {filas.map(({ fav, product }, i) => (
-            <a key={product!.slug} href={"/product/" + product!.slug} className="fav-card fav-in" style={{ animationDelay: i * 70 + "ms" }}>
+            <Link key={product!.slug} href={"/product/" + product!.slug} className="fav-card fav-in" style={{ animationDelay: i * 70 + "ms" }}>
               <div className="fav-card-foto">
                 {product!.images[0]?.url && <img src={product!.images[0].url} alt={product!.name} loading="lazy" />}
                 {fav.size && <span className="fav-talle-tag">Talle {fav.size}</span>}
@@ -72,13 +73,13 @@ export default async function ListaPage({ searchParams }: { searchParams: Promis
               <span className="fav-marca">{product!.brand.name}</span>
               <span className="nombre-producto fav-nombre">{product!.name}</span>
               <span className="precio fav-precio">${Number(product!.price).toLocaleString("es-AR")}</span>
-            </a>
+            </Link>
           ))}
         </div>
       )}
 
       <div className="fav-acciones fav-acciones-centro">
-        <a href="/catalog" className="fav-link">Ver todo el catálogo</a>
+        <Link href="/catalog" className="fav-link">Ver todo el catálogo</Link>
       </div>
     </div>
   );

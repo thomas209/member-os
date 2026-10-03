@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRef, useState } from "react";
 import ProductPhoto from "@/components/store/ProductPhoto";
 import FavHeart from "@/components/store/FavHeart";
@@ -23,7 +24,7 @@ function ProductTile({ product }: { product: Product }) {
   // Si cualquiera de las dos fotos tiene fondo de color, la card queda redondeada siempre
   const redondo = fondoColor || fondoColor2;
   return (
-    <a
+    <Link
       href={"/product/" + product.slug}
       style={{ textDecoration: "none", color: "#0A0A0A", display: "block" }}
       onMouseEnter={() => setHovered(true)}
@@ -69,7 +70,7 @@ function ProductTile({ product }: { product: Product }) {
       {product.isEncargo && (
         <p style={{ fontSize: "10px", color: "#737373", marginTop: "3px" }}>Por encargo</p>
       )}
-    </a>
+    </Link>
   );
 }
 

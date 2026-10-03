@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function HeroSplit() {
@@ -33,15 +34,15 @@ export default function HeroSplit() {
   return (
     <div data-nav-oscuro style={{position: "relative", height: "60svh", backgroundColor: "#0A0A0A", overflow: "hidden"}}>
 
-      <a href="/catalog?gender=HOMBRE" style={btnStyle("left")} onMouseEnter={() => setHoveredSide("left")} onMouseLeave={() => setHoveredSide(null)}>
+      <Link href="/catalog?gender=HOMBRE" style={btnStyle("left")} onMouseEnter={() => setHoveredSide("left")} onMouseLeave={() => setHoveredSide(null)}>
         <span style={{fontSize: "32px", display: "block", marginBottom: "8px", opacity: 0.6}}>♂</span>
         Hombre
-      </a>
+      </Link>
 
-      <a href="/catalog?gender=MUJER" style={btnStyle("right")} onMouseEnter={() => setHoveredSide("right")} onMouseLeave={() => setHoveredSide(null)}>
+      <Link href="/catalog?gender=MUJER" style={btnStyle("right")} onMouseEnter={() => setHoveredSide("right")} onMouseLeave={() => setHoveredSide(null)}>
         <span style={{fontSize: "32px", display: "block", marginBottom: "8px", opacity: 0.6}}>♀</span>
         Mujer
-      </a>
+      </Link>
 
       <div style={{
         position: "absolute",

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { refrescarTienda } from "@/lib/storeCache";
 
 export async function GET() {
   const categories = await prisma.category.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } });
@@ -11,6 +12,7 @@ export async function POST(request: Request) {
     const { name, slug } = await request.json();
     if (!name || !slug) return NextResponse.json({ error: "Nombre y slug requeridos" }, { status: 400 });
     const category = await prisma.category.create({ data: { name, slug } });
+    refrescarTienda();
     return NextResponse.json({ category }, { status: 201 });
   } catch (error: any) {
     if (error.code === "P2002") return NextResponse.json({ error: "Ya existe una categoria con ese nombre o slug" }, { status: 400 });

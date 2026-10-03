@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useFavStore, buildListaPath } from "@/store/favorites";
 import { useCartStore } from "@/store/cart";
@@ -101,7 +102,7 @@ export default function FavoritosPage() {
         <div className="fav-vacio-box fav-in">
           <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#A3A3A3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={HEART_PATH} /></svg>
           <p className="fav-vacio">Todavía no guardaste nada. Tocá el corazón de cualquier producto para empezar.</p>
-          <a href="/catalog" className="fav-pastilla">Ir al catálogo</a>
+          <Link href="/catalog" className="fav-pastilla">Ir al catálogo</Link>
         </div>
       ) : (
         <>
@@ -112,7 +113,7 @@ export default function FavoritosPage() {
               const comprable = !!v && v.stock > 0;
               return (
                 <div key={item.slug} className="fav-card fav-in" style={{ animationDelay: i * 70 + "ms" }}>
-                  <a href={"/product/" + item.slug} className="fav-card-foto">
+                  <Link href={"/product/" + item.slug} className="fav-card-foto">
                     {item.image && <img src={item.image} alt={item.name} loading="lazy" />}
                     {fav.size && <span className="fav-talle-tag">Talle {fav.size}</span>}
                     <button
@@ -123,8 +124,8 @@ export default function FavoritosPage() {
                     >
                       <svg viewBox="0 0 24 24" aria-hidden="true"><path d={HEART_PATH} /></svg>
                     </button>
-                  </a>
-                  <a href={"/product/" + item.slug} className="fav-card-info">
+                  </Link>
+                  <Link href={"/product/" + item.slug} className="fav-card-info">
                     <span className="fav-marca">{item.brand}</span>
                     <span className="nombre-producto fav-nombre">{item.name}</span>
                     <span className="precio fav-precio">${item.price.toLocaleString("es-AR")}</span>
@@ -132,15 +133,15 @@ export default function FavoritosPage() {
                       {e.tipo === "ok" && <i className="fav-punto" />}
                       {e.texto}
                     </span>
-                  </a>
+                  </Link>
                   {v && !comprable && item.isEncargo ? (
-                    <a href={"/product/" + item.slug} className="fav-agregar fav-agregar-claro">Ver producto</a>
+                    <Link href={"/product/" + item.slug} className="fav-agregar fav-agregar-claro">Ver producto</Link>
                   ) : v ? (
                     <button type="button" className="fav-agregar" disabled={!comprable} onClick={() => agregar(item, v)}>
                       {comprable ? "Agregar al carrito" : "Sin stock"}
                     </button>
                   ) : (
-                    <a href={"/product/" + item.slug} className="fav-agregar fav-agregar-claro">Elegir talle</a>
+                    <Link href={"/product/" + item.slug} className="fav-agregar fav-agregar-claro">Elegir talle</Link>
                   )}
                   {aviso?.slug === item.slug && <span className="fav-error">{aviso.texto}</span>}
                 </div>

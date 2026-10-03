@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { refrescarTienda } from "@/lib/storeCache";
 
 export async function POST(request: Request) {
   try {
@@ -67,6 +68,7 @@ export async function POST(request: Request) {
       }
     }
 
+    refrescarTienda();
     return NextResponse.json({ product: { id: product.id, slug: product.slug } }, { status: 201 });
   } catch (error: any) {
     console.error(error);

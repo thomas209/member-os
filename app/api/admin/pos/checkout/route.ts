@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
+import { refrescarTienda } from "@/lib/storeCache";
 import { upsertCustomerByEmail } from "@/lib/customerCrm";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 
@@ -227,6 +228,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    refrescarTienda();
     return NextResponse.json({
       orderId: order.id,
       orderNumber: order.orderNumber,
