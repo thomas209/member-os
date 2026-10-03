@@ -4,7 +4,9 @@ import { persist } from "zustand/middleware";
 // Favoritos del cliente. Se guardan en el navegador (localStorage), igual que
 // el carrito: no usan la base de datos.
 export type Fav = { slug: string; size: string | null };
-export type FavSheetProduct = { slug: string; name: string; brand: string };
+export type FavSize = { size: string; stock: number };
+// sizes: si la card ya los trae, la hoja se abre sin esperar a la red
+export type FavSheetProduct = { slug: string; name: string; brand: string; sizes?: FavSize[] };
 
 type FavStore = {
   favs: Fav[];
@@ -14,6 +16,9 @@ type FavStore = {
   sheet: FavSheetProduct | null;
   // Cambia cada vez que se guarda algo, para animar el corazon del header
   bumpCount: number;
+  // Ultimos datos vistos en /favoritos, para mostrar la pagina al instante
+  cache: unknown[];
+  setCache: (cache: unknown[]) => void;
   add: (slug: string, size: string | null) => void;
   remove: (slug: string) => void;
   setOwnerName: (name: string) => void;
@@ -28,6 +33,8 @@ export const useFavStore = create<FavStore>()(
       ownerName: "",
       sheet: null,
       bumpCount: 0,
+      cache: [],
+      setCache: (cache) => set({ cache }),
       add: (slug, size) =>
         set({
           favs: [...get().favs.filter((f) => f.slug !== slug), { slug, size }],
@@ -40,7 +47,7 @@ export const useFavStore = create<FavStore>()(
     }),
     {
       name: "mc-favoritos",
-      partialize: (state) => ({ favs: state.favs, ownerName: state.ownerName }),
+      partialize: (state) => ({ favs: state.favs, ownerName: state.ownerName, cache: state.cache }),
     }
   )
 );

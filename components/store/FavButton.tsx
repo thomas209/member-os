@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useFavStore } from "@/store/favorites";
 import { HEART_PATH } from "@/components/store/FavHeart";
 
@@ -21,7 +22,7 @@ export default function FavButton() {
 
   const n = mounted ? count : 0;
   return (
-    <a href="/favoritos" aria-label="Mis favoritos" className="hover-fade" style={{ display: "flex", alignItems: "center", gap: "8px", color: "#0A0A0A", textDecoration: "none" }}>
+    <Link href="/favoritos" prefetch aria-label="Mis favoritos" className="hover-fade" style={{ display: "flex", alignItems: "center", gap: "8px", color: "#0A0A0A", textDecoration: "none" }}>
       <svg key={pulsing ? "p" : "i"} className={pulsing ? "cart-icon-bump" : ""} width="20" height="20" viewBox="0 0 24 24" fill={n > 0 ? "#DC2626" : "none"} stroke={n > 0 ? "#DC2626" : "currentColor"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d={HEART_PATH} />
       </svg>
@@ -30,6 +31,6 @@ export default function FavButton() {
           {n}
         </span>
       )}
-    </a>
+    </Link>
   );
 }

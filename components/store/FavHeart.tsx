@@ -1,16 +1,17 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useFavStore } from "@/store/favorites";
+import { useFavStore, type FavSize } from "@/store/favorites";
 
 export const HEART_PATH = "M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z";
 
 // Corazon de favoritos para las cards. Va dentro del recuadro de la foto
 // (que tiene position: relative). Funciona igual en fotos con card redondeada
 // y en fotos de fondo blanco sin card.
-export default function FavHeart({ slug, name, brand, compact = false, hideTag = false }: { slug: string; name: string; brand: string; compact?: boolean; hideTag?: boolean }) {
+export default function FavHeart({ slug, name, brand, compact = false, hideTag = false, sizes }: { slug: string; name: string; brand: string; compact?: boolean; hideTag?: boolean; sizes?: FavSize[] }) {
   const fav = useFavStore((s) => s.favs.find((f) => f.slug === slug));
   const remove = useFavStore((s) => s.remove);
   const openSheet = useFavStore((s) => s.openSheet);
+  const add = useFavStore((s) => s.add);
   // Lo guardado vive en el navegador: recien se puede leer despues de montar
   const [mounted, setMounted] = useState(false);
   const [pop, setPop] = useState(false);
@@ -42,7 +43,9 @@ export default function FavHeart({ slug, name, brand, compact = false, hideTag =
           e.preventDefault();
           e.stopPropagation();
           if (on) remove(slug);
-          else openSheet({ slug, name, brand });
+          // Talle unico (carteras, arte): se guarda al toque, sin hoja
+          else if (sizes && sizes.length <= 1) add(slug, null);
+          else openSheet({ slug, name, brand, sizes });
         }}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d={HEART_PATH} /></svg>

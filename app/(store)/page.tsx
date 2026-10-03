@@ -34,7 +34,7 @@ async function getFeaturedProducts() {
     include: {
       brand: { select: { name: true } },
       images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 2 },
-      variants: { select: { stock: true } },
+      variants: { select: { size: true, stock: true }, orderBy: { sortOrder: "asc" } },
     },
     orderBy: { createdAt: "desc" },
     take: 4,
@@ -75,6 +75,7 @@ export default async function HomePage() {
                 comparePrice={product.comparePrice?.toString()}
                 inStock={product.variants.some((v) => v.stock > 0)}
                 isEncargo={product.isEncargo}
+                sizes={product.variants.map((v) => ({ size: v.size, stock: v.stock }))}
               />
             ))}
           </div>

@@ -6,7 +6,7 @@ import FavHeart from "@/components/store/FavHeart";
 
 const CARD_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw";
 
-export default function ProductCard({ href, image, secondImage, brand, name, price, comparePrice, inStock = true, isEncargo = false }: { href: string; image: string | null; secondImage?: string | null; brand: string; name: string; price: string; comparePrice?: string | null; inStock?: boolean; isEncargo?: boolean }) {
+export default function ProductCard({ href, image, secondImage, brand, name, price, comparePrice, inStock = true, isEncargo = false, sizes }: { href: string; image: string | null; secondImage?: string | null; brand: string; name: string; price: string; comparePrice?: string | null; inStock?: boolean; isEncargo?: boolean; sizes?: { size: string; stock: number }[] }) {
   const [hovered, setHovered] = useState(false);
   const [fondoColor, setFondoColor] = useState(false);
   const [fondoColor2, setFondoColor2] = useState(false);
@@ -15,7 +15,7 @@ export default function ProductCard({ href, image, secondImage, brand, name, pri
   return (
     <Link href={href} prefetch style={{textDecoration:"none",color:"#0A0A0A",display:"block"}} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <div style={{aspectRatio:"4/5",backgroundColor:"#F4F4F4",borderRadius:redondo?"18px":0,transition:"border-radius 0.3s ease",marginBottom:"16px",overflow:"hidden",position:"relative"}}>
-        <FavHeart slug={href.split("/").pop() || ""} name={name} brand={brand} />
+        <FavHeart slug={href.split("/").pop() || ""} name={name} brand={brand} sizes={sizes} />
         {!inStock && (
           <div style={{position:"absolute",top:"10px",left:"10px",zIndex:1,backgroundColor:"white",color:"#0A0A0A",fontSize:"10px",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",padding:"5px 10px",border:"1px solid #0A0A0A"}}>
             Sin stock

@@ -22,6 +22,7 @@ async function getProductsByCategory(categorySlug: string, take = 16) {
     include: {
       brand: { select: { name: true } },
       images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 2 },
+      variants: { select: { size: true, stock: true }, orderBy: { sortOrder: "asc" } },
     },
     orderBy: { createdAt: "desc" },
     take,
@@ -59,6 +60,7 @@ export default async function CategoryCarousel({
           image: p.images[0]?.url ?? null,
           secondImage: p.images[1]?.url ?? null,
           isEncargo: p.isEncargo,
+          sizes: p.variants.map((v) => ({ size: v.size, stock: v.stock })),
         }))} />
       </div>
     </section>

@@ -37,6 +37,7 @@ export default function FavoritosPage() {
   const ownerName = useFavStore((s) => s.ownerName);
   const setOwnerName = useFavStore((s) => s.setOwnerName);
   const addItem = useCartStore((s) => s.addItem);
+  const setCache = useFavStore((s) => s.setCache);
   const [mounted, setMounted] = useState(false);
   const [items, setItems] = useState<Item[] | null>(null);
   const [compartir, setCompartir] = useState(false);
@@ -48,11 +49,14 @@ export default function FavoritosPage() {
   useEffect(() => {
     if (!mounted) return;
     if (!slugs) { setItems([]); return; }
+    // Primero lo ultimo que se vio (al instante), despues se actualiza con el stock real
+    const guardado = useFavStore.getState().cache as Item[];
+    if (guardado.length) setItems((prev) => prev ?? guardado);
     let cancelled = false;
     fetch("/api/favoritos?slugs=" + encodeURIComponent(slugs))
       .then((r) => r.json())
-      .then((d) => { if (!cancelled) setItems(d.products ?? []); })
-      .catch(() => { if (!cancelled) setItems([]); });
+      .then((d) => { if (!cancelled) { setItems(d.products ?? []); setCache(d.products ?? []); } })
+      .catch(() => { if (!cancelled) setItems((prev) => prev ?? []); });
     return () => { cancelled = true; };
   }, [slugs, mounted]);
 

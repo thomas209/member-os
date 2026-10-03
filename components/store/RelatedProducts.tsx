@@ -10,6 +10,7 @@ export type RelatedProduct = {
   price: string;
   comparePrice: string | null;
   inStock: boolean;
+  sizes?: { size: string; stock: number }[];
 };
 
 export default function RelatedProducts({ products }: { products: RelatedProduct[] }) {
@@ -34,6 +35,7 @@ export default function RelatedProducts({ products }: { products: RelatedProduct
               price={p.price}
               comparePrice={p.comparePrice}
               inStock={p.inStock}
+              sizes={p.sizes}
             />
           </div>
         ))}
@@ -52,6 +54,7 @@ export default function RelatedProducts({ products }: { products: RelatedProduct
             price={p.price}
             comparePrice={p.comparePrice}
             inStock={p.inStock}
+            sizes={p.sizes}
           />
         ))}
       </div>

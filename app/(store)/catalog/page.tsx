@@ -85,7 +85,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
         brand: { select: { name: true, slug: true } },
         category: { select: { name: true, slug: true } },
         images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 2 },
-        variants: { select: { stock: true } },
+        variants: { select: { size: true, stock: true }, orderBy: { sortOrder: "asc" } },
       },
       orderBy,
       skip: (page - 1) * PAGE_SIZE,
@@ -195,6 +195,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
               comparePrice={product.comparePrice?.toString()}
               inStock={product.variants.some((v) => v.stock > 0)}
               isEncargo={product.isEncargo}
+              sizes={product.variants.map((v) => ({ size: v.size, stock: v.stock }))}
             />
           ))}
         </div>

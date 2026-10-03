@@ -26,7 +26,7 @@ async function getProduct(slug: string) {
 const RELATED_INCLUDE = {
   brand: { select: { name: true } },
   images: { orderBy: [{ isPrimary: "desc" as const }, { sortOrder: "asc" as const }], take: 2 },
-  variants: { select: { stock: true } },
+  variants: { select: { size: true, stock: true }, orderBy: { sortOrder: "asc" as const } },
 };
 
 async function getRelatedProducts(product: { id: string; categoryId: string; brandId: string }): Promise<RelatedProduct[]> {
@@ -71,6 +71,7 @@ async function getRelatedProducts(product: { id: string; categoryId: string; bra
     price: p.price.toString(),
     comparePrice: p.comparePrice?.toString() ?? null,
     inStock: p.variants.some((v) => v.stock > 0),
+    sizes: p.variants.map((v) => ({ size: v.size, stock: v.stock })),
   }));
 }
 
@@ -189,7 +190,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         <div style={{ position: "relative", minWidth: 0 }}>
           <ProductGallery images={product.images} productName={product.name} />
-          <FavHeart slug={product.slug} name={product.name} brand={product.brand.name} hideTag />
+          <FavHeart slug={product.slug} name={product.name} brand={product.brand.name} sizes={product.variants.map((v) => ({ size: v.size, stock: v.stock }))} hideTag />
         </div>
 
         <div className="pdp-info">

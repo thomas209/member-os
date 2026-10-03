@@ -19,7 +19,10 @@ export default function FavSheet() {
 
   useEffect(() => {
     if (!sheet) return;
-    setSizes(null); setSelected(null); setDone(false); setError(false); setPill(null);
+    setSelected(null); setDone(false); setError(false); setPill(null);
+    // Si la card ya trajo los talles, se muestran al instante
+    if (sheet.sizes) { setSizes(sheet.sizes); return; }
+    setSizes(null);
     let cancelled = false;
     fetch("/api/favoritos?slugs=" + encodeURIComponent(sheet.slug))
       .then((r) => r.json())
@@ -41,7 +44,7 @@ export default function FavSheet() {
     if (conTalles && !selected) { setError(true); return; }
     add(sheet.slug, conTalles ? selected : null);
     setDone(true);
-    setTimeout(closeSheet, 1500);
+    setTimeout(closeSheet, 1000);
   };
 
   return (
