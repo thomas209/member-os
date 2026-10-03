@@ -182,7 +182,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
           </p>
         </div>
       ) : (
-        <div className="catalog-grid">
+        <div key={[category, brand, gender, q, sort, page, encargo].join("|")} className="catalog-grid catalog-in">
           {products.map((product) => (
             <ProductCard
               key={product.id}

@@ -491,3 +491,11 @@ a:hover .product-img {
   body:has(.fav-barra) { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
   .fav-agregar { height: 42px; font-size: 13px; }
 }
+
+/* Navegacion fluida entre secciones (menu pastilla): el contenido actual se
+   atenua mientras llega el nuevo, y la grilla nueva entra suave. */
+.store-root > main { transition: opacity 0.25s ease; }
+body.nav-cargando .store-root > main { opacity: 0.4; transition: opacity 0.3s ease 0.12s; pointer-events: none; }
+@keyframes catalogIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.catalog-in { animation: catalogIn 0.45s cubic-bezier(0.32,0.72,0,1) both; }
+@media (prefers-reduced-motion: reduce) { .catalog-in { animation: none; } }

@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 // Menu principal con el mismo diseno que el selector de talles.
 // Al tocar una seccion, la pastilla se desliza hasta ahi (negra; roja en Arte).
@@ -23,6 +24,9 @@ export default function NavPill({ full = false, dark = false }: { full?: boolean
   const [listo, setListo] = useState(false); // no se muestra hasta saber la seccion
   const refs = useRef<(HTMLAnchorElement | null)[]>([]);
   const [rect, setRect] = useState<{ left: number; width: number } | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const [cargando, startTransition] = useTransition();
 
   const medir = () => {
     const el = refs.current[pos];
@@ -46,13 +50,41 @@ export default function NavPill({ full = false, dark = false }: { full?: boolean
     return () => clearTimeout(t);
   }, []);
 
-  // Al tocar: la pastilla se desliza y despues cambia de pagina
+  // Las secciones se precargan, asi el cambio es inmediato al tocar
+  useEffect(() => {
+    ITEMS.forEach((it) => router.prefetch(it.href));
+  }, [router]);
+
+  // Si se navega por otro lado (boton "atras", filtros, logo), la pastilla
+  // se reubica en la seccion que corresponde.
+  useEffect(() => {
+    const ubicar = () => {
+      const q = new URLSearchParams(window.location.search);
+      const i = ITEMS.findIndex((it) => it.match(window.location.pathname, q));
+      if (i >= 0) setPos(i);
+    };
+    if (listo) ubicar();
+    const alVolver = () => setTimeout(ubicar, 0);
+    window.addEventListener("popstate", alVolver);
+    return () => window.removeEventListener("popstate", alVolver);
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Mientras llega la seccion nueva, el contenido actual se atenua suave
+  // (sin recargar la pagina ni dejar la pantalla en blanco).
+  useEffect(() => {
+    if (!cargando) return;
+    document.body.classList.add("nav-cargando");
+    return () => document.body.classList.remove("nav-cargando");
+  }, [cargando]);
+
+  // Al tocar: la pastilla se desliza al instante y el contenido cambia sin
+  // recargar la pagina (el logo, el menu y el carrito quedan fijos).
   const ir = (e: React.MouseEvent, i: number, href: string) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey) return;
     e.preventDefault();
     setAnimar(true);
     setPos(i);
-    setTimeout(() => { window.location.href = href; }, 260);
+    startTransition(() => router.push(href));
   };
 
   const enArte = pos === ARTE;
