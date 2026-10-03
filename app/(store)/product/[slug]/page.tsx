@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import AddToCart from "@/components/store/AddToCart";
 import ProductGallery from "@/components/store/ProductGallery";
+import FavHeart from "@/components/store/FavHeart";
 import ProductBreadcrumbs from "@/components/store/ProductBreadcrumbs";
 import RelatedProducts, { type RelatedProduct } from "@/components/store/RelatedProducts";
 import ViewContentTracker from "@/components/ViewContentTracker";
@@ -186,7 +187,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-20">
 
-        <ProductGallery images={product.images} productName={product.name} />
+        <div style={{ position: "relative", minWidth: 0 }}>
+          <ProductGallery images={product.images} productName={product.name} />
+          <FavHeart slug={product.slug} name={product.name} brand={product.brand.name} hideTag />
+        </div>
 
         <div className="pdp-info">
           <p className="text-[11px] tracking-widest uppercase text-neutral-400 pdp-marca">

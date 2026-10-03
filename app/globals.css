@@ -473,3 +473,21 @@ a:hover .product-img {
   .fav-in, .fav-cora.pop svg, .fav-talle-tag, .fav-velo, .fav-hoja, .fav-listo, .fav-punto::after { animation: none; }
   .fav-listo path { animation: none; stroke-dashoffset: 0; }
 }
+
+/* Favoritos v2: cards grandes, agregar al carrito y barra fija en celular */
+.fav-page-ancha { max-width: 1040px; }
+.fav-card-foto { display: block; }
+.fav-card-info { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; text-decoration: none; color: #0A0A0A; min-width: 0; }
+.fav-agregar { margin-top: 8px; width: 100%; height: 44px; border-radius: 999px; border: none; background: #0A0A0A; color: white; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s cubic-bezier(0.32,0.72,0,1); }
+.fav-agregar:active { transform: scale(0.97); }
+.fav-agregar:disabled { background: #F4F4F4; color: #A3A3A3; cursor: default; }
+.fav-agregar-claro { background: #F4F4F4; color: #0A0A0A; }
+.fav-grid { row-gap: 32px; }
+.fav-pastilla-full { width: 100%; justify-content: center; }
+.fav-barra { display: none; }
+@media (max-width: 767px) {
+  .fav-acciones-desktop { display: none; }
+  .fav-barra { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: rgba(255,255,255,0.72); -webkit-backdrop-filter: blur(22px) saturate(1.5); backdrop-filter: blur(22px) saturate(1.5); border-top: 1px solid rgba(10,10,10,0.06); padding: 12px 16px max(12px, env(safe-area-inset-bottom)); }
+  body:has(.fav-barra) { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+  .fav-agregar { height: 42px; font-size: 13px; }
+}

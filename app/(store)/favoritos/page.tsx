@@ -1,12 +1,21 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useFavStore, buildListaPath } from "@/store/favorites";
+import { useCartStore } from "@/store/cart";
 import { HEART_PATH } from "@/components/store/FavHeart";
 
+type Size = { id: string; size: string; stock: number };
 type Item = {
-  slug: string; name: string; brand: string; price: number; comparePrice: number | null;
-  isEncargo: boolean; image: string | null; sizes: { size: string; stock: number }[];
+  id: string; slug: string; name: string; brand: string; price: number; comparePrice: number | null;
+  isEncargo: boolean; image: string | null; sizes: Size[];
 };
+
+// Variante que corresponde a lo guardado: el talle elegido, o la unica que
+// hay si el producto es de talle unico.
+function variante(item: Item, size: string | null): Size | null {
+  if (size) return item.sizes.find((s) => s.size === size) ?? null;
+  return item.sizes.length === 1 ? item.sizes[0] : null;
+}
 
 function estado(item: Item, size: string | null): { texto: string; tipo: "ok" | "poco" | "no" } {
   const stock = size
@@ -18,15 +27,21 @@ function estado(item: Item, size: string | null): { texto: string; tipo: "ok" | 
   return { texto: "Disponible" + enTalle, tipo: "ok" };
 }
 
+const ShareIcon = () => (
+  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="m16 6-4-4-4 4" /><path d="M12 2v13" /></svg>
+);
+
 export default function FavoritosPage() {
   const favs = useFavStore((s) => s.favs);
   const remove = useFavStore((s) => s.remove);
   const ownerName = useFavStore((s) => s.ownerName);
   const setOwnerName = useFavStore((s) => s.setOwnerName);
+  const addItem = useCartStore((s) => s.addItem);
   const [mounted, setMounted] = useState(false);
   const [items, setItems] = useState<Item[] | null>(null);
   const [compartir, setCompartir] = useState(false);
   const [copiado, setCopiado] = useState(false);
+  const [aviso, setAviso] = useState<{ slug: string; texto: string } | null>(null);
   useEffect(() => setMounted(true), []);
 
   const slugs = useMemo(() => favs.map((f) => f.slug).join(","), [favs]);
@@ -57,8 +72,19 @@ export default function FavoritosPage() {
     try { await navigator.clipboard.writeText(link); setCopiado(true); setTimeout(() => setCopiado(false), 1800); } catch { /* portapapeles bloqueado */ }
   };
 
+  const agregar = (item: Item, v: Size) => {
+    const ok = addItem({
+      variantId: v.id, productId: item.id, slug: item.slug, name: item.name, brand: item.brand,
+      size: v.size, price: item.price, image: item.image, maxStock: v.stock, isEncargo: item.isEncargo,
+    });
+    if (!ok) {
+      setAviso({ slug: item.slug, texto: "Ya tenés en el carrito todo el stock de este talle" });
+      setTimeout(() => setAviso(null), 2600);
+    }
+  };
+
   return (
-    <div className="fav-page">
+    <div className="fav-page fav-page-ancha">
       <header className="fav-head fav-in">
         <p className="fav-rotulo">Favoritos</p>
         <h1 className="fav-h1">Tu selección</h1>
@@ -75,38 +101,58 @@ export default function FavoritosPage() {
         </div>
       ) : (
         <>
-          <div className="fav-lista">
+          <div className="fav-grid">
             {filas.map(({ fav, item }, i) => {
               const e = estado(item, fav.size);
+              const v = variante(item, fav.size);
+              const comprable = !!v && v.stock > 0;
               return (
-                <div key={item.slug} className="fav-fila fav-in" style={{ animationDelay: i * 70 + "ms" }}>
-                  <a href={"/product/" + item.slug} className="fav-mini">
+                <div key={item.slug} className="fav-card fav-in" style={{ animationDelay: i * 70 + "ms" }}>
+                  <a href={"/product/" + item.slug} className="fav-card-foto">
                     {item.image && <img src={item.image} alt={item.name} loading="lazy" />}
+                    {fav.size && <span className="fav-talle-tag">Talle {fav.size}</span>}
+                    <button
+                      type="button"
+                      className="fav-cora on"
+                      aria-label={"Quitar " + item.name + " de favoritos"}
+                      onClick={(ev) => { ev.preventDefault(); ev.stopPropagation(); remove(item.slug); }}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d={HEART_PATH} /></svg>
+                    </button>
                   </a>
-                  <a href={"/product/" + item.slug} className="fav-info">
+                  <a href={"/product/" + item.slug} className="fav-card-info">
                     <span className="fav-marca">{item.brand}</span>
                     <span className="nombre-producto fav-nombre">{item.name}</span>
-                    <span className="precio fav-precio">
-                      ${item.price.toLocaleString("es-AR")}
-                      {fav.size ? <span className="fav-talle-txt"> · Talle {fav.size}</span> : null}
-                    </span>
+                    <span className="precio fav-precio">${item.price.toLocaleString("es-AR")}</span>
                     <span className={"fav-chip fav-chip-" + e.tipo}>
                       {e.tipo === "ok" && <i className="fav-punto" />}
                       {e.texto}
                     </span>
                   </a>
-                  <button type="button" className="fav-quitar" onClick={() => remove(item.slug)} aria-label={"Quitar " + item.name}>Quitar</button>
+                  {v && !comprable && item.isEncargo ? (
+                    <a href={"/product/" + item.slug} className="fav-agregar fav-agregar-claro">Ver producto</a>
+                  ) : v ? (
+                    <button type="button" className="fav-agregar" disabled={!comprable} onClick={() => agregar(item, v)}>
+                      {comprable ? "Agregar al carrito" : "Sin stock"}
+                    </button>
+                  ) : (
+                    <a href={"/product/" + item.slug} className="fav-agregar fav-agregar-claro">Elegir talle</a>
+                  )}
+                  {aviso?.slug === item.slug && <span className="fav-error">{aviso.texto}</span>}
                 </div>
               );
             })}
           </div>
 
-          <div className="fav-acciones fav-in" style={{ animationDelay: filas.length * 70 + "ms" }}>
-            <button type="button" className="fav-pastilla" onClick={() => setCompartir(true)}>
-              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="m16 6-4-4-4 4" /><path d="M12 2v13" /></svg>
-              Mandar mi lista
-            </button>
+          {/* Compu: boton al pie de la grilla */}
+          <div className="fav-acciones fav-acciones-desktop fav-in" style={{ animationDelay: filas.length * 70 + "ms" }}>
+            <button type="button" className="fav-pastilla" onClick={() => setCompartir(true)}><ShareIcon />Mandar mi lista</button>
             <p className="fav-sub">Ideal para regalos: quien la recibe ve qué querés y en qué talle.</p>
+          </div>
+
+          {/* Celular: barra de vidrio fija abajo */}
+          <div className="fav-barra">
+            <button type="button" className="fav-pastilla fav-pastilla-full" onClick={() => setCompartir(true)}><ShareIcon />Mandar mi lista</button>
           </div>
         </>
       )}

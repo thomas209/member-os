@@ -17,6 +17,7 @@ export async function GET(req: Request) {
   const products = await prisma.product.findMany({
     where: { slug: { in: slugs }, isActive: true, deletedAt: null },
     select: {
+      id: true,
       slug: true,
       name: true,
       price: true,
@@ -24,12 +25,13 @@ export async function GET(req: Request) {
       isEncargo: true,
       brand: { select: { name: true } },
       images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 1, select: { url: true } },
-      variants: { orderBy: { sortOrder: "asc" }, select: { size: true, stock: true } },
+      variants: { orderBy: { sortOrder: "asc" }, select: { id: true, size: true, stock: true } },
     },
   });
 
   return NextResponse.json({
     products: products.map((p) => ({
+      id: p.id,
       slug: p.slug,
       name: p.name,
       brand: p.brand.name,
@@ -37,7 +39,7 @@ export async function GET(req: Request) {
       comparePrice: p.comparePrice ? Number(p.comparePrice) : null,
       isEncargo: p.isEncargo,
       image: p.images[0]?.url ?? null,
-      sizes: p.variants.map((v) => ({ size: v.size, stock: v.stock })),
+      sizes: p.variants.map((v) => ({ id: v.id, size: v.size, stock: v.stock })),
     })),
   });
 }
