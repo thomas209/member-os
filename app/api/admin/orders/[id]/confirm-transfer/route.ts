@@ -113,6 +113,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           shippingCost: Number(order.shippingCost),
           total: Number(order.total),
           receiptUrl: (process.env.NEXT_PUBLIC_URL || "http://localhost:3000") + "/receipt/" + order.id,
+          porTransferencia: true,
         });
       } catch (emailError) {
         console.error("No se pudo enviar el email de confirmacion:", emailError);

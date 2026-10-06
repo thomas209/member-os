@@ -54,6 +54,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       shippingCost: Number(order.shippingCost),
       total: Number(order.total),
       receiptUrl: baseUrl + "/receipt/" + order.id,
+      porTransferencia: order.paymentMethod === "TRANSFERENCIA",
     });
 
     return NextResponse.json({ ok: true });

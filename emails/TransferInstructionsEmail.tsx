@@ -1,7 +1,5 @@
-import {
-  Body, Container, Head, Heading, Html,
-  Img, Link, Preview, Section, Text, Button,
-} from "@react-email/components";
+import { Text } from "@react-email/components";
+import { Marco, Estado, Rotulo, Titulo, Bajada, Boton, Panel, Productos, nroPedido, pesos, F, C, type MailItem } from "./_base";
 
 type TransferInstructionsEmailProps = {
   firstName: string;
@@ -11,8 +9,14 @@ type TransferInstructionsEmailProps = {
   holder: string;
   transferUrl: string;
   isReminder?: boolean;
+  // Productos del pedido (opcional). Si vienen, se listan abajo.
+  items?: MailItem[];
 };
 
+// Primer mail de un pedido por transferencia: sale solo apenas se hace el
+// pedido, agradece la compra y deja los datos para pagar. El pedido figura
+// "esperando el pago" hasta que se confirma desde el admin (ahi sale el
+// mail de pago confirmado).
 export default function TransferInstructionsEmail({
   firstName,
   orderNumber,
@@ -21,85 +25,45 @@ export default function TransferInstructionsEmail({
   holder,
   transferUrl,
   isReminder = false,
+  items,
 }: TransferInstructionsEmailProps) {
-  const orderLabel = "#" + String(orderNumber).padStart(4, "0");
+  const orderLabel = nroPedido(orderNumber);
 
   return (
-    <Html>
-      <Head />
-      <Preview>
-        {isReminder ? "Todavía no vimos tu transferencia del pedido " + orderLabel : "Instrucciones para transferir el pedido " + orderLabel}
-      </Preview>
-      <Body style={{backgroundColor:"#F4F4F4",fontFamily:"Georgia,serif",margin:0,padding:0}}>
-        <Container style={{maxWidth:"600px",margin:"0 auto",backgroundColor:"white"}}>
+    <Marco preview={isReminder ? "Todavía no vimos tu transferencia del pedido " + orderLabel : "Recibimos tu pedido " + orderLabel + " — falta la transferencia"}>
+      <Rotulo>Pedido {orderLabel} · Esperando el pago</Rotulo>
+      <Titulo>{isReminder ? "Todavía te espera tu pedido" : "¡Gracias por tu compra!"}</Titulo>
+      <Bajada>
+        {isReminder
+          ? "Hola " + firstName + ", todavía no recibimos el comprobante de tu transferencia del pedido " + orderLabel + ". Te dejamos los datos de nuevo por si los necesitás."
+          : "Hola " + firstName + ", recibimos tu pedido " + orderLabel + ". Para confirmarlo, hacé la transferencia con estos datos y mandanos el comprobante."}
+      </Bajada>
 
-          {/* Header */}
-          <Section style={{backgroundColor:"#0A0A0A",padding:"28px 48px",textAlign:"center"}}>
-            <table role="presentation" style={{margin:"0 auto",borderCollapse:"collapse"}}>
-              <tbody>
-                <tr>
-                  <td style={{backgroundColor:"white",borderRadius:"14px",padding:"14px 18px",lineHeight:0}}>
-                    <Img src="https://res.cloudinary.com/dklvmlzds/image/upload/v1783912898/MEMBER_B_1_3_wyfasx.png" height="32" alt="Member Club" style={{display:"block",margin:"0 auto",height:"32px",width:"auto"}} />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </Section>
+      <Estado paso={-1} nota="Apenas veamos la transferencia, lo confirmamos y te avisamos." />
 
-          {/* Body */}
-          <Section style={{padding:"48px"}}>
-            <Heading style={{fontSize:"24px",fontWeight:"700",color:"#0A0A0A",marginBottom:"8px"}}>
-              {isReminder ? "Todavía te espera tu pedido" : "Falta un paso: transferí para confirmar"}
-            </Heading>
-            <Text style={{fontSize:"15px",color:"#525252",marginBottom:"32px"}}>
-              {isReminder
-                ? "Hola " + firstName + ", todavía no recibimos el comprobante de tu transferencia del pedido " + orderLabel + ". Te dejamos los datos de nuevo por si los necesitás."
-                : "Hola " + firstName + ", para confirmar el pedido " + orderLabel + " necesitamos que hagas la transferencia con estos datos y nos mandes el comprobante."}
-            </Text>
+      <Panel style={{ margin: "0 0 28px 0" }}>
+        <Rotulo>Monto a transferir</Rotulo>
+        <Text style={{ fontFamily: F.titulo, fontSize: "34px", lineHeight: "1.1", fontWeight: 600, letterSpacing: "-0.02em", color: C.negro, margin: "6px 0 20px 0" }}>
+          {pesos(total)}
+        </Text>
+        <Rotulo>CBU</Rotulo>
+        <Text style={{ fontFamily: F.mono, fontSize: "16px", lineHeight: "1.4", color: C.negro, margin: "4px 0 16px 0" }}>
+          {cbu}
+        </Text>
+        <Rotulo>Titular</Rotulo>
+        <Text style={{ fontSize: "15px", lineHeight: "1.4", fontWeight: 500, color: C.negro, margin: "4px 0 0 0" }}>
+          {holder}
+        </Text>
+      </Panel>
 
-            <Section style={{backgroundColor:"#F4F4F4",padding:"24px",marginBottom:"32px"}}>
-              <Text style={{fontSize:"11px",letterSpacing:"0.15em",textTransform:"uppercase",color:"#737373",margin:"0 0 8px 0"}}>
-                Monto a transferir
-              </Text>
-              <Text style={{fontSize:"28px",fontWeight:"700",color:"#0A0A0A",margin:"0 0 20px 0"}}>
-                ${total.toLocaleString("es-AR")}
-              </Text>
-              <Text style={{fontSize:"11px",letterSpacing:"0.15em",textTransform:"uppercase",color:"#737373",margin:"0 0 4px 0"}}>
-                CBU
-              </Text>
-              <Text style={{fontSize:"16px",fontFamily:"monospace",color:"#0A0A0A",margin:"0 0 16px 0"}}>
-                {cbu}
-              </Text>
-              <Text style={{fontSize:"11px",letterSpacing:"0.15em",textTransform:"uppercase",color:"#737373",margin:"0 0 4px 0"}}>
-                Titular
-              </Text>
-              <Text style={{fontSize:"14px",color:"#0A0A0A",margin:0}}>
-                {holder}
-              </Text>
-            </Section>
+      <Boton href={transferUrl}>Ver instrucciones y mandar comprobante</Boton>
 
-            <Section style={{textAlign:"center"}}>
-              <Button
-                href={transferUrl}
-                style={{backgroundColor:"#0A0A0A",color:"white",padding:"14px 32px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",textDecoration:"none",display:"inline-block"}}
-              >
-                Ver instrucciones y mandar comprobante
-              </Button>
-            </Section>
-          </Section>
-
-          {/* Footer */}
-          <Section style={{backgroundColor:"#FAFAFA",padding:"24px 48px",borderTop:"1px solid #E8E8E8",textAlign:"center"}}>
-            <Text style={{fontSize:"12px",color:"#A3A3A3",margin:"0 0 4px 0"}}>
-              Cualquier consulta respondé este email o escribinos por Instagram
-            </Text>
-            <Link href="https://instagram.com/member_ba" style={{fontSize:"12px",color:"#737373"}}>
-              @member_ba
-            </Link>
-          </Section>
-
-        </Container>
-      </Body>
-    </Html>
+      {items && items.length > 0 && (
+        <>
+          <Rotulo style={{ margin: "32px 0 14px 0" }}>Productos</Rotulo>
+          <Productos items={items} />
+        </>
+      )}
+    </Marco>
   );
 }

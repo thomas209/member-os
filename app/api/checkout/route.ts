@@ -157,8 +157,23 @@ export async function POST(request: Request) {
     if (paymentMethod === "TRANSFERENCIA") {
       const transferUrl = baseUrl + "/checkout/transfer/" + order.id;
 
+      // Este es el primer mail del pedido ("gracias por tu compra", estado
+      // esperando el pago): sale solo, sin esperar la confirmacion manual.
       if (shippingAddress.email) {
         try {
+          // Fotos de los productos para el mail. Si esta consulta falla, el
+          // mail sale igual, sin fotos.
+          const fotos = new Map<string, string | null>();
+          try {
+            const productos = await prisma.product.findMany({
+              where: { id: { in: orderItems.map((i) => i.productId) } },
+              select: { id: true, images: { orderBy: { isPrimary: "desc" }, take: 1 } },
+            });
+            for (const p of productos) fotos.set(p.id, p.images[0]?.url ?? null);
+          } catch (fotoError) {
+            console.error("No se pudieron cargar las fotos para el mail:", fotoError);
+          }
+
           await sendTransferInstructionsEmail({
             to: shippingAddress.email,
             firstName: shippingAddress.firstName || "",
@@ -167,6 +182,15 @@ export async function POST(request: Request) {
             cbu: BANK_CBU,
             holder: BANK_HOLDER,
             transferUrl,
+            items: orderItems.map((i) => ({
+              productName: i.productName,
+              productBrand: i.productBrand,
+              size: i.size,
+              quantity: i.quantity,
+              unitPrice: i.unitPrice,
+              image: fotos.get(i.productId) ?? null,
+              isEncargo: i.isEncargo,
+            })),
           });
         } catch (emailError) {
           console.error("No se pudo enviar el email de instrucciones de transferencia:", emailError);

@@ -78,16 +78,20 @@ type SendOrderConfirmationEmailParams = {
   shippingCost: number;
   total: number;
   receiptUrl: string;
+  // true cuando el pago fue por transferencia: el cliente ya recibio el
+  // "gracias por tu compra" al hacer el pedido, asi que este mail le avisa
+  // que el pago quedo confirmado.
+  porTransferencia?: boolean;
 };
 
 export async function sendOrderConfirmationEmail(params: SendOrderConfirmationEmailParams) {
-  const { to, firstName, orderNumber, items, subtotal, discountAmount, shippingCost, total, receiptUrl } = params;
+  const { to, firstName, orderNumber, items, subtotal, discountAmount, shippingCost, total, receiptUrl, porTransferencia } = params;
 
   const { data, error } = await resend.emails.send({
     from: FROM_EMAIL,
     to,
-    subject: "Confirmamos tu pedido #" + String(orderNumber).padStart(4, "0"),
-    react: OrderConfirmationEmail({ firstName, orderNumber, items, subtotal, discountAmount, shippingCost, total, receiptUrl }),
+    subject: (porTransferencia ? "Recibimos tu pago — pedido #" : "Confirmamos tu pedido #") + String(orderNumber).padStart(4, "0"),
+    react: OrderConfirmationEmail({ firstName, orderNumber, items, subtotal, discountAmount, shippingCost, total, receiptUrl, porTransferencia }),
   });
 
   if (error) {
@@ -142,18 +146,28 @@ type SendTransferInstructionsEmailParams = {
   holder: string;
   transferUrl: string;
   isReminder?: boolean;
+  // Productos del pedido (opcional): si vienen, se listan en el mail.
+  items?: {
+    productName: string;
+    productBrand: string;
+    size: string;
+    quantity: number;
+    unitPrice: number;
+    image?: string | null;
+    isEncargo?: boolean;
+  }[];
 };
 
 export async function sendTransferInstructionsEmail(params: SendTransferInstructionsEmailParams) {
-  const { to, firstName, orderNumber, total, cbu, holder, transferUrl, isReminder } = params;
+  const { to, firstName, orderNumber, total, cbu, holder, transferUrl, isReminder, items } = params;
 
   const { data, error } = await resend.emails.send({
     from: FROM_EMAIL,
     to,
     subject: isReminder
       ? "Todavía no vimos tu transferencia del pedido #" + String(orderNumber).padStart(4, "0")
-      : "Instrucciones para transferir — pedido #" + String(orderNumber).padStart(4, "0"),
-    react: TransferInstructionsEmail({ firstName, orderNumber, total, cbu, holder, transferUrl, isReminder }),
+      : "¡Gracias por tu compra! Pedido #" + String(orderNumber).padStart(4, "0") + " — falta la transferencia",
+    react: TransferInstructionsEmail({ firstName, orderNumber, total, cbu, holder, transferUrl, isReminder, items }),
   });
 
   if (error) {

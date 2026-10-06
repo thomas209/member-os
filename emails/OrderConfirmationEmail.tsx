@@ -1,27 +1,18 @@
-import {
-  Body, Container, Head, Heading, Hr, Html, Img,
-  Link, Preview, Section, Text, Button, Row, Column
-} from "@react-email/components";
-
-type OrderItem = {
-  productName: string;
-  productBrand: string;
-  size: string;
-  quantity: number;
-  unitPrice: number;
-  image?: string | null;
-  isEncargo?: boolean;
-};
+import { Marco, Estado, Rotulo, Titulo, Bajada, Boton, Panel, Fila, Productos, nroPedido, pesos, type MailItem } from "./_base";
 
 type OrderConfirmationEmailProps = {
   firstName: string;
   orderNumber: number;
-  items: OrderItem[];
+  items: MailItem[];
   subtotal: number;
   discountAmount: number;
   shippingCost: number;
   total: number;
   receiptUrl: string;
+  // true cuando el pago fue por transferencia: el cliente ya recibio el
+  // "gracias por tu compra" al hacer el pedido, asi que este mail avisa
+  // que el pago quedo confirmado.
+  porTransferencia?: boolean;
 };
 
 export default function OrderConfirmationEmail({
@@ -33,106 +24,31 @@ export default function OrderConfirmationEmail({
   shippingCost,
   total,
   receiptUrl,
+  porTransferencia = false,
 }: OrderConfirmationEmailProps) {
+  const pedido = nroPedido(orderNumber);
+
   return (
-    <Html>
-      <Head />
-      <Preview>Confirmamos tu pedido #{String(orderNumber).padStart(4, "0")}</Preview>
-      <Body style={{backgroundColor:"#F4F4F4",fontFamily:"Georgia,serif",margin:0,padding:0}}>
-        <Container style={{maxWidth:"600px",margin:"0 auto",backgroundColor:"white"}}>
+    <Marco preview={(porTransferencia ? "Recibimos tu pago del pedido " : "Confirmamos tu pedido ") + pedido}>
+      <Rotulo>Pedido {pedido} · Confirmado</Rotulo>
+      <Titulo>{porTransferencia ? "Recibimos tu pago" : "¡Gracias por tu compra!"}</Titulo>
+      <Bajada>
+        Hola {firstName}, {porTransferencia ? "ya vimos tu transferencia" : "confirmamos tu pago"} y ya estamos preparando el pedido {pedido}. Te avisamos por email apenas lo despachemos.
+      </Bajada>
 
-          {/* Header */}
-          <Section style={{backgroundColor:"#0A0A0A",padding:"28px 48px",textAlign:"center"}}>
-            <table role="presentation" style={{margin:"0 auto",borderCollapse:"collapse"}}>
-              <tbody>
-                <tr>
-                  <td style={{backgroundColor:"white",borderRadius:"14px",padding:"14px 18px",lineHeight:0}}>
-                    <Img src="https://res.cloudinary.com/dklvmlzds/image/upload/v1783912898/MEMBER_B_1_3_wyfasx.png" height="32" alt="Member Club" style={{display:"block",margin:"0 auto",height:"32px",width:"auto"}} />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </Section>
+      <Estado paso={0} />
 
-          {/* Body */}
-          <Section style={{padding:"48px"}}>
-            <Heading style={{fontSize:"24px",fontWeight:"700",color:"#0A0A0A",marginBottom:"8px"}}>
-              ¡Gracias por tu compra!
-            </Heading>
-            <Text style={{fontSize:"15px",color:"#525252",marginBottom:"32px"}}>
-              Hola {firstName}, confirmamos tu pago y ya estamos preparando el pedido #{String(orderNumber).padStart(4, "0")}. Te avisamos por email apenas lo despachemos.
-            </Text>
+      <Rotulo style={{ margin: "0 0 14px 0" }}>Productos</Rotulo>
+      <Productos items={items} />
 
-            {/* Productos */}
-            <Text style={{fontSize:"11px",letterSpacing:"0.15em",textTransform:"uppercase",color:"#737373",marginBottom:"16px"}}>
-              Productos
-            </Text>
-            {items.map((item, i) => (
-              <Row key={i} style={{marginBottom:"16px",borderBottom:"1px solid #E8E8E8",paddingBottom:"16px"}}>
-                <Column style={{width:"80px"}}>
-                  {item.image && (
-                    <Img src={item.image} width="72" height="90" alt={item.productName} style={{objectFit:"cover"}} />
-                  )}
-                </Column>
-                <Column style={{paddingLeft:"16px"}}>
-                  <Text style={{fontSize:"11px",color:"#737373",margin:"0 0 4px 0",textTransform:"uppercase",letterSpacing:"0.08em"}}>{item.productBrand}</Text>
-                  <Text style={{fontSize:"14px",fontWeight:"600",color:"#0A0A0A",margin:"0 0 4px 0"}}>{item.productName}</Text>
-                  <Text style={{fontSize:"12px",color:"#737373",margin:0}}>Talle {item.size} x {item.quantity}</Text>
-                  {item.isEncargo && (
-                    <Text style={{fontSize:"11px",color:"#A3A3A3",margin:"4px 0 0 0"}}>Por encargo</Text>
-                  )}
-                </Column>
-                <Column style={{textAlign:"right"}}>
-                  <Text style={{fontSize:"14px",fontWeight:"700",color:"#0A0A0A",margin:0}}>
-                    ${(item.unitPrice * item.quantity).toLocaleString("es-AR")}
-                  </Text>
-                </Column>
-              </Row>
-            ))}
+      <Panel style={{ margin: "8px 0 28px 0" }}>
+        <Fila label="Subtotal" value={pesos(subtotal)} />
+        {discountAmount > 0 && <Fila label="Descuento" value={"-" + pesos(discountAmount)} />}
+        <Fila label="Envío" value={shippingCost === 0 ? "Gratis" : pesos(shippingCost)} />
+        <Fila label="Total pagado" value={pesos(total)} fuerte />
+      </Panel>
 
-            <Hr style={{borderColor:"#E8E8E8",margin:"24px 0"}} />
-
-            <Row>
-              <Column><Text style={{fontSize:"14px",color:"#737373",margin:0}}>Subtotal</Text></Column>
-              <Column style={{textAlign:"right"}}><Text style={{fontSize:"14px",color:"#737373",margin:0}}>${subtotal.toLocaleString("es-AR")}</Text></Column>
-            </Row>
-            {discountAmount > 0 && (
-              <Row>
-                <Column><Text style={{fontSize:"14px",color:"#737373",margin:"4px 0 0 0"}}>Descuento</Text></Column>
-                <Column style={{textAlign:"right"}}><Text style={{fontSize:"14px",color:"#737373",margin:"4px 0 0 0"}}>-${discountAmount.toLocaleString("es-AR")}</Text></Column>
-              </Row>
-            )}
-            <Row>
-              <Column><Text style={{fontSize:"14px",color:"#737373",margin:"4px 0 0 0"}}>Envío</Text></Column>
-              <Column style={{textAlign:"right"}}><Text style={{fontSize:"14px",color:"#737373",margin:"4px 0 0 0"}}>{shippingCost === 0 ? "Gratis" : "$" + shippingCost.toLocaleString("es-AR")}</Text></Column>
-            </Row>
-            <Row>
-              <Column><Text style={{fontSize:"18px",fontWeight:"700",color:"#0A0A0A",margin:"12px 0 0 0"}}>Total pagado</Text></Column>
-              <Column style={{textAlign:"right"}}><Text style={{fontSize:"18px",fontWeight:"700",color:"#0A0A0A",margin:"12px 0 0 0"}}>${total.toLocaleString("es-AR")}</Text></Column>
-            </Row>
-
-            <Section style={{textAlign:"center",marginTop:"32px"}}>
-              <Button
-                href={receiptUrl}
-                style={{backgroundColor:"#0A0A0A",color:"white",padding:"14px 32px",fontSize:"12px",fontWeight:"600",letterSpacing:"0.1em",textTransform:"uppercase",textDecoration:"none",display:"inline-block"}}
-              >
-                Ver comprobante
-              </Button>
-            </Section>
-          </Section>
-
-          {/* Footer */}
-          <Section style={{backgroundColor:"#FAFAFA",padding:"24px 48px",borderTop:"1px solid #E8E8E8",textAlign:"center"}}>
-            <Text style={{fontSize:"12px",color:"#A3A3A3",margin:"0 0 4px 0"}}>
-              Cualquier consulta respondé este email o escribinos por Instagram
-            </Text>
-            <Link href="https://instagram.com/member_ba" style={{fontSize:"12px",color:"#737373"}}>
-              @member_ba
-            </Link>
-          </Section>
-
-        </Container>
-      </Body>
-    </Html>
+      <Boton href={receiptUrl}>Ver comprobante</Boton>
+    </Marco>
   );
 }
