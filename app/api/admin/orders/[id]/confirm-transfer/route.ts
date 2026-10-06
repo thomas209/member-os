@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 import { refrescarTienda } from "@/lib/storeCache";
-import { sendOrderConfirmationEmail } from "@/lib/email";
+import { sendOrderConfirmationEmail, datosEntrega } from "@/lib/email";
 
 // Confirma a mano que la transferencia llego (no hay forma automatica de
 // saberlo). Recien aca se descuenta stock — mismo patron atomico que el
@@ -114,6 +114,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           total: Number(order.total),
           receiptUrl: (process.env.NEXT_PUBLIC_URL || "http://localhost:3000") + "/receipt/" + order.id,
           porTransferencia: true,
+          trackingPageUrl: baseUrl + "/seguimiento/" + order.id,
+          ...datosEntrega(order.shippingAddress, order.paymentMethod),
         });
       } catch (emailError) {
         console.error("No se pudo enviar el email de confirmacion:", emailError);

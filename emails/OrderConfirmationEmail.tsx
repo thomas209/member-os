@@ -1,4 +1,4 @@
-import { Marco, Estado, Rotulo, Titulo, Bajada, Boton, Panel, Fila, Productos, nroPedido, pesos, type MailItem } from "./_base";
+import { Marco, Estado, Rotulo, Titulo, Bajada, Boton, LinkSuave, Panel, Entrega, Fila, Productos, nroPedido, pesos, type MailItem } from "./_base";
 
 type OrderConfirmationEmailProps = {
   firstName: string;
@@ -13,6 +13,12 @@ type OrderConfirmationEmailProps = {
   // "gracias por tu compra" al hacer el pedido, asi que este mail avisa
   // que el pago quedo confirmado.
   porTransferencia?: boolean;
+  // Link a la pagina de seguimiento del pedido en la web. Si viene, el boton
+  // principal lleva ahi y el comprobante queda como link abajo.
+  trackingPageUrl?: string;
+  // Datos de entrega y forma de pago (opcionales)
+  envioA?: string[];
+  pago?: string;
 };
 
 export default function OrderConfirmationEmail({
@@ -25,11 +31,14 @@ export default function OrderConfirmationEmail({
   total,
   receiptUrl,
   porTransferencia = false,
+  trackingPageUrl,
+  envioA,
+  pago,
 }: OrderConfirmationEmailProps) {
   const pedido = nroPedido(orderNumber);
 
   return (
-    <Marco preview={(porTransferencia ? "Recibimos tu pago del pedido " : "Confirmamos tu pedido ") + pedido}>
+    <Marco pedido={pedido} preview={(porTransferencia ? "Recibimos tu pago del pedido " : "Confirmamos tu pedido ") + pedido}>
       <Rotulo>Pedido {pedido} · Confirmado</Rotulo>
       <Titulo>{porTransferencia ? "Recibimos tu pago" : "¡Gracias por tu compra!"}</Titulo>
       <Bajada>
@@ -41,14 +50,25 @@ export default function OrderConfirmationEmail({
       <Rotulo style={{ margin: "0 0 14px 0" }}>Productos</Rotulo>
       <Productos items={items} />
 
-      <Panel style={{ margin: "8px 0 28px 0" }}>
+      <Panel style={{ margin: "8px 0 12px 0" }}>
         <Fila label="Subtotal" value={pesos(subtotal)} />
         {discountAmount > 0 && <Fila label="Descuento" value={"-" + pesos(discountAmount)} />}
         <Fila label="Envío" value={shippingCost === 0 ? "Gratis" : pesos(shippingCost)} />
         <Fila label="Total pagado" value={pesos(total)} fuerte />
       </Panel>
 
-      <Boton href={receiptUrl}>Ver comprobante</Boton>
+      <Entrega envioA={envioA} pago={pago} />
+
+      <div style={{ height: "28px", lineHeight: "28px", fontSize: "1px" }}>&nbsp;</div>
+
+      {trackingPageUrl ? (
+        <>
+          <Boton href={trackingPageUrl}>Ver estado del pedido</Boton>
+          <LinkSuave href={receiptUrl}>Ver comprobante</LinkSuave>
+        </>
+      ) : (
+        <Boton href={receiptUrl}>Ver comprobante</Boton>
+      )}
     </Marco>
   );
 }

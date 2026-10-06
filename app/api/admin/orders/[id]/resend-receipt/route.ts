@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
-import { sendOrderConfirmationEmail } from "@/lib/email";
+import { sendOrderConfirmationEmail, datosEntrega } from "@/lib/email";
 
 // Reenvia el mail de comprobante de un pedido ya existente (online o POS).
 // Usa la misma plantilla que la confirmacion original — se usa cuando el
@@ -55,6 +55,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       total: Number(order.total),
       receiptUrl: baseUrl + "/receipt/" + order.id,
       porTransferencia: order.paymentMethod === "TRANSFERENCIA",
+      trackingPageUrl: baseUrl + "/seguimiento/" + order.id,
+      ...datosEntrega(order.shippingAddress, order.paymentMethod),
     });
 
     return NextResponse.json({ ok: true });

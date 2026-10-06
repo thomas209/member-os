@@ -18,7 +18,7 @@ export default function AbandonedCartEmail({
   const pedido = nroPedido(orderNumber);
 
   return (
-    <Marco preview={"Tu pedido " + pedido + " todavía te espera"}>
+    <Marco pedido={pedido} preview={"Tu pedido " + pedido + " todavía te espera"}>
       <Rotulo>Pedido {pedido} · Sin pagar</Rotulo>
       <Titulo>Todavía podés completar tu compra</Titulo>
       <Bajada>

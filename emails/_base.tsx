@@ -11,6 +11,8 @@ import type { CSSProperties, ReactNode } from "react";
 import {
   Body, Container, Head, Html, Img, Link, Preview, Section, Text, Button, Row, Column,
 } from "@react-email/components";
+import { buildWhatsappLink } from "../lib/whatsapp";
+import { STORE_WHATSAPP_NUMBER } from "../lib/bankDetails";
 
 export const LOGO_URL = "https://res.cloudinary.com/dklvmlzds/image/upload/v1783912898/MEMBER_B_1_3_wyfasx.png";
 
@@ -30,11 +32,14 @@ export const C = {
   foto: "#F4F4F4",
 };
 
+// La primera linea le pide al correo que NO pase el mail a modo oscuro (la
+// tienda es blanca); si no, Mail lo invierte y queda gris con letras claras.
 // Animaciones del estado del pedido (las mismas ideas que la pagina de
 // seguimiento: la linea se llena, los pasos aparecen y el paso actual late).
 // Se ven en el Mail del iPhone y de Mac. Gmail y Outlook las ignoran y
 // muestran el estado fijo, que es exactamente el mismo dibujo ya terminado.
 const ANIMACIONES = `
+:root { color-scheme: light; supported-color-schemes: light; }
 @keyframes mcCrece { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes mcAparece { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes mcLate { 0% { box-shadow: 0 0 0 0 rgba(10,10,10,0.38); } 100% { box-shadow: 0 0 0 11px rgba(10,10,10,0); } }
@@ -59,7 +64,13 @@ export type MailItem = {
 
 // Marco de todos los mails: fondo gris claro, tarjeta blanca redondeada,
 // logo arriba como en la barra de la web y pie con el contacto.
-export function Marco({ preview, children }: { preview: string; children: ReactNode }) {
+// pedido = numero ya formateado ("#0482"): si viene, el boton de WhatsApp del
+// pie abre el chat con la consulta sobre ese pedido ya escrita.
+export function Marco({ preview, pedido, children }: { preview: string; pedido?: string; children: ReactNode }) {
+  const whatsapp = buildWhatsappLink(
+    STORE_WHATSAPP_NUMBER,
+    pedido ? "Hola! Tengo una consulta sobre mi pedido " + pedido + "." : "Hola! Tengo una consulta."
+  );
   return (
     <Html lang="es">
       <Head>
@@ -82,12 +93,20 @@ export function Marco({ preview, children }: { preview: string; children: ReactN
         </Container>
 
         <Container style={{ maxWidth: "560px", margin: "0 auto", padding: "22px 28px 8px", textAlign: "center" }}>
-          <Text style={{ fontSize: "13px", lineHeight: "1.5", color: C.suave, margin: "0 0 6px 0" }}>
-            Cualquier consulta respondé este email o escribinos por Instagram
+          <Text style={{ fontSize: "13px", lineHeight: "1.5", color: C.suave, margin: "0 0 14px 0" }}>
+            Cualquier consulta respondé este email o escribinos
           </Text>
-          <Link href="https://instagram.com/member_ba" style={{ fontSize: "13px", color: C.negro, textDecoration: "none", fontWeight: 500 }}>
-            @member_ba
-          </Link>
+          <Button
+            href={whatsapp}
+            style={{ backgroundColor: "#FFFFFF", color: C.negro, borderRadius: "999px", padding: "13px 26px", fontFamily: F.texto, fontSize: "14px", fontWeight: 500, textDecoration: "none", display: "inline-block" }}
+          >
+            Escribinos por WhatsApp
+          </Button>
+          <Text style={{ fontSize: "13px", lineHeight: "1.5", margin: "14px 0 0 0" }}>
+            <Link href="https://instagram.com/member_ba" style={{ color: C.negro, textDecoration: "none", fontWeight: 500 }}>
+              @member_ba
+            </Link>
+          </Text>
           <Text style={{ fontFamily: F.mono, fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#A3A3A3", margin: "18px 0 0 0" }}>
             Member Club · Pinamar
           </Text>
@@ -122,17 +141,28 @@ export function Bajada({ children, style }: { children: ReactNode; style?: CSSPr
   );
 }
 
-// Boton pastilla, igual que el de "Finalizar compra"
-export function Boton({ href, children }: { href: string; children: ReactNode }) {
+// Boton pastilla, igual que el de "Finalizar compra".
+// claro = version secundaria (gris clara con letra negra), para cuando el
+// mail ya tiene otro boton principal.
+export function Boton({ href, children, claro, style }: { href: string; children: ReactNode; claro?: boolean; style?: CSSProperties }) {
   return (
-    <Section style={{ textAlign: "center" }}>
+    <Section style={{ textAlign: "center", ...style }}>
       <Button
         href={href}
-        style={{ backgroundColor: C.negro, color: "#FFFFFF", borderRadius: "999px", padding: "17px 34px", fontFamily: F.texto, fontSize: "16px", fontWeight: 500, textDecoration: "none", display: "inline-block" }}
+        style={{ backgroundColor: claro ? C.panel : C.negro, color: claro ? C.negro : "#FFFFFF", borderRadius: "999px", padding: "17px 34px", fontFamily: F.texto, fontSize: "16px", fontWeight: 500, textDecoration: "none", display: "inline-block" }}
       >
         {children}
       </Button>
     </Section>
+  );
+}
+
+// Link de texto centrado, para una accion secundaria debajo de un boton
+export function LinkSuave({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Text style={{ fontSize: "14px", lineHeight: "1.4", textAlign: "center", margin: "16px 0 0 0" }}>
+      <Link href={href} style={{ color: "#0066CC", textDecoration: "none" }}>{children}</Link>
+    </Text>
   );
 }
 
@@ -233,8 +263,13 @@ export function Estado({ paso, nota }: { paso: number; nota?: string }) {
                             className={hecho ? "mc-punto" : actual ? "mc-actual" : undefined}
                             style={{
                               animationDelay: hecho || actual ? espera(i * 3) : undefined,
-                              width: "22px", height: "22px", lineHeight: "22px", borderRadius: "999px", boxSizing: "border-box",
-                              textAlign: "center", fontSize: "12px", fontWeight: 700, color: "#FFFFFF",
+                              // Sin box-sizing (algunos correos lo quitan): el tamaño total
+                              // siempre da 22px sumando ancho + borde.
+                              width: hecho ? "22px" : actual ? "8px" : "18px",
+                              height: hecho ? "22px" : actual ? "8px" : "18px",
+                              lineHeight: hecho ? "22px" : "8px",
+                              borderRadius: "999px",
+                              textAlign: "center", fontSize: hecho ? "12px" : "1px", fontWeight: 700, color: "#FFFFFF",
                               backgroundColor: hecho ? C.negro : "#FFFFFF",
                               border: hecho ? "none" : actual ? "7px solid " + C.negro : "2px solid #D4D4D4",
                             }}
@@ -257,6 +292,33 @@ export function Estado({ paso, nota }: { paso: number; nota?: string }) {
       </table>
       {nota && (
         <Text style={{ fontSize: "13px", lineHeight: "1.4", color: C.suave, textAlign: "center", margin: "14px 0 0 0" }}>{nota}</Text>
+      )}
+    </Section>
+  );
+}
+
+// Datos de entrega y forma de pago, para que el cliente confirme de un
+// vistazo que esta todo bien. Solo muestra lo que venga cargado.
+export function Entrega({ envioA, pago, style }: { envioA?: string[]; pago?: string; style?: CSSProperties }) {
+  const lineas = (envioA || []).filter(Boolean);
+  if (lineas.length === 0 && !pago) return null;
+  return (
+    <Section style={{ border: "1px solid " + C.linea, borderRadius: "22px", padding: "18px 22px", ...style }}>
+      {lineas.length > 0 && (
+        <>
+          <Rotulo>Enviamos a</Rotulo>
+          {lineas.map((l, i) => (
+            <Text key={i} style={{ fontSize: "15px", lineHeight: "1.45", fontWeight: i === 0 ? 500 : 400, color: i === 0 ? C.negro : C.texto, margin: i === 0 ? "6px 0 0 0" : 0 }}>
+              {l}
+            </Text>
+          ))}
+        </>
+      )}
+      {pago && (
+        <>
+          <Rotulo style={{ margin: lineas.length > 0 ? "16px 0 0 0" : 0 }}>Forma de pago</Rotulo>
+          <Text style={{ fontSize: "15px", lineHeight: "1.45", fontWeight: 500, color: C.negro, margin: "6px 0 0 0" }}>{pago}</Text>
+        </>
       )}
     </Section>
   );

@@ -3,6 +3,8 @@ import ShippingEmail from "@/emails/ShippingEmail";
 import OrderConfirmationEmail from "@/emails/OrderConfirmationEmail";
 import AbandonedCartEmail from "@/emails/AbandonedCartEmail";
 import TransferInstructionsEmail from "@/emails/TransferInstructionsEmail";
+import ProcessingEmail from "@/emails/ProcessingEmail";
+import DeliveredEmail from "@/emails/DeliveredEmail";
 import LoginLinkEmail from "@/emails/LoginLinkEmail";
 import PromoEmail from "@/emails/PromoEmail";
 
@@ -18,6 +20,21 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // 3) cargar la variable RESEND_FROM_EMAIL en Vercel, ej:
 //    "Member Club <no-reply@memberclubargentina.com>"
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "Member Club <onboarding@resend.dev>";
+
+// Arma los datos de entrega y la forma de pago que se muestran en los mails,
+// a partir de la direccion guardada en el pedido. Solo lectura: no toca nada.
+// Si falta algun dato, esa linea no aparece.
+export function datosEntrega(shippingAddress: unknown, paymentMethod?: string | null): { envioA: string[]; pago?: string } {
+  const a = (shippingAddress || {}) as Record<string, string | undefined>;
+  const nombre = [a.firstName, a.lastName].filter(Boolean).join(" ");
+  const calle = [a.street, a.number].filter(Boolean).join(" ") + (a.floor ? " - " + a.floor : "");
+  const localidad = [a.city, a.province].filter(Boolean).join(", ");
+  const envioA = a.street ? [nombre, calle.trim(), localidad, a.postalCode ? "CP " + a.postalCode : ""].filter(Boolean) : [];
+  const pago =
+    paymentMethod === "TRANSFERENCIA" ? "Transferencia bancaria" :
+    paymentMethod === "MERCADOPAGO" ? "Mercado Pago" : undefined;
+  return { envioA, pago };
+}
 
 type SendShippingEmailParams = {
   to: string;
@@ -82,16 +99,21 @@ type SendOrderConfirmationEmailParams = {
   // "gracias por tu compra" al hacer el pedido, asi que este mail le avisa
   // que el pago quedo confirmado.
   porTransferencia?: boolean;
+  // Link a la pagina de seguimiento del pedido en la web (opcional)
+  trackingPageUrl?: string;
+  // Datos de entrega y forma de pago (opcionales, ver datosEntrega)
+  envioA?: string[];
+  pago?: string;
 };
 
 export async function sendOrderConfirmationEmail(params: SendOrderConfirmationEmailParams) {
-  const { to, firstName, orderNumber, items, subtotal, discountAmount, shippingCost, total, receiptUrl, porTransferencia } = params;
+  const { to, firstName, orderNumber, items, subtotal, discountAmount, shippingCost, total, receiptUrl, porTransferencia, trackingPageUrl, envioA, pago } = params;
 
   const { data, error } = await resend.emails.send({
     from: FROM_EMAIL,
     to,
     subject: (porTransferencia ? "Recibimos tu pago — pedido #" : "Confirmamos tu pedido #") + String(orderNumber).padStart(4, "0"),
-    react: OrderConfirmationEmail({ firstName, orderNumber, items, subtotal, discountAmount, shippingCost, total, receiptUrl, porTransferencia }),
+    react: OrderConfirmationEmail({ firstName, orderNumber, items, subtotal, discountAmount, shippingCost, total, receiptUrl, porTransferencia, trackingPageUrl, envioA, pago }),
   });
 
   if (error) {
@@ -156,10 +178,14 @@ type SendTransferInstructionsEmailParams = {
     image?: string | null;
     isEncargo?: boolean;
   }[];
+  // Link a la pagina de seguimiento del pedido en la web (opcional)
+  trackingPageUrl?: string;
+  // Datos de entrega (opcional, ver datosEntrega)
+  envioA?: string[];
 };
 
 export async function sendTransferInstructionsEmail(params: SendTransferInstructionsEmailParams) {
-  const { to, firstName, orderNumber, total, cbu, holder, transferUrl, isReminder, items } = params;
+  const { to, firstName, orderNumber, total, cbu, holder, transferUrl, isReminder, items, trackingPageUrl, envioA } = params;
 
   const { data, error } = await resend.emails.send({
     from: FROM_EMAIL,
@@ -167,12 +193,83 @@ export async function sendTransferInstructionsEmail(params: SendTransferInstruct
     subject: isReminder
       ? "Todavía no vimos tu transferencia del pedido #" + String(orderNumber).padStart(4, "0")
       : "¡Gracias por tu compra! Pedido #" + String(orderNumber).padStart(4, "0") + " — falta la transferencia",
-    react: TransferInstructionsEmail({ firstName, orderNumber, total, cbu, holder, transferUrl, isReminder, items }),
+    react: TransferInstructionsEmail({ firstName, orderNumber, total, cbu, holder, transferUrl, isReminder, items, trackingPageUrl, envioA }),
   });
 
   if (error) {
     console.error("Error enviando email de instrucciones de transferencia:", error);
     throw new Error("Error al enviar email de instrucciones de transferencia");
+  }
+
+  return data;
+}
+
+type SendProcessingEmailParams = {
+  to: string;
+  firstName: string;
+  orderNumber: number;
+  items: {
+    productName: string;
+    productBrand: string;
+    size: string;
+    quantity: number;
+    unitPrice: number;
+    image?: string | null;
+    isEncargo?: boolean;
+  }[];
+  trackingPageUrl: string;
+};
+
+// Aviso de "estamos preparando tu pedido": sale cuando el pedido pasa a
+// "En proceso" en el admin.
+export async function sendProcessingEmail(params: SendProcessingEmailParams) {
+  const { to, firstName, orderNumber, items, trackingPageUrl } = params;
+
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to,
+    subject: "Estamos preparando tu pedido #" + String(orderNumber).padStart(4, "0"),
+    react: ProcessingEmail({ firstName, orderNumber, items, trackingPageUrl }),
+  });
+
+  if (error) {
+    console.error("Error enviando email de pedido en preparacion:", error);
+    throw new Error("Error al enviar email de pedido en preparacion");
+  }
+
+  return data;
+}
+
+type SendDeliveredEmailParams = {
+  to: string;
+  firstName: string;
+  orderNumber: number;
+  items: {
+    productName: string;
+    productBrand: string;
+    size: string;
+    quantity: number;
+    unitPrice: number;
+    image?: string | null;
+    isEncargo?: boolean;
+  }[];
+};
+
+// Aviso de "tu pedido ya llego": sale cuando el pedido se marca como
+// "Entregado" en el admin.
+export async function sendDeliveredEmail(params: SendDeliveredEmailParams) {
+  const { to, firstName, orderNumber, items } = params;
+
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to,
+    subject: "Tu pedido #" + String(orderNumber).padStart(4, "0") + " ya llegó",
+    react: DeliveredEmail({ firstName, orderNumber, items }),
+  });
+
+  if (error) {
+    console.error("Error enviando email de pedido entregado:", error);
+    throw new Error("Error al enviar email de pedido entregado");
   }
 
   return data;

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendShippingEmail } from "@/lib/email";
+import { sendShippingEmail, sendProcessingEmail, sendDeliveredEmail } from "@/lib/email";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   PENDING: ["PAID", "CANCELLED"],
@@ -127,6 +127,53 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       where: { id },
       data: updateData,
     });
+
+    // Al pasar el pedido a "En proceso" se le avisa al cliente que ya lo
+    // estamos preparando. Si el mail falla, el cambio de estado queda igual.
+    if (updateData.status === "PROCESSING" && order.guestEmail) {
+      try {
+        await sendProcessingEmail({
+          to: order.guestEmail,
+          firstName: order.guestFirstName || "Cliente",
+          orderNumber: order.orderNumber,
+          items: order.items.map((item) => ({
+            productName: item.productName,
+            productBrand: item.productBrand,
+            size: item.size,
+            quantity: item.quantity,
+            unitPrice: Number(item.unitPrice),
+            image: item.product.images[0]?.url ?? null,
+            isEncargo: item.isEncargo,
+          })),
+          trackingPageUrl: (process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com") + "/seguimiento/" + order.id,
+        });
+      } catch (emailError) {
+        console.error("No se pudo enviar el email de pedido en preparacion:", emailError);
+      }
+    }
+
+    // Al marcar el pedido como "Entregado" se le avisa al cliente que ya llego.
+    // Si el mail falla, el cambio de estado queda igual.
+    if (updateData.status === "DELIVERED" && order.guestEmail) {
+      try {
+        await sendDeliveredEmail({
+          to: order.guestEmail,
+          firstName: order.guestFirstName || "Cliente",
+          orderNumber: order.orderNumber,
+          items: order.items.map((item) => ({
+            productName: item.productName,
+            productBrand: item.productBrand,
+            size: item.size,
+            quantity: item.quantity,
+            unitPrice: Number(item.unitPrice),
+            image: item.product.images[0]?.url ?? null,
+            isEncargo: item.isEncargo,
+          })),
+        });
+      } catch (emailError) {
+        console.error("No se pudo enviar el email de pedido entregado:", emailError);
+      }
+    }
 
     return NextResponse.json({ order: updated });
   } catch (error) {

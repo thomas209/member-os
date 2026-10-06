@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { payment } from "@/lib/mercadopago";
 import { WebhookSignatureValidator, InvalidWebhookSignatureError } from "mercadopago";
-import { sendOrderConfirmationEmail } from "@/lib/email";
+import { sendOrderConfirmationEmail, datosEntrega } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -173,6 +173,8 @@ export async function POST(request: Request) {
             shippingCost: Number(order.shippingCost),
             total: Number(order.total),
             receiptUrl: baseUrl + "/receipt/" + order.id,
+            trackingPageUrl: baseUrl + "/seguimiento/" + order.id,
+            ...datosEntrega(order.shippingAddress, order.paymentMethod || "MERCADOPAGO"),
           });
         } catch (emailError) {
           console.error("No se pudo enviar el email de confirmacion:", emailError);

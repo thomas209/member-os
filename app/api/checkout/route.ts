@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { preference } from "@/lib/mercadopago";
 import { calculateShippingCost } from "@/lib/shipping";
 import { calculateTransferDiscount, BANK_CBU, BANK_HOLDER } from "@/lib/bankDetails";
-import { sendTransferInstructionsEmail } from "@/lib/email";
+import { sendTransferInstructionsEmail, datosEntrega } from "@/lib/email";
 import { getCurrentCustomerId } from "@/lib/customerAuth";
 import { upsertCustomerByEmail } from "@/lib/customerCrm";
 
@@ -182,6 +182,8 @@ export async function POST(request: Request) {
             cbu: BANK_CBU,
             holder: BANK_HOLDER,
             transferUrl,
+            trackingPageUrl: baseUrl + "/seguimiento/" + order.id,
+            envioA: datosEntrega(shippingAddress).envioA,
             items: orderItems.map((i) => ({
               productName: i.productName,
               productBrand: i.productBrand,

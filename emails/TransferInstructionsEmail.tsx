@@ -1,5 +1,5 @@
 import { Text } from "@react-email/components";
-import { Marco, Estado, Rotulo, Titulo, Bajada, Boton, Panel, Productos, nroPedido, pesos, F, C, type MailItem } from "./_base";
+import { Marco, Estado, Rotulo, Titulo, Bajada, Boton, Panel, Entrega, Productos, nroPedido, pesos, F, C, type MailItem } from "./_base";
 
 type TransferInstructionsEmailProps = {
   firstName: string;
@@ -11,6 +11,10 @@ type TransferInstructionsEmailProps = {
   isReminder?: boolean;
   // Productos del pedido (opcional). Si vienen, se listan abajo.
   items?: MailItem[];
+  // Link a la pagina de seguimiento del pedido en la web (opcional)
+  trackingPageUrl?: string;
+  // Datos de entrega (opcional)
+  envioA?: string[];
 };
 
 // Primer mail de un pedido por transferencia: sale solo apenas se hace el
@@ -26,11 +30,13 @@ export default function TransferInstructionsEmail({
   transferUrl,
   isReminder = false,
   items,
+  trackingPageUrl,
+  envioA,
 }: TransferInstructionsEmailProps) {
   const orderLabel = nroPedido(orderNumber);
 
   return (
-    <Marco preview={isReminder ? "Todavía no vimos tu transferencia del pedido " + orderLabel : "Recibimos tu pedido " + orderLabel + " — falta la transferencia"}>
+    <Marco pedido={orderLabel} preview={isReminder ? "Todavía no vimos tu transferencia del pedido " + orderLabel : "Recibimos tu pedido " + orderLabel + " — falta la transferencia"}>
       <Rotulo>Pedido {orderLabel} · Esperando el pago</Rotulo>
       <Titulo>{isReminder ? "Todavía te espera tu pedido" : "¡Gracias por tu compra!"}</Titulo>
       <Bajada>
@@ -57,6 +63,9 @@ export default function TransferInstructionsEmail({
       </Panel>
 
       <Boton href={transferUrl}>Ver instrucciones y mandar comprobante</Boton>
+      {trackingPageUrl && (
+        <Boton href={trackingPageUrl} claro style={{ marginTop: "10px" }}>Ver estado del pedido</Boton>
+      )}
 
       {items && items.length > 0 && (
         <>
@@ -64,6 +73,8 @@ export default function TransferInstructionsEmail({
           <Productos items={items} />
         </>
       )}
+
+      {!isReminder && <Entrega envioA={envioA} pago="Transferencia bancaria" style={{ margin: "8px 0 0 0" }} />}
     </Marco>
   );
 }

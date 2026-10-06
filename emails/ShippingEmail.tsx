@@ -27,7 +27,7 @@ export default function ShippingEmail({
   const pedido = nroPedido(orderNumber);
 
   return (
-    <Marco preview={"Tu pedido " + pedido + " fue despachado"}>
+    <Marco pedido={pedido} preview={"Tu pedido " + pedido + " fue despachado"}>
       <Rotulo>Pedido {pedido} · En camino</Rotulo>
       <Titulo>Tu pedido fue despachado</Titulo>
       <Bajada style={partial ? { margin: "0 0 8px 0" } : undefined}>
