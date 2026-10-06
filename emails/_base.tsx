@@ -207,7 +207,8 @@ export function Productos({ items }: { items: MailItem[] }) {
           </Column>
           <Column style={{ paddingLeft: "14px", paddingRight: "8px", verticalAlign: "middle" }}>
             <Rotulo style={{ fontSize: "10px", margin: "0 0 4px 0" }}>{item.productBrand}</Rotulo>
-            <Text style={{ fontSize: "15px", lineHeight: "1.3", fontWeight: 500, color: C.negro, margin: "0 0 4px 0" }}>{item.productName}</Text>
+            {/* Nombre de producto como en la web: monoespaciada, mayusculas, letras apenas separadas */}
+            <Text style={{ fontFamily: F.mono, fontSize: "13px", lineHeight: "1.35", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.06em", color: C.negro, margin: "0 0 5px 0" }}>{item.productName}</Text>
             <Text style={{ fontSize: "13px", lineHeight: "1.4", color: C.gris, margin: 0 }}>
               Talle {item.size} · x{item.quantity}{item.isEncargo ? " · Por encargo" : ""}
             </Text>
