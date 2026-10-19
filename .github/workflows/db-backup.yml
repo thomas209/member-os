@@ -1,0 +1,44 @@
+# Backup diario de la base de PRODUCCION (Railway).
+#
+# - Corre todos los dias a las 03:00 (hora Argentina) y tambien se puede
+#   disparar a mano desde GitHub > Actions > "Backup base de datos" > Run workflow.
+# - Hace un pg_dump completo (solo lectura) y lo guarda como artefacto del
+#   workflow durante 90 dias. Se descarga desde la pagina de cada ejecucion.
+# - Requiere el secret PROD_DATABASE_URL (Settings > Secrets and variables > Actions).
+name: Backup base de datos
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # 06:00 UTC = 03:00 Argentina
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: pg_dump de produccion
+        env:
+          PROD_DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: |
+          if [ -z "$PROD_DATABASE_URL" ]; then echo "Falta el secret PROD_DATABASE_URL"; exit 1; fi
+          STAMP=$(date -u +%Y-%m-%dT%H-%M-%SZ)
+          echo "STAMP=$STAMP" >> $GITHUB_ENV
+          mkdir -p out
+          # Imagen oficial de Postgres: pg_dump nuevo funciona contra servidores mas viejos.
+          docker run --rm -v "$PWD/out:/out" -e URL="$PROD_DATABASE_URL" postgres:18 \
+            sh -c 'pg_dump "$URL" --format=custom --no-owner --no-privileges -f /out/member-os-$0.dump' "$STAMP"
+          # Verifica que el archivo sea un backup valido y liste las tablas incluidas.
+          docker run --rm -v "$PWD/out:/out" postgres:18 pg_restore --list /out/member-os-$STAMP.dump | grep "TABLE DATA"
+          ls -lh out
+
+      - name: Guardar backup (90 dias)
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ env.STAMP }}
+          path: out/*.dump
+          retention-days: 90
+          if-no-files-found: error

@@ -3,10 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/db-guard.mjs",
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate": "node scripts/db-guard.mjs && prisma migrate dev",
+    "db:reset": "node scripts/db-guard.mjs && prisma migrate reset",
+    "db:push": "node scripts/db-guard.mjs && prisma db push",
+    "db:studio": "node scripts/db-guard.mjs && prisma studio",
+    "db:backup": "node scripts/db-backup.mjs",
+    "db:copy-to-local": "node scripts/db-copy-prod-to-local.mjs",
+    "db:deploy-prod": "node scripts/db-deploy-prod.mjs",
+    "db:deploy-staging": "node scripts/db-deploy-staging.mjs",
+    "db:copy-to-staging": "node scripts/db-copy-prod-to-staging.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",

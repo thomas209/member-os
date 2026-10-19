@@ -417,3 +417,92 @@ model QuoteRequest {
   @@index([status, createdAt])
   @@index([customerId])
 }
+
+// ============================================================
+// MODULO DE REDES E IA (FEATURE_SOCIAL)
+// Tablas nuevas, no modifican ninguna existente.
+// ============================================================
+
+// Voz de la marca: se arma como instruccion de sistema para la IA.
+// La propone el analisis del perfil de Instagram y Tommy la edita.
+model BrandVoice {
+  id         String    @id @default(cuid())
+  tone       String    @default("")
+  doWords    String[]
+  dontWords  String[]
+  examples   String[]
+  insights   Json?     // analisis del perfil: estilo visual, hashtags, que rinde mas
+  analyzedAt DateTime?
+  updatedAt  DateTime  @updatedAt
+}
+
+// Registro de cada llamada a la IA: lo que propuso, tokens y si se acepto.
+model AiGeneration {
+  id           String   @id @default(cuid())
+  kind         String   // caption | product_description | profile_analysis | reply
+  input        Json
+  output       String
+  status       String   @default("suggested") // suggested | accepted | edited | discarded
+  model        String
+  inputTokens  Int
+  outputTokens Int
+  costUsd      Decimal  @default(0) @db.Decimal(10, 6)
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([kind, status])
+}
+
+// Cuenta de red social conectada (por ahora Instagram). El token se guarda
+// cifrado con AES-GCM (clave en SOCIAL_TOKEN_KEY), nunca en texto plano.
+model SocialAccount {
+  id                String    @id @default(cuid())
+  platform          String    // "instagram"
+  externalId        String
+  handle            String?
+  profilePictureUrl String?
+  accessTokenEnc    String
+  tokenExpiresAt    DateTime?
+  status            String    @default("active") // active | reauth_required | disconnected
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([platform, externalId])
+}
+
+// Plantilla de Canva para armar la imagen de los posts. Es un diseno de
+// Canva con campos de "Data autofill" (foto, titulo, precio, etc.).
+model SocialTemplate {
+  id            String   @id @default(cuid())
+  name          String
+  canvaDesignId String   @unique
+  dataset       Json     // campos de la plantilla: { nombre: { type } }
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Publicaciones armadas desde Member OS. Nada se publica sin approvedAt.
+// El paso a "publishing" se hace con un update condicional para que un post
+// nunca se publique dos veces.
+model ScheduledPost {
+  id             String    @id @default(cuid())
+  accountId      String
+  productIds     String[]
+  caption        String
+  mediaUrls      String[]
+  mediaType      String    @default("image") // image | carousel
+  scheduledAt    DateTime?
+  status         String    @default("draft") // draft | approved | paused | publishing | published | failed
+  idempotencyKey String    @unique @default(uuid())
+  remoteId       String?
+  permalink      String?
+  lastError      String?
+  attempts       Int       @default(0)
+  approvedAt     DateTime?
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([status, scheduledAt])
+}

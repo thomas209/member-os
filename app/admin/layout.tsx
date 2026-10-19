@@ -13,6 +13,11 @@ const posLinks = [
   { href: "/admin/pos/cash-history", label: "Cierres de caja" },
 ];
 
+// Modulo de redes e IA: el link solo aparece si esta prendido.
+const marketingLinks = process.env.NEXT_PUBLIC_FEATURE_SOCIAL === "true"
+  ? [{ href: "/admin/social", label: "Redes" }]
+  : [];
+
 const catalogLinks = [
   { href: "/admin/products", label: "Productos" },
   { href: "/admin/brands", label: "Marcas" },
@@ -36,6 +41,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {item.label}
           </a>
         ))}
+        {marketingLinks.length > 0 && (
+          <>
+            <p style={{fontSize:"10px",letterSpacing:"0.12em",textTransform:"uppercase",color:"#525252",marginBottom:"8px",paddingLeft:"12px",marginTop:"16px"}}>Marketing</p>
+            {marketingLinks.map((item) => (
+              <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{display:"block",padding:"10px 12px",fontSize:"13px",color:"#A3A3A3",textDecoration:"none",marginBottom:"2px"}}>
+                {item.label}
+              </a>
+            ))}
+          </>
+        )}
         <p style={{fontSize:"10px",letterSpacing:"0.12em",textTransform:"uppercase",color:"#525252",marginBottom:"8px",paddingLeft:"12px",marginTop:"16px"}}>Catalogo</p>
         {catalogLinks.map((item) => (
           <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{display:"block",padding:"10px 12px",fontSize:"13px",color:"#A3A3A3",textDecoration:"none",marginBottom:"2px"}}>
