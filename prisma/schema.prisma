@@ -506,3 +506,38 @@ model ScheduledPost {
 
   @@index([status, scheduledAt])
 }
+
+// Inbox de mensajes (Instagram ahora, WhatsApp despues). Tablas propias:
+// no se relacionan por FK con clientes ni pedidos existentes.
+model Conversation {
+  id              String    @id @default(cuid())
+  platform        String    // instagram | whatsapp
+  externalId      String    // id de la conversacion en la plataforma
+  participantId   String    // IGSID / telefono del cliente
+  participantName String?
+  lastMessageAt   DateTime?
+  lastInboundAt   DateTime? // ultimo mensaje del cliente (ventana de 24 hs)
+  unread          Boolean   @default(false)
+  status          String    @default("open") // open | closed
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  messages        Message[]
+
+  @@unique([platform, externalId])
+  @@index([platform, lastMessageAt])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  externalId     String?      @unique
+  direction      String       // in | out
+  text           String?
+  attachments    Json?
+  sentBy         String       @default("customer") // customer | tommy | bot | app
+  sentAt         DateTime
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, sentAt])
+}

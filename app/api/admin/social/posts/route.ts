@@ -3,6 +3,18 @@ import { prisma } from "@/lib/prisma";
 import { getInstagramAccount } from "@/lib/social/instagram";
 import { socialDisabled, aiErrorResponse } from "@/lib/ai/http";
 
+// Lista para el calendario: agendados, borradores y publicados recientes.
+export async function GET() {
+  const off = socialDisabled();
+  if (off) return off;
+  const [upcoming, drafts, recent] = await Promise.all([
+    prisma.scheduledPost.findMany({ where: { status: { in: ["approved", "publishing"] } }, orderBy: { scheduledAt: "asc" }, take: 50 }),
+    prisma.scheduledPost.findMany({ where: { status: { in: ["draft", "paused", "failed"] } }, orderBy: { createdAt: "desc" }, take: 20 }),
+    prisma.scheduledPost.findMany({ where: { status: "published" }, orderBy: { publishedAt: "desc" }, take: 12 }),
+  ]);
+  return NextResponse.json({ upcoming, drafts, recent });
+}
+
 // Crea un borrador de post (no publica). Protegido por el middleware.
 export async function POST(request: NextRequest) {
   const off = socialDisabled();

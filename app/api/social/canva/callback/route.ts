@@ -8,7 +8,7 @@ import { isSocialEnabled } from "@/lib/ai/config";
 export async function GET(request: NextRequest) {
   if (!isSocialEnabled()) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
   const url = request.nextUrl;
-  const back = new URL("/admin/social", url.origin.replace("127.0.0.1", "localhost"));
+  const back = new URL("/admin/social/crear", url.origin.replace("127.0.0.1", "localhost"));
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
   if (!code || !state) {

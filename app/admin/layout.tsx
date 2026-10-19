@@ -15,7 +15,7 @@ const posLinks = [
 
 // Modulo de redes e IA: el link solo aparece si esta prendido.
 const marketingLinks = process.env.NEXT_PUBLIC_FEATURE_SOCIAL === "true"
-  ? [{ href: "/admin/social", label: "Redes" }]
+  ? [{ href: "/admin/social", label: "Community manager" }, { href: "/admin/social/inbox", label: "Mensajes" }, { href: "/admin/social/crear", label: "Crear a mano" }]
   : [];
 
 const catalogLinks = [
