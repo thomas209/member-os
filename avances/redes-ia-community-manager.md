@@ -63,7 +63,7 @@ Spec original: doc "Member OS — Módulo de redes e IA" (Claude Docs).
   - Listas de borradores, agendados y publicados.
 - Agenda: en local, el panel abierto publica cada minuto lo vencido
   (`/api/admin/social/run-due`). En producción: `/api/social/cron`
-  con header `x-cron-secret` = `CRON_SECRET` (cron-job.org cada 10 min).
+  con header `x-cron-secret` = `CRON_SECRET` (cron-job.org cada 1-2 min).
 - El estudio anterior quedó en `/admin/social/crear` (menú "Crear a mano").
 
 ### Rutas API nuevas
@@ -108,7 +108,7 @@ Públicas: `/api/social/canva/callback` (validada por state cifrado),
    `CRON_SECRET`. Dejar `FEATURE_SOCIAL` apagado hasta probar.
 4. Merge de `feature/social` y deploy.
 5. Configurar cron-job.org → POST `https://memberclubargentina.com/api/social/cron`
-   cada 10 min con header `x-cron-secret`.
+   cada 1-2 min (así las historias salen en hora) con header `x-cron-secret`.
 6. Pasar la app de Meta a modo Live (hoy está en desarrollo, con @member_ba como tester).
 
 ### Ojo (no tocado, solo avisado)
