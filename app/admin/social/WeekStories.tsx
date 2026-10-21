@@ -90,7 +90,7 @@ function uploadToCloudinary(file: File, onProgress: (n: number) => void): Promis
   });
 }
 
-function Uploader({ day, account, onClose, onDone }: { day: Date; account: Account; onClose: () => void; onDone: (m: string) => void }) {
+export function Uploader({ day, account, onClose, onDone }: { day: Date; account: Account; onClose: () => void; onDone: (m: string) => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [localUrl, setLocalUrl] = useState("");
   const [uploaded, setUploaded] = useState<{ publicId: string; kind: "image" | "video" } | null>(null);

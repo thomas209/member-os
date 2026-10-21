@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import InstagramPreview from "./InstagramPreview";
 import StoryPreview from "./StoryPreview";
-import WeekStories from "./WeekStories";
+import WeekAgenda from "./WeekAgenda";
 
 type Account = { handle: string; picture: string | null; status: string } | null;
 type Suggestion = {
@@ -51,7 +51,9 @@ export default function CommunityManager({ account, hasVoice, unread, urgent, sp
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
 
+  const [reloadKey, setReloadKey] = useState(0);
   const load = useCallback(async () => {
+    setReloadKey((k) => k + 1);
     const [s, p] = await Promise.all([
       fetch("/api/admin/social/suggestions").then((r) => r.json()).catch(() => ({ suggestions: [] })),
       fetch("/api/admin/social/posts").then((r) => r.json()).catch(() => null),
@@ -140,12 +142,12 @@ export default function CommunityManager({ account, hasVoice, unread, urgent, sp
 
       {error && <div style={{ ...card, marginTop: "16px", borderColor: "#FCA5A5", background: "#FEF2F2", fontSize: "13px", color: "#991B1B" }}>{error}</div>}
 
-      <h2 style={h2}>Historias de la semana</h2>
-      <WeekStories
-        posts={[...posts.upcoming, ...posts.recent]}
+      <h2 style={h2}>Agenda</h2>
+      <WeekAgenda
         account={account}
         ready={!!ready}
-        onOpen={(p) => setOpen(p as Post)}
+        reloadKey={reloadKey}
+        onOpen={(p) => setOpen(p as unknown as Post)}
         onChanged={(m) => { setToast(m); load(); }}
       />
 

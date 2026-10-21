@@ -4,9 +4,27 @@ import { getInstagramAccount } from "@/lib/social/instagram";
 import { socialDisabled, aiErrorResponse } from "@/lib/ai/http";
 
 // Lista para el calendario: agendados, borradores y publicados recientes.
-export async function GET() {
+export async function GET(request: NextRequest) {
   const off = socialDisabled();
   if (off) return off;
+  // Agenda: todo lo que sale (o salio) en un rango de fechas.
+  const from = request.nextUrl.searchParams.get("from");
+  const to = request.nextUrl.searchParams.get("to");
+  if (from && to) {
+    const gte = new Date(from), lt = new Date(to);
+    if (isNaN(+gte) || isNaN(+lt)) return NextResponse.json({ error: "Rango inválido" }, { status: 400 });
+    const items = await prisma.scheduledPost.findMany({
+      where: {
+        OR: [
+          { status: { in: ["approved", "publishing", "paused", "failed"] }, scheduledAt: { gte, lt } },
+          { status: "published", publishedAt: { gte, lt } },
+        ],
+      },
+      orderBy: { scheduledAt: "asc" },
+      take: 200,
+    });
+    return NextResponse.json({ items });
+  }
   const [upcoming, drafts, recent] = await Promise.all([
     prisma.scheduledPost.findMany({ where: { status: { in: ["approved", "publishing"] } }, orderBy: { scheduledAt: "asc" }, take: 50 }),
     prisma.scheduledPost.findMany({ where: { status: { in: ["draft", "paused", "failed"] } }, orderBy: { createdAt: "desc" }, take: 20 }),
