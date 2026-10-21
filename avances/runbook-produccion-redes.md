@@ -40,3 +40,12 @@ Nada de esto se hace sin el OK explícito de Tommy en el momento.
 - 0.2 `npm run build`: ✓ compila sin errores.
 - 0.3 Tienda en local: ✓ home, catálogo, producto, checkout, favoritos, stores,
   cuenta, sitemap, robots, feed y admin (pedidos/productos) responden 200, sin errores en consola.
+
+## Resultado Fase 1 y 2 — 21/10/2026
+- Fase 1: código en producción (commit 87d799f, deploy Ready 1m 14s), módulo APAGADO.
+  Tienda, admin, sitemap y feed OK (2 pasadas). Rutas del módulo responden 404.
+- Fase 2: `npm run db:deploy-prod` aplicó 7 migraciones. Backups:
+  `backups/2026-10-21T23-29-09-523Z-pre-deploy` y `...T23-30-14-279Z-post-deploy`.
+  Todas las tablas existentes con las mismas filas; 7 tablas nuevas vacías; web OK después.
+- Bug viejo (no de este deploy): `/catalog?gender=hombre` en minúscula da 500. Los links del menú usan mayúscula.
+- Pendiente: Fase 3 (prender el módulo). Repo de GitHub público: pasarlo a privado y recién ahí volver a agregar el backup diario.
