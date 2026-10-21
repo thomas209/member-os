@@ -155,3 +155,10 @@ Públicas: `/api/social/canva/callback` (validada por state cifrado),
 - ANTES de conectar el número del local: confirmar coexistencia (app + API en el
   mismo número) disponible en Argentina. Si no, el número deja de andar en la app.
 - Instagram: publicar la app (Live), webhook de Instagram y probar con un DM real.
+
+### Agenda e historias propias (commits 0d8912b, de64b81)
+- Community manager → "Agenda": semana lunes a domingo con posts/historias,
+  hora, tipo y estado; flechas para otras semanas; lista en el celu.
+- "+ Historia": foto o video propio (subida directa a Cloudinary, firmada),
+  tal cual / con logo / con producto; videos recortados a 9:16 y 60 s.
+- Probado: una historia agendada se publicó sola en @member_ba (21/10 19:43).
