@@ -40,8 +40,8 @@ function toLocalInput(d: Date) {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-export default function CommunityManager({ account, hasVoice, unread, urgent, spent, budget }: {
-  account: Account; hasVoice: boolean; unread: number; urgent: number; spent: number; budget: number;
+export default function CommunityManager({ account, hasVoice, unread, urgent, spent, budget, openId }: {
+  account: Account; hasVoice: boolean; unread: number; urgent: number; spent: number; budget: number; openId?: string;
 }) {
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
   const [posts, setPosts] = useState<{ upcoming: Post[]; drafts: Post[]; recent: Post[] }>({ upcoming: [], drafts: [], recent: [] });
@@ -60,6 +60,15 @@ export default function CommunityManager({ account, hasVoice, unread, urgent, sp
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Viene de "Crear borrador" en la ficha del producto: abre ese borrador.
+  const [openedFromUrl, setOpenedFromUrl] = useState(false);
+  useEffect(() => {
+    if (!openId || openedFromUrl) return;
+    const all = [...posts.drafts, ...posts.upcoming, ...posts.recent];
+    const p = all.find((x) => x.id === openId);
+    if (p) { setOpen(p); setOpenedFromUrl(true); window.history.replaceState(null, "", "/admin/social"); }
+  }, [openId, openedFromUrl, posts]);
 
   // En local no hay cron: mientras el panel esta abierto, cada minuto se
   // publica lo agendado que ya vencio. En produccion lo hace el cron.

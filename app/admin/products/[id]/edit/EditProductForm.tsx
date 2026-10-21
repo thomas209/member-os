@@ -5,7 +5,7 @@ import ImageUpload from "@/components/admin/ImageUpload";
 const SIZES_ZAPATILLAS = ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"];
 const SIZES_ROPA = ["XS", "S", "M", "L", "XL", "XXL"];
 
-export default function EditProductForm({ product, brands, categories }: any) {
+export default function EditProductForm({ product, brands, categories, headerExtra }: any) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [images, setImages] = useState<string[]>(product.images.map((img: any) => img.url));
@@ -97,6 +97,7 @@ export default function EditProductForm({ product, brands, categories }: any) {
         <a href="/admin/products" style={{fontSize:"12px",color:"#737373",textDecoration:"none"}}>← Productos</a>
         <h1 style={{fontSize:"24px",fontWeight:"700",letterSpacing:"-0.02em",marginTop:"8px"}}>Editar producto</h1>
         <p style={{fontSize:"13px",color:"#737373",marginTop:"4px"}}>{product.name}</p>
+        {headerExtra}
       </div>
 
       <div style={sectionStyle}>
