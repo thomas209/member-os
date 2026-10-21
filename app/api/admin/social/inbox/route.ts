@@ -17,6 +17,7 @@ export async function GET() {
       id: c.id,
       platform: c.platform,
       name: c.participantName || c.participantId,
+      handle: c.participantId,
       lastMessageAt: c.lastMessageAt,
       unread: c.unread,
       canReply: canReply(c.lastInboundAt),

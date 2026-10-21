@@ -1,13 +1,26 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type ConvItem = { id: string; platform: string; name: string; lastMessageAt: string | null; unread: boolean; canReply: boolean; preview: string; lastFromCustomer: boolean };
+type ConvItem = { id: string; platform: string; name: string; handle: string; lastMessageAt: string | null; unread: boolean; canReply: boolean; preview: string; lastFromCustomer: boolean };
 type Msg = { id: string; direction: "in" | "out"; text: string | null; attachments: unknown; sentBy: string; sentAt: string };
-type Conv = { id: string; platform: string; name: string; canReply: boolean; windowEndsAt: string | null; messages: Msg[] };
+type Conv = { id: string; platform: string; name: string; handle: string; canReply: boolean; windowEndsAt: string | null; messages: Msg[] };
 type Suggestion = { generationId: string; reply: string; needsHuman: boolean; reason: string; category: string; sources: { productos: string[]; pedidoVerificado: boolean } };
 
 const btn: React.CSSProperties = { background: "#0A0A0A", color: "white", border: "none", borderRadius: "8px", padding: "9px 14px", fontSize: "13px", fontWeight: 600, cursor: "pointer" };
 const btnGhost: React.CSSProperties = { ...btn, background: "white", color: "#0A0A0A", border: "1px solid #E5E5E5" };
+
+const isWa = (p: string) => p === "whatsapp";
+const label = (c: { platform: string; name: string; handle: string }) =>
+  isWa(c.platform) ? (c.name !== c.handle ? `${c.name} · +${c.handle}` : "+" + c.handle) : "@" + c.name;
+const appName = (p: string) => (isWa(p) ? "WhatsApp" : "Instagram");
+function Badge({ platform }: { platform: string }) {
+  return (
+    <span style={{ fontSize: "10px", fontWeight: 700, padding: "2px 6px", borderRadius: "6px", flexShrink: 0,
+      background: isWa(platform) ? "#DCFCE7" : "#FCE7F3", color: isWa(platform) ? "#166534" : "#9D174D" }}>
+      {isWa(platform) ? "WA" : "IG"}
+    </span>
+  );
+}
 
 function when(d: string | null) {
   if (!d) return "";
@@ -25,6 +38,7 @@ export default function InboxView() {
   const [sugg, setSugg] = useState<Suggestion | null>(null);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
+  const [filter, setFilter] = useState<"todos" | "instagram" | "whatsapp">("todos");
   const bottom = useRef<HTMLDivElement>(null);
 
   const loadList = useCallback(async () => {
@@ -116,22 +130,31 @@ export default function InboxView() {
             <h1 style={{ fontSize: "18px", fontWeight: 700 }}>Inbox</h1>
             <button style={{ ...btnGhost, padding: "6px 10px" }} disabled={syncing} onClick={sync}>{syncing ? "…" : "Actualizar"}</button>
           </div>
-          <p style={{ fontSize: "12px", color: "#737373", marginTop: "4px" }}>Instagram · {msg || "se actualiza cada minuto"}</p>
+          <p style={{ fontSize: "12px", color: "#737373", marginTop: "4px" }}>{msg || "Instagram cada minuto · WhatsApp al instante"}</p>
+          <div style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
+            {(["todos", "instagram", "whatsapp"] as const).map((f) => (
+              <button key={f} onClick={() => setFilter(f)}
+                style={{ fontSize: "12px", padding: "5px 10px", borderRadius: "999px", cursor: "pointer", border: "1px solid " + (filter === f ? "#0A0A0A" : "#E5E5E5"), background: filter === f ? "#0A0A0A" : "white", color: filter === f ? "white" : "#0A0A0A" }}>
+                {f === "todos" ? "Todos" : f === "instagram" ? "Instagram" : "WhatsApp"}
+                {(() => { const n = list.filter((c) => c.unread && (f === "todos" || c.platform === f)).length; return n ? ` · ${n}` : ""; })()}
+              </button>
+            ))}
+          </div>
         </div>
         <div style={{ overflowY: "auto", flex: 1 }}>
-          {list.length === 0 && <p style={{ padding: "16px", fontSize: "13px", color: "#737373" }}>Sin conversaciones todavía.</p>}
-          {list.map((c) => (
+          {list.filter((c) => filter === "todos" || c.platform === filter).length === 0 && <p style={{ padding: "16px", fontSize: "13px", color: "#737373" }}>Sin conversaciones todavía.</p>}
+          {list.filter((c) => filter === "todos" || c.platform === filter).map((c) => (
             <button key={c.id} onClick={() => open(c.id)}
               style={{ display: "block", width: "100%", textAlign: "left", padding: "12px 16px", border: "none", borderBottom: "1px solid #F5F5F5", background: conv?.id === c.id ? "#F5F5F5" : "white", cursor: "pointer" }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                <span style={{ fontWeight: c.unread ? 700 : 500 }}>@{c.name}</span>
+                <span style={{ fontWeight: c.unread ? 700 : 500, display: "flex", gap: "6px", alignItems: "center", minWidth: 0 }}><Badge platform={c.platform} /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label(c)}</span></span>
                 <span style={{ color: "#A3A3A3", fontSize: "11px" }}>{when(c.lastMessageAt)}</span>
               </div>
               <div style={{ display: "flex", gap: "6px", alignItems: "center", marginTop: "4px" }}>
                 {c.unread && <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#0095F6", flexShrink: 0 }} />}
                 <span style={{ fontSize: "12px", color: "#737373", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.lastFromCustomer ? "" : "Vos: "}{c.preview}</span>
               </div>
-              {c.lastFromCustomer && !c.canReply && <div style={{ fontSize: "11px", color: "#B45309", marginTop: "4px" }}>Más de 24 hs: responder desde la app</div>}
+              {c.lastFromCustomer && !c.canReply && <div style={{ fontSize: "11px", color: "#B45309", marginTop: "4px" }}>Más de 24 hs: responder desde {appName(c.platform)}</div>}
             </button>
           ))}
         </div>
@@ -145,24 +168,24 @@ export default function InboxView() {
           <>
             <div style={{ padding: "16px 24px", borderBottom: "1px solid #E5E5E5", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <div style={{ fontWeight: 700 }}>@{conv.name}</div>
+                <div style={{ fontWeight: 700, display: "flex", gap: "8px", alignItems: "center" }}><Badge platform={conv.platform} />{label(conv)}</div>
                 <div style={{ fontSize: "12px", color: conv.canReply ? "#16A34A" : "#B45309" }}>
                   {conv.canReply && conv.windowEndsAt
                     ? `Podés responder hasta ${new Date(conv.windowEndsAt).toLocaleString("es-AR", { weekday: "short", hour: "2-digit", minute: "2-digit" })}`
-                    : "Pasaron más de 24 hs: Instagram solo deja responder desde la app"}
+                    : `Pasaron más de 24 hs: ${appName(conv.platform)} solo deja responder desde la app`}
                 </div>
               </div>
-              <a href={`https://ig.me/m/${conv.name}`} target="_blank" rel="noreferrer" style={{ fontSize: "12px" }}>Abrir en Instagram →</a>
+              <a href={isWa(conv.platform) ? `https://wa.me/${conv.handle}` : `https://ig.me/m/${conv.name}`} target="_blank" rel="noreferrer" style={{ fontSize: "12px" }}>Abrir en {appName(conv.platform)} →</a>
             </div>
 
             <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px", background: "#FAFAFA" }}>
               {conv.messages.map((m) => (
                 <div key={m.id} style={{ display: "flex", justifyContent: m.direction === "out" ? "flex-end" : "flex-start", marginBottom: "8px" }}>
-                  <div style={{ maxWidth: "70%", padding: "9px 13px", borderRadius: "18px", fontSize: "14px", lineHeight: 1.4, whiteSpace: "pre-wrap", background: m.direction === "out" ? "#3797F0" : "white", color: m.direction === "out" ? "white" : "#0A0A0A", border: m.direction === "out" ? "none" : "1px solid #EFEFEF" }}>
-                    {m.text || "[foto/adjunto — verlo en Instagram]"}
+                  <div style={{ maxWidth: "70%", padding: "9px 13px", borderRadius: "18px", fontSize: "14px", lineHeight: 1.4, whiteSpace: "pre-wrap", background: m.direction === "out" ? (isWa(conv.platform) ? "#D9FDD3" : "#3797F0") : "white", color: m.direction === "out" && !isWa(conv.platform) ? "white" : "#0A0A0A", border: m.direction === "out" ? "none" : "1px solid #EFEFEF" }}>
+                    {m.text || `[foto/adjunto — verlo en ${appName(conv.platform)}]`}
                     <div style={{ fontSize: "10px", opacity: 0.6, marginTop: "4px", textAlign: "right" }}>
                       {new Date(m.sentAt).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
-                      {m.sentBy === "tommy" ? " · desde Member OS" : m.sentBy === "bot" ? " · bot" : ""}
+                      {m.sentBy === "tommy" ? " · desde Member OS" : m.sentBy === "bot" ? " · bot" : m.sentBy === "app" && m.direction === "out" ? " · desde el celu" : ""}
                     </div>
                   </div>
                 </div>
