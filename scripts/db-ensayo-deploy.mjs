@@ -37,7 +37,7 @@ if (!isLocalUrl(ensayoUrl) || !ensayoUrl.includes(ENSAYO_DB)) fail("No pude arma
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
 const dir = path.join("backups", stamp + "-ensayo");
 fs.mkdirSync(dir, { recursive: true });
-const informe = [`# Ensayo de deploy — ${new Date().toLocaleString("es-AR")}`, "", `Producción: ${describeUrl(prodUrl)} (solo lectura)`, `Copia: ${describeUrl(ensayoUrl)}`, ""];
+const informe = [`# Ensayo de deploy — ${new Date().toLocaleString("es-AR", { hour12: false })}`, "", `Producción: ${describeUrl(prodUrl)} (solo lectura)`, `Copia: ${describeUrl(ensayoUrl)}`, ""];
 
 // Herramientas de Postgres (pg_dump/pg_restore) de la misma version que el servidor.
 async function serverMajor(url) {
