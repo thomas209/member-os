@@ -33,3 +33,10 @@ Nada de esto se hace sin el OK explícito de Tommy en el momento.
 - cron-job.org → POST `/api/social/cron` cada 1-2 min con header `x-cron-secret`.
 - Meta: app en Live, webhook de Instagram, prueba con DM real.
 - WhatsApp: confirmar coexistencia ANTES de conectar el número del local; variables `WHATSAPP_*`; webhook `/api/social/whatsapp/webhook`.
+
+## Resultado Fase 0 — 21/10/2026
+- 0.1 Ensayo de base: ✓ OK (backups/2026-10-21T22-54-51-324Z-ensayo/INFORME.md).
+  7 migraciones pendientes (2 viejas idempotentes + 5 del módulo), ninguna tabla cambió filas.
+- 0.2 `npm run build`: ✓ compila sin errores.
+- 0.3 Tienda en local: ✓ home, catálogo, producto, checkout, favoritos, stores,
+  cuenta, sitemap, robots, feed y admin (pedidos/productos) responden 200, sin errores en consola.
