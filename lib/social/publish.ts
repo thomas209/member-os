@@ -27,8 +27,8 @@ async function igGet<T>(path: string, token: string, fields: string) {
   return (await res.json()) as T;
 }
 
-async function waitReady(containerId: string, token: string) {
-  for (let i = 0; i < 20; i++) {
+async function waitReady(containerId: string, token: string, tries = 20) {
+  for (let i = 0; i < tries; i++) {
     const s = await igGet<{ status_code?: string }>(`/${containerId}`, token, "status_code");
     if (s.status_code === "FINISHED") return;
     if (s.status_code === "ERROR" || s.status_code === "EXPIRED") throw new InstagramError("Instagram no pudo procesar la imagen (" + s.status_code + ")");
@@ -74,8 +74,10 @@ export async function publishPost(postId: string) {
     if (post.mediaType === "story") {
       const ids: string[] = [];
       for (const url of post.mediaUrls) {
-        const c = await igPost(`/${uid}/media`, token, { image_url: url, media_type: "STORIES" });
-        await waitReady(c.id, token);
+        // Videos propios (Cloudinary /video/upload/): Instagram tarda mas en procesarlos.
+        const video = url.includes("/video/upload/");
+        const c = await igPost(`/${uid}/media`, token, video ? { video_url: url, media_type: "STORIES" } : { image_url: url, media_type: "STORIES" });
+        await waitReady(c.id, token, video ? 60 : 20);
         ids.push((await igPost(`/${uid}/media_publish`, token, { creation_id: c.id })).id);
       }
       return prisma.scheduledPost.update({

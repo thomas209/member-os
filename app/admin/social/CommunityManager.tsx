@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import InstagramPreview from "./InstagramPreview";
 import StoryPreview from "./StoryPreview";
+import WeekStories from "./WeekStories";
 
 type Account = { handle: string; picture: string | null; status: string } | null;
 type Suggestion = {
@@ -102,7 +103,7 @@ export default function CommunityManager({ account, hasVoice, unread, urgent, sp
   const reminder = (suggestions || []).find((s) => s.kind === "frecuencia");
 
   return (
-    <div style={{ padding: "48px", maxWidth: "1000px" }}>
+    <div style={{ padding: "clamp(16px, 5vw, 48px)", maxWidth: "1000px" }}>
       <h1 style={{ fontSize: "26px", fontWeight: 700, letterSpacing: "-0.02em", marginBottom: "4px" }}>Tu community manager</h1>
       <p style={{ fontSize: "14px", color: "#737373" }}>Te propongo qué publicar con lo que pasa en la tienda. Vos solo elegís, revisás y aprobás.</p>
 
@@ -138,6 +139,15 @@ export default function CommunityManager({ account, hasVoice, unread, urgent, sp
       )}
 
       {error && <div style={{ ...card, marginTop: "16px", borderColor: "#FCA5A5", background: "#FEF2F2", fontSize: "13px", color: "#991B1B" }}>{error}</div>}
+
+      <h2 style={h2}>Historias de la semana</h2>
+      <WeekStories
+        posts={[...posts.upcoming, ...posts.recent]}
+        account={account}
+        ready={!!ready}
+        onOpen={(p) => setOpen(p as Post)}
+        onChanged={(m) => { setToast(m); load(); }}
+      />
 
       <h2 style={h2}>Para hoy</h2>
       {suggestions === null ? (
@@ -200,6 +210,11 @@ export default function CommunityManager({ account, hasVoice, unread, urgent, sp
   );
 }
 
+// Miniatura: para videos de Cloudinary, un cuadro del video en jpg.
+function thumb(u: string) {
+  return u.includes("/video/upload/") ? u.replace(/\.(mp4|mov|webm)$/i, ".jpg") : u;
+}
+
 function statusLabel(p: Post) {
   if (p.status === "published") return "Publicado " + fmt(p.publishedAt);
   if (p.status === "approved") return "Sale " + fmt(p.scheduledAt);
@@ -216,7 +231,7 @@ function PostList({ posts, onOpen }: { posts: Post[]; onOpen: (p: Post) => void 
         <button key={p.id} onClick={() => (p.status === "published" && p.permalink ? window.open(p.permalink, "_blank") : onOpen(p))}
           style={{ textAlign: "left", background: "white", border: "1px solid #EDEDED", borderRadius: "12px", padding: 0, overflow: "hidden", cursor: "pointer" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={p.mediaUrls[0]} alt="" style={{ width: "100%", aspectRatio: p.mediaType === "story" ? "9/16" : "4/5", objectFit: "cover", display: "block", maxHeight: "220px" }} />
+          <img src={thumb(p.mediaUrls[0])} alt="" style={{ width: "100%", aspectRatio: p.mediaType === "story" ? "9/16" : "4/5", objectFit: "cover", display: "block", maxHeight: "220px" }} />
           <div style={{ padding: "8px 10px", fontSize: "11px", color: p.status === "failed" || p.status === "paused" ? "#B91C1C" : "#525252" }}>
             {p.mediaType === "story" ? "Historia · " : p.mediaUrls.length > 1 ? "Carrusel · " : ""}{statusLabel(p)}
           </div>

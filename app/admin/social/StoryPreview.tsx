@@ -6,7 +6,10 @@ export default function StoryPreview({ handle, picture, images }: { handle: stri
   const [i, setI] = useState(0);
   return (
     <div style={{ position: "relative", width: "300px", aspectRatio: "9 / 16", borderRadius: "14px", overflow: "hidden", background: "#000", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
-      <img src={images[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      {images[i]?.includes("/video/upload/")
+        ? <video key={images[i]} src={images[i]} autoPlay muted loop playsInline style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        // eslint-disable-next-line @next/next/no-img-element
+        : <img src={images[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />}
       <div style={{ position: "absolute", top: "8px", left: "8px", right: "8px", display: "flex", gap: "3px" }}>
         {images.map((_, k) => (
           <span key={k} style={{ flex: 1, height: "2px", borderRadius: "2px", background: k <= i ? "white" : "rgba(255,255,255,0.4)" }} />
