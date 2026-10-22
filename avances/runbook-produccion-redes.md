@@ -49,3 +49,26 @@ Nada de esto se hace sin el OK explícito de Tommy en el momento.
   Todas las tablas existentes con las mismas filas; 7 tablas nuevas vacías; web OK después.
 - Bug viejo (no de este deploy): `/catalog?gender=hombre` en minúscula da 500. Los links del menú usan mayúscula.
 - Pendiente: Fase 3 (prender el módulo). Repo de GitHub público: pasarlo a privado y recién ahí volver a agregar el backup diario.
+
+## ▶ PARA RETOMAR (dejado el 21/10/2026 a las 21 hs)
+Estado: Fases 0, 1 y 2 terminadas. Producción estable con el módulo APAGADO.
+En Vercel todavía NO hay ninguna variable del módulo cargada.
+
+Fase 3 — prender el módulo, paso a paso:
+1. Terminal (en member-OS): `node scripts/env-produccion-social.mjs`
+   → imprime 7 líneas (FEATURE_SOCIAL, NEXT_PUBLIC_FEATURE_SOCIAL, ANTHROPIC_API_KEY,
+   ANTHROPIC_MODEL, AI_MONTHLY_BUDGET_USD, SOCIAL_TOKEN_KEY nueva, CRON_SECRET nueva).
+   Copiar solo esas 7 líneas. No pegarlas en ningún chat. Guardar CRON_SECRET aparte.
+2. Vercel → member-os → Settings → Environment Variables → Add Environment Variable →
+   pegar en "Key" (las separa solo) → Environments: SOLO Production → Save.
+3. Verificar que estén los 7 nombres. Después: Deployments → último de Production → ⋯ → Redeploy.
+4. Probar en memberclubargentina.com/admin: aparece "Marketing" en el menú.
+5. Reconectar Instagram en "Crear a mano" (generar token en Meta → member_ba → Generate token).
+6. "Analizar mi perfil" para la voz de marca (la base de producción arranca vacía).
+7. Probar: armar un borrador y agendar una historia de prueba.
+8. Vuelta atrás si algo falla: borrar/poner FEATURE_SOCIAL=false + Redeploy.
+
+Fase 4 (otro día): cron-job.org cada 1-2 min con CRON_SECRET, Canva (redirect con el dominio real),
+Meta en Live + webhooks, WhatsApp (confirmar coexistencia antes).
+Otros pendientes: repo de GitHub a privado y volver a agregar el backup diario;
+arreglar /catalog?gender=hombre (minúscula da 500).
