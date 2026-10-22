@@ -72,3 +72,9 @@ Fase 4 (otro día): cron-job.org cada 1-2 min con CRON_SECRET, Canva (redirect c
 Meta en Live + webhooks, WhatsApp (confirmar coexistencia antes).
 Otros pendientes: repo de GitHub a privado y volver a agregar el backup diario;
 arreglar /catalog?gender=hombre (minúscula da 500).
+
+### 22/10/2026 19:30 — Fase 3, pasos 1 a 4 hechos
+- 7 variables cargadas en Vercel (quedaron en Production y Preview, tipo Config; editarlas pide código por mail).
+- Redeploy de Production (87d799f, sin build cache): Ready. Home, catálogo y admin 200; pedidos intactos (17).
+- "Marketing" aparece en el menú del admin.
+- Sigue: paso 5 (reconectar Instagram), 6 (analizar perfil), 7 (prueba).
