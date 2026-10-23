@@ -8,7 +8,9 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   if (off) return off;
   try {
     const { id } = await params;
-    return NextResponse.json(await suggestReply(id));
+    const s = await suggestReply(id);
+    // En el panel se envia un solo mensaje: los links van al final del texto.
+    return NextResponse.json({ ...s, reply: [s.reply, ...s.links].filter(Boolean).join("\n\n") });
   } catch (e) {
     return aiErrorResponse(e);
   }

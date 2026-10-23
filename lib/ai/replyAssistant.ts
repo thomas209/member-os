@@ -128,7 +128,7 @@ export async function suggestReply(conversationId: string) {
           envioGratis: "en compras desde " + money(FREE_SHIPPING_THRESHOLD),
           plazo: "NO LO SABÉS: no des días ni fechas; decí que se lo confirmamos al despachar",
         }),
-      'Respondé SOLO JSON: {"reply": "mensaje listo para enviar, máximo 600 caracteres", "needsHuman": true|false, "reason": "por qué necesita a Tommy, o vacío", "category": "stock|precio|horarios|envios|pedido|cambio|reclamo|otro"}',
+      'Respondé SOLO JSON: {"reply": "mensaje listo para enviar, máximo 600 caracteres, SIN links (los links van aparte)", "links": ["link exacto (campo link) de cada producto que recomendás, máximo 3"], "needsHuman": true|false, "reason": "por qué necesita a Tommy, o vacío", "category": "stock|precio|horarios|envios|pedido|cambio|reclamo|otro"}',
     ].join("\n\n"),
     maxTokens: 600,
   });
@@ -147,9 +147,18 @@ export async function suggestReply(conversationId: string) {
   try {
     const t = r.text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "");
     const j = JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1));
+    // Links aparte: cada uno se manda solo, asi Instagram arma la tarjeta con
+    // la imagen del producto. Solo se aceptan links de productos encontrados.
+    const valid = new Set(products.map((p) => p.link));
+    const links = (Array.isArray(j.links) ? j.links : []).map(String).filter((l: string) => valid.has(l)).slice(0, 3);
+    const reply = String(j.reply || "")
+      .replace(/https?:\/\/\S*memberclubargentina\.com\/product\/\S+/g, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
     return {
       generationId: gen.id,
-      reply: String(j.reply || ""),
+      reply,
+      links,
       needsHuman: !!j.needsHuman,
       reason: String(j.reason || ""),
       category: String(j.category || "otro"),

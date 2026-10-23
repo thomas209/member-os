@@ -54,6 +54,10 @@ export async function autoReplyPending() {
         continue;
       }
       await sendInstagramReply(c.id, s.reply, "bot");
+      // Cada link en su propio mensaje, solo: Instagram le arma la vista previa con la foto.
+      for (const link of s.links) {
+        await sendInstagramReply(c.id, link, "bot").catch((e) => console.error("[autoReply] link", e));
+      }
       results.push({ conversation: who, result: "respondido (" + s.category + ")" });
     } catch (e) {
       await prisma.conversation.update({ where: { id: c.id }, data: { unread: true } }).catch(() => {});
