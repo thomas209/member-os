@@ -7,6 +7,25 @@
 import { prisma } from "@/lib/prisma";
 import { suggestReply } from "@/lib/ai/replyAssistant";
 import { sendInstagramReply, canReply } from "./inbox";
+import { Resend } from "resend";
+
+const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com";
+// Lo que le dice el bot al cliente cuando le pasa la conversacion a Tommy.
+const HANDOFF_TEXT = "¡Gracias por escribirnos! Ya le pasé tu consulta al equipo y en un rato te responde una persona 🙌";
+const HANDOFF_EVERY_MS = 12 * 60 * 60 * 1000;
+
+// Aviso por mail a Tommy (SOCIAL_NOTIFY_EMAIL). Si falta la variable, no hace nada.
+async function notifyTommy(who: string, motivo: string, ultimo: string) {
+  const to = process.env.SOCIAL_NOTIFY_EMAIL;
+  if (!to || !process.env.RESEND_API_KEY) return;
+  const esc = (x: string) => x.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c] as string);
+  await new Resend(process.env.RESEND_API_KEY).emails.send({
+    from: process.env.RESEND_FROM_EMAIL || "Member Club <onboarding@resend.dev>",
+    to,
+    subject: `Instagram: @${who} necesita que respondas vos`,
+    html: `<p><b>@${esc(who)}</b> escribió:</p><blockquote>${esc(ultimo)}</blockquote><p>Motivo: ${esc(motivo)}</p><p><a href="${SITE_URL}/admin/social/inbox">Abrir el Inbox</a></p>`,
+  });
+}
 
 const SAFE = new Set(["stock", "precio", "horarios", "envios", "otro"]);
 // Solo mensajes recientes: al prenderlo no contesta mensajes viejos.
@@ -41,6 +60,17 @@ export async function autoReplyPending() {
     if (mode === "test" && !allowed.includes(who)) continue;
     if (c.messages[0]?.direction !== "in") continue;
     if (!canReply(c.lastInboundAt)) continue;
+    // Si lo ultimo que se respondio lo mando una persona (panel o celu) en las
+    // ultimas 12 hs, o el bot ya derivo la conversacion, el bot no se mete.
+    const ultimaSalida = await prisma.message.findFirst({
+      where: { conversationId: c.id, direction: "out" },
+      orderBy: { sentAt: "desc" },
+      select: { sentBy: true, text: true, sentAt: true },
+    });
+    if (ultimaSalida && Date.now() - +ultimaSalida.sentAt < HANDOFF_EVERY_MS) {
+      if (ultimaSalida.sentBy !== "bot") continue;
+      if (c.status === "human" && ultimaSalida.text === HANDOFF_TEXT) continue;
+    }
 
     // "Lock": si dos avisos llegan juntos, solo uno responde.
     const lock = await prisma.conversation.updateMany({ where: { id: c.id, unread: true }, data: { unread: false } });
@@ -50,7 +80,17 @@ export async function autoReplyPending() {
       const s = await suggestReply(c.id);
       if (s.needsHuman || !SAFE.has(s.category) || !s.reply.trim()) {
         await prisma.conversation.update({ where: { id: c.id }, data: { unread: true } });
-        results.push({ conversation: who, result: "para Tommy: " + (s.reason || s.category) });
+        const motivo = s.reason || s.category;
+        // Al cliente: aviso de que responde una persona (una vez cada 12 hs por conversacion).
+        const yaAvisado = await prisma.message.findFirst({
+          where: { conversationId: c.id, sentBy: "bot", text: HANDOFF_TEXT, sentAt: { gte: new Date(Date.now() - HANDOFF_EVERY_MS) } },
+          select: { id: true },
+        });
+        if (!yaAvisado) await sendInstagramReply(c.id, HANDOFF_TEXT, "bot").catch((e) => console.error("[autoReply] handoff", e));
+        await notifyTommy(who, motivo, c.messages[0]?.text || "[adjunto]").catch((e) => console.error("[autoReply] mail", e));
+        // sendInstagramReply marca la conversacion como leida: se vuelve a marcar para Tommy.
+        await prisma.conversation.update({ where: { id: c.id }, data: { unread: true, status: "human" } });
+        results.push({ conversation: who, result: "para Tommy: " + motivo });
         continue;
       }
       await sendInstagramReply(c.id, s.reply, "bot");

@@ -44,6 +44,14 @@ export default function AddToCart({ variants, product, sizeGuideType = "indument
   const retiros = pickupLocation === "AMBOS" ? [PICKUPS.PINAMAR, PICKUPS.CABA] : pickupLocation === "CABA" ? [PICKUPS.CABA] : [PICKUPS.PINAMAR];
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
 
+  // Si el link trae ?talle=38 (ej. desde un DM del bot), ese talle ya viene elegido.
+  useEffect(() => {
+    const talle = new URLSearchParams(window.location.search).get("talle");
+    if (!talle) return;
+    const v = variants.find((x) => x.size.toUpperCase() === talle.toUpperCase() && x.stock > 0);
+    if (v) setSelectedVariant(v);
+  }, [variants]);
+
   // Pastilla que se desliza hasta el talle elegido (efecto tipo Apple)
   const sizeRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [pill, setPill] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
