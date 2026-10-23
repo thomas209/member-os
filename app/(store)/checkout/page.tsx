@@ -22,6 +22,7 @@ export default function CheckoutPage() {
   const [form, setForm] = useState({
     firstName: "", lastName: "", email: "", phone: "",
     street: "", number: "", floor: "", city: "", province: "", postalCode: "",
+    whatsappOptIn: true,
   });
   const [loggedInEmail, setLoggedInEmail] = useState<string | null>(null);
   const [localidades, setLocalidades] = useState<string[]>([]);
@@ -194,6 +195,10 @@ export default function CheckoutPage() {
         <div style={{marginBottom:"16px"}}>
           <label className="co-label">Telefono</label>
           <input name="phone" type="tel" autoComplete="tel" inputMode="tel" value={form.phone} onChange={handleChange} placeholder="1122334455" className="co-campo" />
+          <label style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "10px", fontSize: "13px", color: "#525252", cursor: "pointer" }}>
+            <input type="checkbox" checked={form.whatsappOptIn} onChange={(e) => setForm((f) => ({ ...f, whatsappOptIn: e.target.checked }))} style={{ width: "16px", height: "16px", accentColor: "#0A0A0A" }} />
+            Quiero recibir el estado de mi pedido por WhatsApp
+          </label>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr] gap-3 co-fila co-fila-calle">
           <div>

@@ -3,6 +3,7 @@ import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 import { refrescarTienda } from "@/lib/storeCache";
 import { sendOrderConfirmationEmail, datosEntrega } from "@/lib/email";
+import { sendOrderWhatsApp } from "@/lib/social/whatsappOrder";
 
 // Confirma a mano que la transferencia llego (no hay forma automatica de
 // saberlo). Recien aca se descuenta stock — mismo patron atomico que el
@@ -121,6 +122,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         console.error("No se pudo enviar el email de confirmacion:", emailError);
       }
     }
+
+    // WhatsApp con el link de seguimiento (si esta configurado y el cliente lo acepto).
+    await sendOrderWhatsApp(order).catch((e) => console.error("No se pudo enviar el WhatsApp del pedido:", e));
 
     refrescarTienda();
     return NextResponse.json({ ok: true, oversold: oversoldItems });

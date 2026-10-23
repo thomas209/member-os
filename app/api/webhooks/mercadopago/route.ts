@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { payment } from "@/lib/mercadopago";
 import { WebhookSignatureValidator, InvalidWebhookSignatureError } from "mercadopago";
 import { sendOrderConfirmationEmail, datosEntrega } from "@/lib/email";
+import { sendOrderWhatsApp } from "@/lib/social/whatsappOrder";
 
 export async function POST(request: Request) {
   try {
@@ -180,6 +181,9 @@ export async function POST(request: Request) {
           console.error("No se pudo enviar el email de confirmacion:", emailError);
         }
       }
+
+      // WhatsApp con el link de seguimiento (si esta configurado y el cliente lo acepto).
+      await sendOrderWhatsApp(order).catch((e) => console.error("No se pudo enviar el WhatsApp del pedido:", e));
     }
 
     // Pago rechazado o cancelado
