@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { callModel, AiError } from "./client";
 import { getBrandVoice } from "./brandVoice";
 import { STORE_INFO } from "@/lib/storeInfo";
+import { SHIPPING_COST, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 
 const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com";
 const money = (n: number) => "$" + Math.round(n).toLocaleString("es-AR");
@@ -110,7 +111,7 @@ export async function suggestReply(conversationId: string) {
     system: [
       "Respondés mensajes directos de clientes de Member Club, tienda de sneakers y streetwear premium de Pinamar, Argentina. Español rioplatense, tuteando con 'vos', corto y cálido, como escribe la tienda.",
       voice?.tone ? "Tono de la marca: " + voice.tone : "",
-      "REGLAS: usá SOLO los datos que te paso (productos, pedido, datos del local). Nunca inventes stock, talles, precios, plazos de entrega, descuentos ni políticas. Si no encontrás el producto o falta un dato, decí que lo chequeás y marcá needsHuman=true. Reclamos, cambios, devoluciones, problemas de pago o enojo: needsHuman=true. Nunca des datos de un pedido si no está verificado.",
+      "REGLAS: usá SOLO los datos que te paso (productos, pedido, datos del local). Nunca inventes stock, talles, precios, costos o plazos de envío, descuentos ni políticas. El costo de envío es SOLO el que figura en 'Envíos'; no pidas código postal para cotizar. Si no encontrás el producto o falta un dato, decí que lo chequeás y marcá needsHuman=true. Reclamos, cambios, devoluciones, problemas de pago o enojo: needsHuman=true. Nunca des datos de un pedido si no está verificado.",
     ]
       .filter(Boolean)
       .join("\n"),
@@ -121,6 +122,12 @@ export async function suggestReply(conversationId: string) {
       JSON.stringify(products),
       "Pedido: " + JSON.stringify(order),
       "Datos del local: " + JSON.stringify(STORE_INFO),
+      "Envíos (los mismos que cobra la web en el checkout): " +
+        JSON.stringify({
+          costo: money(SHIPPING_COST) + " a cualquier punto del país, mismo precio para CABA y para el interior",
+          envioGratis: "en compras desde " + money(FREE_SHIPPING_THRESHOLD),
+          plazo: "NO LO SABÉS: no des días ni fechas; decí que se lo confirmamos al despachar",
+        }),
       'Respondé SOLO JSON: {"reply": "mensaje listo para enviar, máximo 600 caracteres", "needsHuman": true|false, "reason": "por qué necesita a Tommy, o vacío", "category": "stock|precio|horarios|envios|pedido|cambio|reclamo|otro"}',
     ].join("\n\n"),
     maxTokens: 600,
