@@ -7,3 +7,6 @@ export const FREE_SHIPPING_THRESHOLD = 180000;
 export function calculateShippingCost(subtotal: number): number {
   return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
 }
+
+// Demora aproximada de los productos por encargo (lo muestra la pagina de producto y lo usa el bot).
+export const ENCARGO_DIAS = 14;

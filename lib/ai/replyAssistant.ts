@@ -7,8 +7,10 @@ import { prisma } from "@/lib/prisma";
 import { callModel, AiError } from "./client";
 import { getBrandVoice } from "./brandVoice";
 import { STORE_INFO } from "@/lib/storeInfo";
-import { SHIPPING_COST, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
+import { SHIPPING_COST, FREE_SHIPPING_THRESHOLD, ENCARGO_DIAS } from "@/lib/shipping";
 import { TRANSFER_DISCOUNT_PERCENT, TRANSFER_DISCOUNT_MIN_PRICE } from "@/lib/bankDetails";
+import { getActiveToken, listMedia } from "@/lib/social/instagram";
+import { CALZADO_TABLE, INDUMENTARIA_TABLE } from "@/lib/sizeGuide";
 
 const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com";
 const money = (n: number) => "$" + Math.round(n).toLocaleString("es-AR");
@@ -147,6 +149,32 @@ async function findProducts(text: string) {
   return { pedido: f, productos: top.map((p) => shape(p, f.size)), alternativas: alternativas.map((p) => shape(p, f.size)) };
 }
 
+// Posts o historias de Member Club que el cliente compartio por DM: se busca
+// el post propio (por link o id) para leer su caption y saber de que producto
+// habla. Si no se encuentra, se usa lo que mande Instagram (titulo/descripcion).
+type Shared = { tipo: string; caption?: string; link?: string };
+async function sharedPosts(msgs: { attachments: unknown }[]): Promise<Shared[]> {
+  const items = msgs
+    .flatMap((m) => (Array.isArray(m.attachments) ? (m.attachments as Record<string, string | undefined>[]) : []))
+    .filter((a) => a && (a.type === "share" || a.type === "story_reply" || a.type === "story_mention"));
+  if (!items.length) return [];
+  let media: Awaited<ReturnType<typeof listMedia>> = [];
+  try {
+    const { token } = await getActiveToken();
+    media = await listMedia(token, 60);
+  } catch {
+    // sin token o sin red: se usa lo que vino en el mensaje
+  }
+  return items.slice(-3).map((a) => {
+    const link = a.link || "";
+    const code = link.match(/instagram\.com\/(?:p|reel|tv)\/([\w-]+)/)?.[1];
+    const asset = link.match(/[?&]asset_id=(\d+)/)?.[1] || a.id;
+    const own = media.find((m) => (code && m.permalink?.includes("/" + code)) || (asset && m.id === asset));
+    const tipo = a.type === "share" ? "post compartido" : a.type === "story_reply" ? "respuesta a una historia" : "mención en una historia";
+    return { tipo, caption: own?.caption || [a.name, a.description].filter(Boolean).join(" · ") || undefined, link: own?.permalink };
+  });
+}
+
 // Estado de pedido SOLO si el cliente da numero de pedido y el mail con el
 // que compro, y coinciden. Si no, no se revela nada.
 async function findOrder(text: string) {
@@ -173,8 +201,10 @@ export async function suggestReply(conversationId: string) {
   });
   if (!conv) throw new AiError("Conversación no encontrada", 404);
   const history = [...conv.messages].reverse();
-  const lastIn = history.filter((m) => m.direction === "in").slice(-3).map((m) => m.text || "").join("\n");
-  if (!lastIn.trim()) throw new AiError("No hay mensajes del cliente para responder", 400);
+  const lastInMsgs = history.filter((m) => m.direction === "in").slice(-3);
+  const shared = await sharedPosts(lastInMsgs);
+  const lastIn = [...lastInMsgs.map((m) => m.text || ""), ...shared.map((x) => x.caption || "")].join("\n");
+  if (!lastIn.trim() && !shared.length) throw new AiError("No hay mensajes del cliente para responder", 400);
 
   const [products, order, voice] = await Promise.all([findProducts(lastIn), findOrder(history.map((m) => m.text || "").join("\n")), getBrandVoice()]);
 
@@ -183,13 +213,22 @@ export async function suggestReply(conversationId: string) {
       "Respondés mensajes directos de clientes de Member Club, tienda de sneakers y streetwear premium de Pinamar, Argentina. Español rioplatense, tuteando con 'vos', corto y cálido, como escribe la tienda.",
       voice?.tone ? "Tono de la marca: " + voice.tone : "",
       "REGLAS: usá SOLO los datos que te paso (productos, pedido, datos del local). Nunca inventes stock, talles, precios, costos o plazos de envío, descuentos ni políticas. El costo de envío es SOLO el que figura en 'Envíos'; no pidas código postal para cotizar. Si no encontrás el producto o falta un dato, decí que lo chequeás y marcá needsHuman=true. Si el cliente solo PREGUNTA cómo son los cambios o devoluciones, respondé con la 'Política de cambios y devoluciones' (category=politica) y no agregues condiciones que no estén ahí. Si quiere HACER un cambio o devolución concreto, reclamos, problemas de pago o enojo: needsHuman=true. Nunca des datos de un pedido si no está verificado.",
-      "CÓMO VENDER: si hay el talle que pide, decilo claro con el precio. Si no hay ese talle, decilo y ofrecé las 'alternativas' (mismo modelo en otro color o algo parecido con su talle). Si un producto esEncargo, aclará que es por encargo y que te confirmamos disponibilidad, sin dar plazos. Mencioná el retiro sin cargo cuando aplique (campo retiro). Cuando el precio lo justifique, mencioná el precioConTransferencia y las cuotas sin interés de 'Promos'. No mandes más de 3 productos. Si hay muchos, preguntá talle o color para afinar. No repitas el saludo si la conversación ya empezó.",
+      `CÓMO VENDER: si hay el talle que pide, decilo claro con el precio. Si no hay ese talle, decilo y ofrecé las 'alternativas' (mismo modelo en otro color o algo parecido con su talle). Si un producto esEncargo, aclará que es por encargo y que llega en aprox. ${ENCARGO_DIAS} días (lo mismo que dice la web); no des otros plazos. Mencioná el retiro sin cargo cuando aplique (campo retiro). Cuando el precio lo justifique, mencioná el precioConTransferencia y las cuotas sin interés de 'Promos'. No mandes más de 3 productos. Si hay muchos, preguntá talle o color para afinar. No repitas el saludo si la conversación ya empezó. TALLES: si pregunta qué talle le va, usá SOLO la 'Guía de talles' (equivalencias AR/US/EU, largo del pie en cm, pecho y cintura). Si da un talle de otra medida (US, EU, cm) pasalo a AR con la tabla. Si no da datos, pedile el largo del pie en cm o su talle habitual. Nunca digas que una marca calza grande o chico. Si queda entre dos talles, decilo y mostrá los dos con su medida.`,
     ]
       .filter(Boolean)
       .join("\n"),
     user: [
       "Conversación (más vieja primero):",
-      history.map((m) => `${m.direction === "in" ? "CLIENTE" : "TIENDA"}: ${m.text || "[adjunto]"}`).join("\n"),
+      history
+        .map((m) => {
+          const att = Array.isArray(m.attachments) ? (m.attachments as { type?: string }[]) : [];
+          const extra = att.some((a) => a?.type === "share") ? " [compartió un post]" : att.some((a) => a?.type?.startsWith("story")) ? " [respondió una historia]" : att.length && !m.text ? " [mandó una foto]" : "";
+          return `${m.direction === "in" ? "CLIENTE" : "TIENDA"}: ${m.text || ""}${extra}`.trim();
+        })
+        .join("\n"),
+      shared.length
+        ? "El cliente compartió contenido de Member Club (usalo para saber qué producto le interesa; si no se puede identificar, preguntale qué modelo y talle busca): " + JSON.stringify(shared)
+        : "",
       "Lo que pide el cliente (talle, género, precio máximo detectados): " + JSON.stringify(products.pedido),
       "Productos encontrados en la tienda (JSON):",
       JSON.stringify(products.productos),
@@ -205,6 +244,11 @@ export async function suggestReply(conversationId: string) {
         }),
       "Política de cambios y devoluciones: " +
         JSON.stringify({ plazo: "hasta 10 días", condicion: "el producto tiene que estar sin uso y con etiqueta", envio: "el costo del envío del cambio o la devolución lo paga el cliente", gestion: "para hacerlo, lo coordina una persona del equipo" }),
+      "Guía de talles de la web (la misma que ve el cliente): " +
+        JSON.stringify({
+          calzado: CALZADO_TABLE.map((r) => `AR ${r.ar} = US ${r.us} = EU ${r.eu} = ${r.cm} cm`),
+          indumentaria: INDUMENTARIA_TABLE.map((r) => `${r.size}: pecho ${r.pecho} cm, cintura ${r.cintura} cm`),
+        }),
       "Puntos de retiro: Pinamar (Av. Constitución 270) y CABA (Av. Callao 1371, Recoleta); cada producto dice dónde se puede retirar.",
       "Envíos (los mismos que cobra la web en el checkout): " +
         JSON.stringify({

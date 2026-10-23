@@ -14,6 +14,8 @@ type IgMsg = {
   to?: { data: { id: string; username?: string }[] };
   message?: string;
   attachments?: { data: unknown[] };
+  shares?: { data: { link?: string; name?: string; description?: string }[] };
+  story?: { reply_to?: { link?: string; id?: string }; mention?: { link?: string; id?: string } };
 };
 type IgConv = {
   id: string;
@@ -36,17 +38,39 @@ async function get<T>(path: string, token: string, params: Record<string, string
   return data as T;
 }
 
+// Adjuntos + posts/historias compartidos, todo en un mismo JSON.
+function extras(m: IgMsg) {
+  const out: object[] = [...((m.attachments?.data as object[]) || [])];
+  for (const sh of m.shares?.data || []) out.push({ type: "share", link: sh.link, name: sh.name, description: sh.description });
+  if (m.story?.reply_to) out.push({ type: "story_reply", link: m.story.reply_to.link, id: m.story.reply_to.id });
+  if (m.story?.mention) out.push({ type: "story_mention", link: m.story.mention.link, id: m.story.mention.id });
+  return out.length ? out : undefined;
+}
+
 // Trae las ultimas conversaciones y sus ultimos mensajes (Instagram solo
 // deja leer los 20 mas recientes de cada una).
 export async function syncInstagram(limit = 25) {
   const { account, token } = await getActiveToken();
   const me = (account.handle || "").toLowerCase();
   try {
-    const convs = await get<{ data: IgConv[] }>("/me/conversations", token, {
-      platform: "instagram",
-      fields: "id,updated_time,participants,messages.limit(20){id,created_time,from,to,message,attachments}",
-      limit: String(limit),
-    });
+    // Con shares/story se ven los posts e historias que comparte el cliente. Si
+    // Instagram rechazara esos campos, se sincroniza igual sin ellos.
+    const base = "id,created_time,from,to,message,attachments";
+    let convs: { data: IgConv[] };
+    try {
+      convs = await get<{ data: IgConv[] }>("/me/conversations", token, {
+        platform: "instagram",
+        fields: `id,updated_time,participants,messages.limit(20){${base},shares,story}`,
+        limit: String(limit),
+      });
+    } catch (e) {
+      if (e instanceof InstagramError && e.tokenInvalid) throw e;
+      convs = await get<{ data: IgConv[] }>("/me/conversations", token, {
+        platform: "instagram",
+        fields: `id,updated_time,participants,messages.limit(20){${base}}`,
+        limit: String(limit),
+      });
+    }
 
     let nuevos = 0;
     for (const c of convs.data) {
@@ -83,7 +107,7 @@ export async function syncInstagram(limit = 25) {
             externalId: m.id,
             direction: isIn ? "in" : "out",
             text: m.message || null,
-            attachments: m.attachments?.data?.length ? (m.attachments.data as object[]) : undefined,
+            attachments: extras(m),
             sentBy: isIn ? "customer" : "app",
             sentAt: new Date(m.created_time),
           },
