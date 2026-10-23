@@ -120,6 +120,23 @@ export default function InboxView() {
     }
   }
 
+  async function backToBot() {
+    if (!conv) return;
+    setBusy("bot");
+    setError("");
+    try {
+      const r = await fetch("/api/admin/social/inbox/" + conv.id + "/bot", { method: "POST" });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Error");
+      setMsg(d.result);
+      await open(conv.id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error");
+    } finally {
+      setBusy("");
+    }
+  }
+
   async function send() {
     if (!conv || !draft.trim()) return;
     setBusy("send");
@@ -211,7 +228,14 @@ export default function InboxView() {
                     : `Pasaron más de 24 hs: ${appName(conv.platform)} solo deja responder desde la app`}
                 </div>
               </div>
-              <a href={isWa(conv.platform) ? `https://wa.me/${conv.handle}` : `https://ig.me/m/${conv.name}`} target="_blank" rel="noreferrer" style={{ fontSize: "12px" }}>Abrir en {appName(conv.platform)} →</a>
+              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                {!isWa(conv.platform) && (
+                  <button style={{ ...btnGhost, padding: "6px 10px", fontSize: "12px" }} disabled={busy === "bot"} onClick={backToBot}>
+                    {busy === "bot" ? "El bot está respondiendo…" : "🤖 Devolver al bot"}
+                  </button>
+                )}
+                <a href={isWa(conv.platform) ? `https://wa.me/${conv.handle}` : `https://ig.me/m/${conv.name}`} target="_blank" rel="noreferrer" style={{ fontSize: "12px" }}>Abrir en {appName(conv.platform)} →</a>
+              </div>
             </div>
 
             <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px", background: "#FAFAFA" }}>
