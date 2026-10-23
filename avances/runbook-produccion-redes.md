@@ -78,3 +78,6 @@ arreglar /catalog?gender=hombre (minúscula da 500).
 - Redeploy de Production (87d799f, sin build cache): Ready. Home, catálogo y admin 200; pedidos intactos (17).
 - "Marketing" aparece en el menú del admin.
 - Sigue: paso 5 (reconectar Instagram), 6 (analizar perfil), 7 (prueba).
+- 19:55 — Página /privacidad en producción (commit 85b2a8e). En Meta: permiso instagram_business_content_publish agregado, privacy policy + data deletion URL cargadas, app PUBLICADA (Live). Falta: regenerar token de member_ba y volver a pegarlo; probar inbox con DM real.
+- 21:43 — Webhook de Instagram andando (/api/social/instagram/webhook, verify token derivado de CRON_SECRET, ver .env.ig-verify-token). member_ba suscripto a "messages". Bot (lib/social/autoReply.ts) en SOCIAL_AUTOREPLY=test solo para orbitk.systems: probado OK. Para todos: SOCIAL_AUTOREPLY=on + Redeploy. Apagar: off + Redeploy.
+  Pendientes: voz de marca sin guardar; margenes de /privacidad; variables de la Fase 3 tambien en Preview; cron de publicacion (cron-job.org); WhatsApp (confirmar coexistencia).
