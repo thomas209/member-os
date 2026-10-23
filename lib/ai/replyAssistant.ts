@@ -50,7 +50,6 @@ async function findProducts(text: string) {
       saleEndsAt: true,
       isEncargo: true,
       brand: { select: { name: true } },
-      images: { select: { url: true }, orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 1 },
       variants: { where: { stock: { gt: 0 } }, select: { size: true }, orderBy: { sortOrder: "asc" } },
     },
     take: 30,
@@ -73,7 +72,6 @@ async function findProducts(text: string) {
         sinStock: p.variants.length === 0,
         esEncargo: p.isEncargo,
         link: `${SITE_URL}/product/${p.slug}`,
-        foto: p.images[0]?.url,
       };
     });
 }
@@ -156,12 +154,6 @@ export async function suggestReply(conversationId: string) {
       reason: String(j.reason || ""),
       category: String(j.category || "otro"),
       sources: { productos: products.map((p) => p.producto), pedidoVerificado: !!order.pedido },
-      // Fotos de los productos cuyo link aparece en la respuesta (max 3), para mandarlas como imagen.
-      images: products
-        .filter((p) => p.foto && String(j.reply || "").includes(p.link))
-        .slice(0, 3)
-        // Cloudinary: JPG liviano de 1080 px (Instagram acepta hasta 8 MB).
-        .map((p) => (p.foto as string).replace("/image/upload/", "/image/upload/f_jpg,q_auto,w_1080/")),
     };
   } catch {
     throw new AiError("La IA no devolvió un formato válido. Probá de nuevo.", 502);
