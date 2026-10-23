@@ -39,6 +39,28 @@ export default function InboxView() {
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [filter, setFilter] = useState<"todos" | "instagram" | "whatsapp">("todos");
+  const [bot, setBot] = useState<"off" | "test" | "on" | null>(null);
+  const [botBusy, setBotBusy] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/social/bot").then((r) => r.json()).then((d) => d.mode && setBot(d.mode)).catch(() => {});
+  }, []);
+
+  async function toggleBot() {
+    const next = bot === "on" ? "off" : "on";
+    if (next === "on" && !confirm("¿Prender el bot? Va a responder solo los DMs de Instagram de todos los clientes (consultas simples; lo demás te lo deriva).")) return;
+    setBotBusy(true);
+    try {
+      const r = await fetch("/api/admin/social/bot", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ mode: next }) });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Error");
+      setBot(d.mode);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Error");
+    } finally {
+      setBotBusy(false);
+    }
+  }
   const bottom = useRef<HTMLDivElement>(null);
 
   const loadList = useCallback(async () => {
@@ -131,6 +153,20 @@ export default function InboxView() {
             <button style={{ ...btnGhost, padding: "6px 10px" }} disabled={syncing} onClick={sync}>{syncing ? "…" : "Actualizar"}</button>
           </div>
           <p style={{ fontSize: "12px", color: "#737373", marginTop: "4px" }}>{msg || "Instagram cada minuto · WhatsApp al instante"}</p>
+          {bot && (
+            <button onClick={toggleBot} disabled={botBusy}
+              style={{ marginTop: "10px", width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", padding: "8px 10px", borderRadius: "10px", cursor: "pointer", border: "1px solid " + (bot === "on" ? "#16A34A" : "#E5E5E5"), background: bot === "on" ? "#F0FDF4" : "white", fontSize: "12px", textAlign: "left" }}>
+              <span>
+                <b>Bot automático</b>
+                <span style={{ display: "block", color: "#737373", marginTop: "2px" }}>
+                  {bot === "on" ? "Responde solo a todos los clientes" : bot === "test" ? "Modo prueba: solo cuentas de prueba" : "Apagado: respondés vos"}
+                </span>
+              </span>
+              <span aria-hidden style={{ width: "34px", height: "20px", borderRadius: "999px", background: bot === "on" ? "#16A34A" : "#D4D4D4", position: "relative", flexShrink: 0, transition: "background .2s" }}>
+                <span style={{ position: "absolute", top: "2px", left: bot === "on" ? "16px" : "2px", width: "16px", height: "16px", borderRadius: "50%", background: "white", transition: "left .2s" }} />
+              </span>
+            </button>
+          )}
           <div style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
             {(["todos", "instagram", "whatsapp"] as const).map((f) => (
               <button key={f} onClick={() => setFilter(f)}

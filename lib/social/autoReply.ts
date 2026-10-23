@@ -31,9 +31,27 @@ const SAFE = new Set(["stock", "precio", "horarios", "envios", "politica", "otro
 // Solo mensajes recientes: al prenderlo no contesta mensajes viejos.
 const MAX_AGE_MS = 15 * 60 * 1000;
 
-export function autoReplyMode(): "off" | "test" | "on" {
-  const m = (process.env.SOCIAL_AUTOREPLY || "off").toLowerCase();
-  return m === "on" || m === "test" ? m : "off";
+export type AutoReplyMode = "off" | "test" | "on";
+const KEY = "social.autoreply";
+const norm = (m: string | undefined | null): AutoReplyMode => {
+  const v = (m || "").toLowerCase();
+  return v === "on" || v === "test" ? v : "off";
+};
+
+// Lo que se eligio en el panel manda; si nunca se toco (o la tabla todavia no
+// existe en esta base), se usa la variable SOCIAL_AUTOREPLY.
+export async function autoReplyMode(): Promise<AutoReplyMode> {
+  try {
+    const row = await prisma.appSetting.findUnique({ where: { key: KEY } });
+    if (row) return norm(row.value);
+  } catch {
+    // tabla sin crear: sigue con la variable
+  }
+  return norm(process.env.SOCIAL_AUTOREPLY);
+}
+
+export async function setAutoReplyMode(mode: AutoReplyMode) {
+  await prisma.appSetting.upsert({ where: { key: KEY }, create: { key: KEY, value: mode }, update: { value: mode } });
 }
 
 function testUsers() {
@@ -44,7 +62,7 @@ function testUsers() {
 }
 
 export async function autoReplyPending() {
-  const mode = autoReplyMode();
+  const mode = await autoReplyMode();
   if (mode === "off") return [];
   const since = new Date(Date.now() - MAX_AGE_MS);
   const convs = await prisma.conversation.findMany({

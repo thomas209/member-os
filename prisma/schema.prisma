@@ -541,3 +541,10 @@ model Message {
 
   @@index([conversationId, sentAt])
 }
+
+// Ajustes simples de la app (clave/valor). Ej: "social.autoreply" = off|test|on
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
