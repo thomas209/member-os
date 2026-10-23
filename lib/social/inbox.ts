@@ -138,3 +138,25 @@ export async function sendInstagramReply(conversationId: string, text: string, s
   await prisma.conversation.update({ where: { id: conv.id }, data: { lastMessageAt: now, unread: false } });
   return msg;
 }
+
+// Manda una imagen (por URL publica, ej. Cloudinary) dentro de la ventana de 24 hs.
+export async function sendInstagramImage(conversationId: string, imageUrl: string, sentBy: "tommy" | "bot" = "bot") {
+  const conv = await prisma.conversation.findUnique({ where: { id: conversationId } });
+  if (!conv || conv.platform !== "instagram") throw new InstagramError("Conversación no encontrada", 404);
+  if (!canReply(conv.lastInboundAt)) throw new InstagramError("Fuera de la ventana de 24 hs", 409);
+  const { token } = await getActiveToken();
+  const res = await fetch(GRAPH + "/me/messages", {
+    method: "POST",
+    headers: { authorization: "Bearer " + token, "content-type": "application/json" },
+    body: JSON.stringify({ recipient: { id: conv.participantId }, message: { attachment: { type: "image", payload: { url: imageUrl } } } }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.error) {
+    const e = data.error || {};
+    console.error("[inbox] image", res.status, e.code, e.message);
+    throw new InstagramError("Instagram no envió la imagen: " + (e.message || res.status), 502);
+  }
+  await prisma.message.create({
+    data: { conversationId: conv.id, externalId: data.message_id || null, direction: "out", text: null, attachments: [{ type: "image", url: imageUrl }], sentBy, sentAt: new Date() },
+  });
+}

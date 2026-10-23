@@ -6,7 +6,7 @@
 // contesta: deja la conversacion como no leida para Tommy.
 import { prisma } from "@/lib/prisma";
 import { suggestReply } from "@/lib/ai/replyAssistant";
-import { sendInstagramReply, canReply } from "./inbox";
+import { sendInstagramReply, sendInstagramImage, canReply } from "./inbox";
 
 const SAFE = new Set(["stock", "precio", "horarios", "envios", "otro"]);
 // Solo mensajes recientes: al prenderlo no contesta mensajes viejos.
@@ -52,6 +52,10 @@ export async function autoReplyPending() {
         await prisma.conversation.update({ where: { id: c.id }, data: { unread: true } });
         results.push({ conversation: who, result: "para Tommy: " + (s.reason || s.category) });
         continue;
+      }
+      // Primero las fotos de los productos que menciona, despues el texto con los links.
+      for (const img of s.images || []) {
+        await sendInstagramImage(c.id, img, "bot").catch((e) => console.error("[autoReply] foto", e));
       }
       await sendInstagramReply(c.id, s.reply, "bot");
       results.push({ conversation: who, result: "respondido (" + s.category + ")" });
