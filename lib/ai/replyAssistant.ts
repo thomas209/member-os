@@ -204,7 +204,7 @@ export async function suggestReply(conversationId: string) {
           envioGratis: "envío gratis en compras desde " + money(FREE_SHIPPING_THRESHOLD),
         }),
       "Política de cambios y devoluciones: " +
-        JSON.stringify({ plazo: "hasta 10 días", envio: "el costo del envío del cambio o la devolución lo paga el cliente", gestion: "para hacerlo, lo coordina una persona del equipo" }),
+        JSON.stringify({ plazo: "hasta 10 días", condicion: "el producto tiene que estar sin uso y con etiqueta", envio: "el costo del envío del cambio o la devolución lo paga el cliente", gestion: "para hacerlo, lo coordina una persona del equipo" }),
       "Puntos de retiro: Pinamar (Av. Constitución 270) y CABA (Av. Callao 1371, Recoleta); cada producto dice dónde se puede retirar.",
       "Envíos (los mismos que cobra la web en el checkout): " +
         JSON.stringify({
