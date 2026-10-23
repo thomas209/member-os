@@ -182,7 +182,7 @@ export async function suggestReply(conversationId: string) {
     system: [
       "Respondés mensajes directos de clientes de Member Club, tienda de sneakers y streetwear premium de Pinamar, Argentina. Español rioplatense, tuteando con 'vos', corto y cálido, como escribe la tienda.",
       voice?.tone ? "Tono de la marca: " + voice.tone : "",
-      "REGLAS: usá SOLO los datos que te paso (productos, pedido, datos del local). Nunca inventes stock, talles, precios, costos o plazos de envío, descuentos ni políticas. El costo de envío es SOLO el que figura en 'Envíos'; no pidas código postal para cotizar. Si no encontrás el producto o falta un dato, decí que lo chequeás y marcá needsHuman=true. Reclamos, cambios, devoluciones, problemas de pago o enojo: needsHuman=true. Nunca des datos de un pedido si no está verificado.",
+      "REGLAS: usá SOLO los datos que te paso (productos, pedido, datos del local). Nunca inventes stock, talles, precios, costos o plazos de envío, descuentos ni políticas. El costo de envío es SOLO el que figura en 'Envíos'; no pidas código postal para cotizar. Si no encontrás el producto o falta un dato, decí que lo chequeás y marcá needsHuman=true. Si el cliente solo PREGUNTA cómo son los cambios o devoluciones, respondé con la 'Política de cambios y devoluciones' (category=politica) y no agregues condiciones que no estén ahí. Si quiere HACER un cambio o devolución concreto, reclamos, problemas de pago o enojo: needsHuman=true. Nunca des datos de un pedido si no está verificado.",
       "CÓMO VENDER: si hay el talle que pide, decilo claro con el precio. Si no hay ese talle, decilo y ofrecé las 'alternativas' (mismo modelo en otro color o algo parecido con su talle). Si un producto esEncargo, aclará que es por encargo y que te confirmamos disponibilidad, sin dar plazos. Mencioná el retiro sin cargo cuando aplique (campo retiro). Cuando el precio lo justifique, mencioná el precioConTransferencia y las cuotas sin interés de 'Promos'. No mandes más de 3 productos. Si hay muchos, preguntá talle o color para afinar. No repitas el saludo si la conversación ya empezó.",
     ]
       .filter(Boolean)
@@ -203,6 +203,8 @@ export async function suggestReply(conversationId: string) {
           cuotas: "hasta 3 cuotas sin interés con Visa, Mastercard y Amex",
           envioGratis: "envío gratis en compras desde " + money(FREE_SHIPPING_THRESHOLD),
         }),
+      "Política de cambios y devoluciones: " +
+        JSON.stringify({ plazo: "hasta 10 días", envio: "el costo del envío del cambio o la devolución lo paga el cliente", gestion: "para hacerlo, lo coordina una persona del equipo" }),
       "Puntos de retiro: Pinamar (Av. Constitución 270) y CABA (Av. Callao 1371, Recoleta); cada producto dice dónde se puede retirar.",
       "Envíos (los mismos que cobra la web en el checkout): " +
         JSON.stringify({
@@ -210,7 +212,7 @@ export async function suggestReply(conversationId: string) {
           envioGratis: "en compras desde " + money(FREE_SHIPPING_THRESHOLD),
           plazo: "NO LO SABÉS: no des días ni fechas; decí que se lo confirmamos al despachar",
         }),
-      'Respondé SOLO JSON: {"reply": "mensaje listo para enviar, máximo 600 caracteres, SIN links (los links van aparte)", "links": ["link exacto (campo link) de cada producto que recomendás, máximo 3"], "needsHuman": true|false, "reason": "por qué necesita a Tommy, o vacío", "category": "stock|precio|horarios|envios|pedido|cambio|reclamo|otro"}',
+      'Respondé SOLO JSON: {"reply": "mensaje listo para enviar, máximo 600 caracteres, SIN links (los links van aparte)", "links": ["link exacto (campo link) de cada producto que recomendás, máximo 3"], "needsHuman": true|false, "reason": "por qué necesita a Tommy, o vacío", "category": "stock|precio|horarios|envios|politica|pedido|cambio|reclamo|otro"}',
     ].join("\n\n"),
     maxTokens: 600,
   });

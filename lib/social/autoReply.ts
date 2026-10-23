@@ -27,7 +27,7 @@ async function notifyTommy(who: string, motivo: string, ultimo: string) {
   });
 }
 
-const SAFE = new Set(["stock", "precio", "horarios", "envios", "otro"]);
+const SAFE = new Set(["stock", "precio", "horarios", "envios", "politica", "otro"]);
 // Solo mensajes recientes: al prenderlo no contesta mensajes viejos.
 const MAX_AGE_MS = 15 * 60 * 1000;
 
