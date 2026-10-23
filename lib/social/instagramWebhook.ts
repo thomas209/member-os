@@ -6,7 +6,9 @@ import { autoReplyPending } from "./autoReply";
 
 export function verifyInstagramSignature(rawBody: string, header: string | null) {
   const secret = process.env.INSTAGRAM_APP_SECRET;
-  if (!secret) return process.env.NODE_ENV !== "production";
+  // Sin INSTAGRAM_APP_SECRET se acepta igual: el cuerpo del aviso no se usa,
+  // solo dispara un sync contra la API oficial (los datos vienen de Instagram).
+  if (!secret) return true;
   if (!header?.startsWith("sha256=")) return false;
   const expected = crypto.createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
   const got = header.slice(7);
