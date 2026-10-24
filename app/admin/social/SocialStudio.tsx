@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import InstagramPreview from "./InstagramPreview";
 import StoryPreview from "./StoryPreview";
+import PublishActions from "./PublishActions";
 
 type Voice = { tone: string; doWords: string[]; dontWords: string[]; examples: string[] };
 type Account = { handle: string | null; picture: string | null; status: string; tokenExpiresAt: string | null };
@@ -244,6 +245,15 @@ export default function SocialStudio({
     const imgs = !isStory && canvaResult?.images?.length ? canvaResult.images : savedUrls.length ? savedUrls : await saveImages();
     if (!imgs || !imgs.length) return;
     if (!isStory && !caption.trim()) return setError("Generá o escribí el texto del post primero");
+    // Si ya hay un borrador de esta vista previa (sin publicar), se actualiza en vez de crear otro.
+    if (preview?.postId && !publishedUrl) {
+      const u = await fetch(`/api/admin/social/posts/${preview.postId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ caption, mediaUrls: imgs }),
+      });
+      if (u.ok) return setPreview({ postId: preview.postId, images: imgs });
+    }
     const res = await fetch("/api/admin/social/posts", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -605,29 +615,21 @@ export default function SocialStudio({
                   <InstagramPreview handle={account.handle || ""} picture={account.picture} images={preview.images} caption={caption} />
                 )}
                 <div style={{ maxWidth: "340px", fontSize: "13px", lineHeight: 1.6 }}>
-                  {publishedUrl ? (
-                    <p style={{ color: "#16A34A", fontWeight: 600 }}>
-                      ✓ Publicado en @{account.handle}.{" "}
-                      {publishedUrl.startsWith("http") && <a href={publishedUrl} target="_blank" rel="noreferrer">Ver en Instagram →</a>}
-                    </p>
-                  ) : !confirming ? (
-                    <>
-                      <p style={{ marginBottom: "12px" }}>Así se va a ver en el feed. Si querés cambiar algo, editá el texto o las imágenes arriba y volvé a tocar “Ver cómo queda”.</p>
-                      <button style={btn} onClick={() => setConfirming(true)}>Dar OK para publicar</button>
-                    </>
-                  ) : (
-                    <>
-                      <p style={{ marginBottom: "12px", color: "#B45309" }}>
-                        Se va a publicar <b>ahora</b> {isStory ? "como historia" : ""} en <b>@{account.handle}</b> y lo van a ver tus seguidores. Antes de subirlo se revisa que haya stock.
-                      </p>
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button style={{ ...btn, background: "#16A34A", opacity: publishing ? 0.5 : 1 }} disabled={publishing} onClick={publish}>
-                          {publishing ? "Publicando…" : "Confirmar y publicar"}
-                        </button>
-                        <button style={btnGhost} disabled={publishing} onClick={() => setConfirming(false)}>Cancelar</button>
-                      </div>
-                    </>
-                  )}
+                  {!publishedUrl && <p style={{ marginBottom: "12px" }}>Así se va a ver. Si querés cambiar algo, editá arriba y volvé a tocar “Ver cómo queda”.</p>}
+                  <PublishActions
+                    key={preview.postId + preview.images.join()}
+                    postId={preview.postId}
+                    isStory={isStory}
+                    handle={account.handle || ""}
+                    beforeAction={async () => {
+                      if (isStory) return;
+                      await fetch(`/api/admin/social/posts/${preview.postId}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ caption }) });
+                    }}
+                    onPublished={(u) => {
+                      setPublishedUrl(u);
+                      if (genId) mark("accept");
+                    }}
+                  />
                 </div>
               </div>
             )}

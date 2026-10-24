@@ -130,7 +130,7 @@ export default function CommunityManager({ account, hasVoice, unread, urgent, sp
         <div style={{ ...card, marginTop: "16px", background: "#FAFAFA" }}>
           <div style={{ fontWeight: 600, fontSize: "14px", marginBottom: "8px" }}>Antes de empezar</div>
           {!ready && <p style={{ fontSize: "13px", margin: "4px 0" }}>1. Conectá tu Instagram en <Link href="/admin/social/crear">Crear a mano</Link>.</p>}
-          {!hasVoice && <p style={{ fontSize: "13px", margin: "4px 0" }}>2. Analizá tu perfil para que aprenda cómo escribe la marca (en <Link href="/admin/social/crear">Crear a mano</Link> → Voz).</p>}
+          {!hasVoice && <p style={{ fontSize: "13px", margin: "4px 0" }}>2. Guardá la voz de la marca para que la IA escriba como vos (en <Link href="/admin/social/crear">Crear a mano</Link> → Analizar mi perfil → Usar esta propuesta → Guardar voz).</p>}
         </div>
       )}
 

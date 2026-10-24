@@ -108,7 +108,7 @@ export async function getSuggestions(): Promise<Suggestion[]> {
     .filter((p) => p.total > 0 && p.total <= 3 && !posted.has(p.id))
     .slice(0, 3);
   for (const p of conPoco) {
-    out.push({ id: "ultimos-" + p.id, kind: "ultimos", title: `Últimos talles: ${p.name}`, description: `Quedan ${p.total} unidad${p.total > 1 ? "es" : ""}. Una historia ayuda a que se vaya.`, productIds: [p.id], tag: "ULTIMOS TALLES", format: "story", priority: 60 });
+    out.push({ id: "ultimos-" + p.id, kind: "ultimos", title: `Últimos talles: ${p.name}`, description: `${p.total > 1 ? "Quedan" : "Queda"} ${p.total} unidad${p.total > 1 ? "es" : ""}. Una historia ayuda a que se vaya.`, productIds: [p.id], tag: "ULTIMOS TALLES", format: "story", priority: 60 });
   }
 
   // 5. Frecuencia: hace cuanto no se publica desde Member OS
