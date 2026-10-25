@@ -129,14 +129,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description,
       images: image ? [image] : undefined,
     },
-    // Precio para Meta (vista previa en Instagram/Facebook y catalogo)
-    other: {
-      "product:price:amount": String(Number(product.price)),
-      "product:price:currency": "ARS",
-      "product:availability": product.isEncargo ? "preorder" : product.variants.some((v) => v.stock > 0) ? "in stock" : "out of stock",
-      "product:brand": product.brand.name,
-      "product:retailer_item_id": product.id,
-    },
   };
 }
 
@@ -207,6 +199,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]) }}
     />
+    {/* Precio para Meta (Instagram/Facebook). React los sube al <head>. */}
+    <meta property="product:price:amount" content={String(Number(product.price))} />
+    <meta property="product:price:currency" content="ARS" />
+    <meta property="product:availability" content={product.isEncargo ? "preorder" : inStock ? "in stock" : "out of stock"} />
+    <meta property="product:brand" content={product.brand.name} />
+    <meta property="product:retailer_item_id" content={product.id} />
     <ViewContentTracker
       id={product.id}
       name={product.name}
