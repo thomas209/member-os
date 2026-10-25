@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { trackMeta, metaCookies } from "@/lib/metaPixel";
 import { useCartStore } from "@/store/cart";
 import { calculateShippingCost, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 import { calculateTransferDiscount, TRANSFER_DISCOUNT_PERCENT, TRANSFER_DISCOUNT_MIN_PRICE } from "@/lib/bankDetails";
@@ -26,6 +27,20 @@ export default function CheckoutPage() {
   });
   const [loggedInEmail, setLoggedInEmail] = useState<string | null>(null);
   const [localidades, setLocalidades] = useState<string[]>([]);
+
+  // Meta: "inicio de compra" una sola vez, cuando el carrito ya cargo.
+  const initiatedRef = useRef(false);
+  useEffect(() => {
+    if (initiatedRef.current || items.length === 0) return;
+    initiatedRef.current = true;
+    trackMeta("InitiateCheckout", {
+      content_ids: items.map((i) => i.productId),
+      content_type: "product",
+      num_items: items.reduce((s, i) => s + i.quantity, 0),
+      value: totalPrice(),
+      currency: "ARS",
+    });
+  }, [items, totalPrice]);
 
   // Cuando la provincia elegida matchea una provincia real (no cualquier
   // cosa que este tipeando), trae sus localidades para sugerir en el
@@ -147,6 +162,7 @@ export default function CheckoutPage() {
           shippingAddress: form,
           paymentMethod,
           couponCode: paymentMethod === "MERCADOPAGO" && couponStatus === "valid" ? couponCode : null,
+          meta: metaCookies(),
         }),
       });
       const data = await res.json();

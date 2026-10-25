@@ -25,7 +25,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const proto = host.startsWith("localhost") ? "http" : "https";
   const og = proto + "://" + host + "/api/og/lista?" + new URLSearchParams({ de: sp.de || "", p: sp.p || "" }).toString();
   return {
-    title: titulo + " · Member Club",
+    title: { absolute: titulo + " · Member Club" },
     description: descripcion,
     robots: { index: false, follow: false },
     openGraph: { title: titulo + " · Member Club", description: descripcion, images: [{ url: og, width: 1200, height: 1200 }] },

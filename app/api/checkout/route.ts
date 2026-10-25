@@ -12,6 +12,13 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { items, shippingAddress, couponCode } = body;
     const paymentMethod = body.paymentMethod === "TRANSFERENCIA" ? "TRANSFERENCIA" : "MERCADOPAGO";
+    const str = (v: unknown, max = 300) => (typeof v === "string" && v ? v.slice(0, max) : undefined);
+    const metaInfo = {
+      fbp: str(body.meta?.fbp),
+      fbc: str(body.meta?.fbc),
+      ip: str(request.headers.get("x-forwarded-for")?.split(",")[0]?.trim(), 64),
+      ua: str(request.headers.get("user-agent")),
+    };
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "El carrito esta vacio" }, { status: 400 });
@@ -141,7 +148,9 @@ export async function POST(request: Request) {
         total,
         couponId: coupon?.id,
         couponCode: paymentMethod === "TRANSFERENCIA" ? null : couponCode?.toUpperCase(),
-        shippingAddress,
+        // _meta: datos tecnicos para atribuir la compra en Meta (Conversions API).
+        // Solo queda en el pedido, no en la ficha del cliente.
+        shippingAddress: { ...shippingAddress, _meta: metaInfo },
         items: {
           create: orderItems,
         },

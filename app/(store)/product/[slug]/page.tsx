@@ -11,6 +11,7 @@ import { ordenarTalles } from "@/lib/sizes";
 import ProductBreadcrumbs from "@/components/store/ProductBreadcrumbs";
 import RelatedProducts, { type RelatedProduct } from "@/components/store/RelatedProducts";
 import ViewContentTracker from "@/components/ViewContentTracker";
+import { offerExtras } from "@/lib/seo";
 
 const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com";
 const RELATED_PRODUCTS_LIMIT = 8;
@@ -87,9 +88,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const product = await getProduct(slug);
 
-  if (!product) {
-    return { title: "Producto no encontrado" };
-  }
+  // Producto inexistente o dado de baja: 404 real (antes respondia "OK" y
+  // Google lo tomaba como pagina vacia).
+  if (!product) notFound();
 
   // Sin esto, el título quedaba "Onitsuka Tiger | Onitsuka" (repite la marca,
   // no dice qué categoría es) y la descripción era literalmente el campo
@@ -169,19 +170,41 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       url: productUrl,
       priceCurrency: "ARS",
       price: Number(product.price),
-      availability: inStock
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
+      // Encargos: se piden y llegan despues -> PreOrder (antes figuraban "en stock")
+      availability: product.isEncargo
+        ? "https://schema.org/PreOrder"
+        : inStock
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
+      seller: { "@type": "Organization", name: "Member Club" },
+      ...offerExtras(Number(product.price)),
     },
+  };
+
+  // Recorrido Inicio > Categoria > Producto (Google lo muestra en vez de la URL)
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: `${SITE_URL}/` },
+      { "@type": "ListItem", position: 2, name: product.category.name, item: `${SITE_URL}/catalog?category=${product.category.slug}` },
+      { "@type": "ListItem", position: 3, name: product.name, item: productUrl },
+    ],
   };
 
   return (
     <>
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]) }}
     />
+    {/* Precio para Meta (Instagram/Facebook). React los sube al <head>. */}
+    <meta property="product:price:amount" content={String(Number(product.price))} />
+    <meta property="product:price:currency" content="ARS" />
+    <meta property="product:availability" content={product.isEncargo ? "preorder" : inStock ? "in stock" : "out of stock"} />
+    <meta property="product:brand" content={product.brand.name} />
+    <meta property="product:retailer_item_id" content={product.id} />
     <ViewContentTracker
       id={product.id}
       name={product.name}

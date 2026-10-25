@@ -1,13 +1,21 @@
 export const dynamic = "force-dynamic";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import PurchaseTracker from "@/components/PurchaseTracker";
 
-export default async function SuccessPage({ searchParams }: { searchParams: any }) {
-  const orderId = searchParams.orderId;
+export const metadata: Metadata = {
+  title: "Pedido confirmado",
+  robots: { index: false, follow: false },
+};
 
-  const order = await prisma.order.findUnique({
+export default async function SuccessPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const sp = await searchParams;
+  const orderId = sp.orderId;
+
+  const order = orderId ? await prisma.order.findUnique({
     where: { id: orderId },
     include: { items: true },
-  });
+  }) : null;
 
   if (!order) {
     return (
@@ -17,8 +25,19 @@ export default async function SuccessPage({ searchParams }: { searchParams: any 
     );
   }
 
+  // Solo se cuenta como compra si Mercado Pago la aprobo (vuelve con
+  // status=approved) o si el webhook ya la marco como aprobada.
+  const pagoAprobado = sp.status === "approved" || sp.collection_status === "approved" || order.paymentStatus === "approved";
+
   return (
     <div style={{maxWidth:"600px",margin:"80px auto",padding:"48px"}}>
+      {pagoAprobado && (
+        <PurchaseTracker
+          orderId={order.id}
+          value={Number(order.total)}
+          items={order.items.map((i) => ({ productId: i.productId, quantity: i.quantity, unitPrice: Number(i.unitPrice) }))}
+        />
+      )}
       <div style={{textAlign:"center",marginBottom:"48px"}}>
         <div style={{width:"64px",height:"64px",backgroundColor:"#DCFCE7",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 24px"}}>
           <span style={{fontSize:"28px"}}>✓</span>

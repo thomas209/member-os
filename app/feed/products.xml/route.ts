@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { SHIPPING_COST, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 
 const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com";
 
@@ -16,6 +17,17 @@ function escapeXml(value: string): string {
     .replace(/'/g, "&apos;");
 }
 
+// Categoria de Google (la lee tambien Meta). Texto en ingles, como pide Google.
+function googleCategory(slug: string): string {
+  if (slug === "zapatillas") return "Apparel & Accessories > Shoes";
+  if (slug === "ropa") return "Apparel & Accessories > Clothing";
+  if (slug === "accesorios") return "Apparel & Accessories";
+  if (slug === "arte") return "Home & Garden > Decor > Artwork";
+  return "Apparel & Accessories";
+}
+
+const GENDER: Record<string, string> = { HOMBRE: "male", MUJER: "female", UNISEX: "unisex", NINO: "unisex" };
+
 function cdata(value: string): string {
   return `<![CDATA[${value.replace(/]]>/g, "]]]]><![CDATA[>")}]]>`;
 }
@@ -25,7 +37,7 @@ export async function GET() {
     where: { isActive: true, deletedAt: null },
     include: {
       brand: { select: { name: true } },
-      category: { select: { name: true } },
+      category: { select: { name: true, slug: true } },
       images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }] },
       variants: { select: { stock: true } },
     },
@@ -59,11 +71,19 @@ export async function GET() {
     <g:link>${escapeXml(url)}</g:link>
     <g:image_link>${escapeXml(p.images[0].url)}</g:image_link>
 ${extraImages}
-    <g:availability>${inStock ? "in stock" : "out of stock"}</g:availability>
+    <g:availability>${p.isEncargo ? "preorder" : inStock ? "in stock" : "out of stock"}</g:availability>
     ${priceLine}
     <g:brand>${cdata(p.brand.name)}</g:brand>
     <g:condition>new</g:condition>
     <g:product_type>${cdata(p.category.name)}</g:product_type>
+    <g:google_product_category>${escapeXml(googleCategory(p.category.slug))}</g:google_product_category>
+    <g:gender>${GENDER[p.gender] || "unisex"}</g:gender>
+    <g:age_group>${p.gender === "NINO" ? "kids" : "adult"}</g:age_group>${p.colorName ? `
+    <g:color>${cdata(p.colorName)}</g:color>` : ""}
+    <g:shipping>
+      <g:country>AR</g:country>
+      <g:price>${(currentPrice >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST).toFixed(2)} ARS</g:price>
+    </g:shipping>
     <g:identifier_exists>no</g:identifier_exists>
   </item>`;
     })

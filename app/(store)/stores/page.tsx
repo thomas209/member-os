@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/lib/seo";
 
 const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com";
 
@@ -9,7 +10,7 @@ const STORE = {
   name: "Member Club",
   address: "Av. Constitución 270, B7167 Pinamar, Provincia de Buenos Aires",
   phone: "011 15-3086-6758",
-  phoneHref: "+541530866758",
+  phoneHref: "+5491130866758", // 011 15-3086-6758 en formato internacional
   hours: "Todos los días, 10:00 a 22:30",
   mapsQuery: "Av. Constitución 270, Pinamar, Buenos Aires",
 };
@@ -48,6 +49,7 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/stores`,
     siteName: "Member Club",
     type: "website",
+    images: [OG_IMAGE],
   },
 };
 

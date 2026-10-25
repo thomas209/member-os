@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { trackMeta } from "@/lib/metaPixel";
 
 export type CartItem = {
   variantId: string;
@@ -66,6 +67,14 @@ export const useCartStore = create<CartStore>()(
         } else {
           set({ items: [...items, { ...item, quantity: 1 }], isOpen: true, bumpCount: get().bumpCount + 1 });
         }
+        // Meta: "agregar al carrito" (para anuncios y publicos de retargeting)
+        trackMeta("AddToCart", {
+          content_ids: [item.productId],
+          content_name: item.name,
+          content_type: "product",
+          value: item.price,
+          currency: "ARS",
+        });
         return true;
       },
 

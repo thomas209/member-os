@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { refrescarTienda } from "@/lib/storeCache";
 import { sendOrderConfirmationEmail, datosEntrega } from "@/lib/email";
 import { sendOrderWhatsApp } from "@/lib/social/whatsappOrder";
+import { sendMetaPurchase } from "@/lib/metaCapi";
 
 // Confirma a mano que la transferencia llego (no hay forma automatica de
 // saberlo). Recien aca se descuenta stock — mismo patron atomico que el
@@ -125,6 +126,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // WhatsApp con el link de seguimiento (si esta configurado y el cliente lo acepto).
     await sendOrderWhatsApp(order).catch((e) => console.error("No se pudo enviar el WhatsApp del pedido:", e));
+
+    // Meta (Conversions API): avisa la venta para medir y optimizar anuncios.
+    await sendMetaPurchase(order).catch((e) => console.error("No se pudo avisar la compra a Meta:", e));
 
     refrescarTienda();
     return NextResponse.json({ ok: true, oversold: oversoldItems });

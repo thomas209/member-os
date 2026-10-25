@@ -4,6 +4,7 @@ import { payment } from "@/lib/mercadopago";
 import { WebhookSignatureValidator, InvalidWebhookSignatureError } from "mercadopago";
 import { sendOrderConfirmationEmail, datosEntrega } from "@/lib/email";
 import { sendOrderWhatsApp } from "@/lib/social/whatsappOrder";
+import { sendMetaPurchase } from "@/lib/metaCapi";
 
 export async function POST(request: Request) {
   try {
@@ -184,6 +185,9 @@ export async function POST(request: Request) {
 
       // WhatsApp con el link de seguimiento (si esta configurado y el cliente lo acepto).
       await sendOrderWhatsApp(order).catch((e) => console.error("No se pudo enviar el WhatsApp del pedido:", e));
+
+      // Meta (Conversions API): avisa la venta para medir y optimizar anuncios.
+      await sendMetaPurchase(order).catch((e) => console.error("No se pudo avisar la compra a Meta:", e));
     }
 
     // Pago rechazado o cancelado

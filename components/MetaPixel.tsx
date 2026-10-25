@@ -1,7 +1,6 @@
 import Script from "next/script";
-
 // ID del Meta Pixel de Member Club (Meta Business Suite → Administrador de eventos).
-const META_PIXEL_ID = "1743002863498197";
+import { META_PIXEL_ID } from "@/lib/metaPixel";
 
 export default function MetaPixel() {
   return (

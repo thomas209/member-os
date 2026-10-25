@@ -3,6 +3,7 @@ import { Inter, Instrument_Sans, DM_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import MetaPixel from '@/components/MetaPixel'
 import './globals.css'
+import { OG_IMAGE } from '@/lib/seo'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -42,11 +43,13 @@ export const metadata: Metadata = {
     siteName: 'Member Club',
     locale: 'es_AR',
     type: 'website',
+    images: [OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Member Club',
     description: 'Ropa y zapatillas importadas en Pinamar. Nike, Adidas, On Running, Hoka, Supreme y más. Envíos a todo el país.',
+    images: [OG_IMAGE.url],
   },
 }
 
