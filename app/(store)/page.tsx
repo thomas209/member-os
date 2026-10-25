@@ -1,6 +1,23 @@
 // La home se guarda armada y se refresca sola cada 2 minutos (y al guardar
 // un producto en el admin). Asi responde al instante en vez de consultar la
 // base en cada visita.
+import type { Metadata } from "next";
+import { SITE_URL, OG_IMAGE, ORGANIZATION_JSONLD, WEBSITE_JSONLD } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: { absolute: "Member Club · Ropa y zapatillas importadas en Pinamar" },
+  alternates: { canonical: `${SITE_URL}/` },
+  openGraph: {
+    title: "Member Club · Ropa y zapatillas importadas en Pinamar",
+    description: "Ropa y zapatillas importadas en Pinamar. Nike, Adidas, On Running, Hoka, Supreme y más. Envíos a todo el país.",
+    url: `${SITE_URL}/`,
+    siteName: "Member Club",
+    locale: "es_AR",
+    type: "website",
+    images: [OG_IMAGE],
+  },
+};
+
 export const revalidate = 120;
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -51,6 +68,9 @@ export default async function HomePage() {
 
   return (
     <main>
+      {/* Para Google: datos de la empresa y del sitio, y el titulo principal (no se ve). */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([ORGANIZATION_JSONLD, WEBSITE_JSONLD]) }} />
+      <h1 className="sr-only">Member Club · Ropa y zapatillas importadas en Pinamar</h1>
       <HeroSplit />
 
             <BrandCarousel brands={brands} />

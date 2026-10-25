@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-
-declare global {
-  interface Window {
-    fbq?: (...args: unknown[]) => void;
-  }
-}
+import { trackMeta } from "@/lib/metaPixel";
 
 type ViewContentTrackerProps = {
   id: string;
@@ -21,7 +16,7 @@ type ViewContentTrackerProps = {
 // corran anuncios.
 export default function ViewContentTracker({ id, name, price, category }: ViewContentTrackerProps) {
   useEffect(() => {
-    window.fbq?.("track", "ViewContent", {
+    trackMeta("ViewContent", {
       content_ids: [id],
       content_name: name,
       content_type: "product",

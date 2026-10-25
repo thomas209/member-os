@@ -11,6 +11,7 @@ import { ordenarTalles } from "@/lib/sizes";
 import ProductBreadcrumbs from "@/components/store/ProductBreadcrumbs";
 import RelatedProducts, { type RelatedProduct } from "@/components/store/RelatedProducts";
 import ViewContentTracker from "@/components/ViewContentTracker";
+import { offerExtras } from "@/lib/seo";
 
 const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com";
 const RELATED_PRODUCTS_LIMIT = 8;
@@ -87,9 +88,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const product = await getProduct(slug);
 
-  if (!product) {
-    return { title: "Producto no encontrado" };
-  }
+  // Producto inexistente o dado de baja: 404 real (antes respondia "OK" y
+  // Google lo tomaba como pagina vacia).
+  if (!product) notFound();
 
   // Sin esto, el título quedaba "Onitsuka Tiger | Onitsuka" (repite la marca,
   // no dice qué categoría es) y la descripción era literalmente el campo
@@ -127,6 +128,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title,
       description,
       images: image ? [image] : undefined,
+    },
+    // Precio para Meta (vista previa en Instagram/Facebook y catalogo)
+    other: {
+      "product:price:amount": String(Number(product.price)),
+      "product:price:currency": "ARS",
+      "product:availability": product.isEncargo ? "preorder" : product.variants.some((v) => v.stock > 0) ? "in stock" : "out of stock",
+      "product:brand": product.brand.name,
+      "product:retailer_item_id": product.id,
     },
   };
 }
@@ -169,18 +178,34 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       url: productUrl,
       priceCurrency: "ARS",
       price: Number(product.price),
-      availability: inStock
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
+      // Encargos: se piden y llegan despues -> PreOrder (antes figuraban "en stock")
+      availability: product.isEncargo
+        ? "https://schema.org/PreOrder"
+        : inStock
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
+      seller: { "@type": "Organization", name: "Member Club" },
+      ...offerExtras(Number(product.price)),
     },
+  };
+
+  // Recorrido Inicio > Categoria > Producto (Google lo muestra en vez de la URL)
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: `${SITE_URL}/` },
+      { "@type": "ListItem", position: 2, name: product.category.name, item: `${SITE_URL}/catalog?category=${product.category.slug}` },
+      { "@type": "ListItem", position: 3, name: product.name, item: productUrl },
+    ],
   };
 
   return (
     <>
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]) }}
     />
     <ViewContentTracker
       id={product.id}

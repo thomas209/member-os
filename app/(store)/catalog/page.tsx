@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
 import { TAG_TIENDA } from "@/lib/storeCache";
 import type { Metadata } from "next";
+import { SITE_URL, OG_IMAGE } from "@/lib/seo";
 import ProductCard from "@/components/store/ProductCard";
 import CatalogToolbar from "@/components/store/CatalogToolbar";
 import FiltrosPlegables from "@/components/store/FiltrosPlegables";
@@ -47,11 +48,25 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
       ? `Descubrí ${parts.join(", ")} en Member Club. Ropa y zapatillas importadas con envíos a todo el país.`
       : "Catálogo de Member Club: ropa y zapatillas importadas de Nike, Adidas, On Running, Hoka, Supreme y más. Envíos a todo el país.";
 
+  // Direccion oficial (canonical): solo los filtros que valen como pagina
+  // propia (categoria, marca, genero, encargos). Orden y pagina no cuentan,
+  // asi Google no ve la misma lista repetida en muchas URLs.
+  const canonicalParams = new URLSearchParams();
+  if (category) canonicalParams.set("category", category);
+  if (brand) canonicalParams.set("brand", brand);
+  if (gender) canonicalParams.set("gender", gender);
+  if (encargo === "1") canonicalParams.set("encargo", "1");
+  const qs = canonicalParams.toString();
+  const canonical = `${SITE_URL}/catalog${qs ? "?" + qs : ""}`;
+
   return {
     title,
     description,
-    openGraph: { title, description },
-    twitter: { card: "summary", title, description },
+    alternates: { canonical },
+    // Las busquedas internas no se indexan (son infinitas y no aportan).
+    robots: q ? { index: false, follow: true } : undefined,
+    openGraph: { title, description, url: canonical, siteName: "Member Club", locale: "es_AR", type: "website", images: [OG_IMAGE] },
+    twitter: { card: "summary_large_image", title, description, images: [OG_IMAGE.url] },
   };
 }
 
