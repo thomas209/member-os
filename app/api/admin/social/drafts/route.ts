@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
       format: b.format === "story" ? "story" : "post",
       presetId: b.presetId ? String(b.presetId) : undefined,
       scheduledAt: when,
+      style: b.style === "simple" ? "simple" : b.style === "canva" ? "canva" : undefined,
     });
     return NextResponse.json({ post });
   } catch (e) {

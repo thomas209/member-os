@@ -6,6 +6,7 @@ import { renderPostImage, type PostTag, type PostFormat } from "./postImage";
 import { renderAnnouncement } from "./announcementImage";
 import { announcementPresets } from "@/lib/storeInfo";
 import { renderBrandStory } from "./brandAnnouncement";
+import { renderCanvaProductStory } from "./canvaProductStory";
 import { suggestCaption } from "@/lib/ai/caption";
 import { getInstagramAccount } from "./instagram";
 import { AiError } from "@/lib/ai/client";
@@ -25,7 +26,7 @@ const NOTES: Record<string, string> = {
 
 // scheduledAt opcional: queda como PROPUESTA para ese momento (sigue siendo
 // borrador; recien sale cuando Tommy la aprueba).
-export async function createDraft(opts: { productIds?: string[]; tag?: PostTag | null; format?: PostFormat; presetId?: string; scheduledAt?: Date | null }) {
+export async function createDraft(opts: { productIds?: string[]; tag?: PostTag | null; format?: PostFormat; presetId?: string; scheduledAt?: Date | null; style?: "canva" | "simple" }) {
   const account = await getInstagramAccount();
   if (!account) throw new AiError("Conectá Instagram primero", 400);
   const format: PostFormat = opts.format === "story" ? "story" : "post";
@@ -47,7 +48,14 @@ export async function createDraft(opts: { productIds?: string[]; tag?: PostTag |
   } else {
     productIds = (opts.productIds || []).slice(0, format === "story" ? 5 : 10);
     if (!productIds.length) throw new AiError("Elegí al menos un producto", 400);
-    for (const id of productIds) mediaUrls.push(await upload(await renderPostImage({ productId: id, tag: opts.tag || null, format })));
+    for (const id of productIds) {
+      // Historias: con la plantilla de Canva de Tommy, salvo que se pida el diseño simple.
+      let canvaUrl: string | null = null;
+      if (format === "story" && opts.style !== "simple") {
+        try { canvaUrl = await renderCanvaProductStory(id, opts.tag || null); } catch (e) { console.error("[social] historia Canva", e); }
+      }
+      mediaUrls.push(canvaUrl || (await upload(await renderPostImage({ productId: id, tag: opts.tag || null, format }))));
+    }
     if (format === "post") caption = (await suggestCaption(productIds, opts.tag ? NOTES[opts.tag] : undefined)).text;
   }
 

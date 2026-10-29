@@ -18,6 +18,7 @@ export type PlanSlot = {
   productIds?: string[];
   tag?: PostTag | null;
   presetId?: string;
+  style?: "canva" | "simple"; // historias de producto: para que no sean todas iguales
 };
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -161,6 +162,13 @@ export async function planWeek(weekStart: Date, exclude: string[] = []): Promise
 
   const out: PlanSlot[] = [];
   postSlots.forEach((s, i) => { if (posts[i]) out.push({ ...posts[i], key: `post-${s.d}`, when: s.at.toISOString() }); });
-  storySlots.forEach((s, i) => { if (stories[i]) out.push({ ...stories[i], key: `story-${s.d}`, when: s.at.toISOString() }); });
+  // Historias de producto: 2 con la plantilla de Canva y 1 con el diseño simple, alternando.
+  let np = 0;
+  storySlots.forEach((s, i) => {
+    const st = stories[i];
+    if (!st) return;
+    const style = st.productIds?.length ? ((np++ + Math.floor(+weekStart / DAY)) % 3 === 2 ? "simple" : "canva") : undefined;
+    out.push({ ...st, key: `story-${s.d}`, when: s.at.toISOString(), ...(style ? { style } : {}) });
+  });
   return out.sort((a, b) => +new Date(a.when) - +new Date(b.when));
 }

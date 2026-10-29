@@ -9,7 +9,7 @@ import { Uploader } from "./WeekStories";
 // En la compu: 7 columnas. En el celu: lista por dia, de arriba hacia abajo.
 export type AgendaPost = { id: string; caption: string; mediaUrls: string[]; mediaType: string; status: string; scheduledAt: string | null; publishedAt: string | null; lastError: string | null; productIds?: string[] };
 type Account = { handle: string; picture: string | null };
-type Slot = { key: string; when: string; format: "post" | "story"; kind: string; title: string; productIds?: string[]; tag?: string | null; presetId?: string };
+type Slot = { key: string; when: string; format: "post" | "story"; kind: string; title: string; productIds?: string[]; tag?: string | null; presetId?: string; style?: string };
 export type Refill = { day: string; format: string; n: number } | null;
 
 const DAY = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
@@ -120,7 +120,7 @@ export default function WeekAgenda({ account, ready, reloadKey, refill, onOpen, 
         setGen({ done: i, total: slots.length, current: `${day} · ${s.format === "story" ? "Historia" : "Post"}: ${s.title}`, errors });
         const res = await fetch("/api/admin/social/drafts", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ productIds: s.productIds, tag: s.tag, format: s.format, presetId: s.presetId, scheduledAt: s.when }),
+          body: JSON.stringify({ productIds: s.productIds, tag: s.tag, format: s.format, presetId: s.presetId, scheduledAt: s.when, style: s.style }),
         });
         const d = await res.json().catch(() => ({}));
         if (!res.ok) {
