@@ -6,6 +6,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSuggestions } from "./suggestions";
 import type { PostTag } from "./postImage";
+import { enTemporada } from "@/lib/storeInfo";
 
 export type PlanSlot = {
   key: string;
@@ -133,10 +134,14 @@ export async function planWeek(weekStart: Date, exclude: string[] = []): Promise
     urgent.push({ format: "story", kind: s.kind, title: s.title, description: s.description, productIds: ids, tag: s.tag ?? null });
     mark(ids);
   }
-  const presets: Cand[] = [
-    { format: "story", kind: "local", title: "Dónde estamos", description: "Recordatorio del local en Pinamar: dirección, teléfono y web.", presetId: "contacto" },
-    { format: "story", kind: "envios", title: "Envíos a todo el país", description: "Recordatorio de envíos y medios de pago.", presetId: "envios" },
-  ];
+  // Historias de marca (plantillas de Canva): 2 por semana, rotando.
+  const brand: Cand[] = [
+    { format: "story", kind: "horarios", title: "Horarios del local", description: "Los horarios de Pinamar, con tu plantilla de Canva.", presetId: enTemporada() ? "temporada" : "fuera" },
+    { format: "story", kind: "local", title: "Visitanos", description: "Dirección, horario y teléfono del local en Pinamar.", presetId: "contacto" },
+    { format: "story", kind: "envios", title: "Tiempos de envío", description: "CABA, interior y encargos, con envío gratis desde $180.000.", presetId: "envios" },
+  ].filter((b) => !urgent.some((u) => u.presetId === b.presetId)) as Cand[];
+  const r0 = Math.floor(+weekStart / (7 * DAY)) % brand.length;
+  const presets: Cand[] = [brand[r0], brand[(r0 + 1) % brand.length]].filter(Boolean);
   const stories: Cand[] = [...urgent];
   let pi = 0;
   while (stories.length < storySlots.length) {

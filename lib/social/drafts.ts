@@ -5,6 +5,7 @@ import cloudinary from "@/lib/cloudinary";
 import { renderPostImage, type PostTag, type PostFormat } from "./postImage";
 import { renderAnnouncement } from "./announcementImage";
 import { announcementPresets } from "@/lib/storeInfo";
+import { renderBrandStory } from "./brandAnnouncement";
 import { suggestCaption } from "@/lib/ai/caption";
 import { getInstagramAccount } from "./instagram";
 import { AiError } from "@/lib/ai/client";
@@ -36,7 +37,12 @@ export async function createDraft(opts: { productIds?: string[]; tag?: PostTag |
   if (opts.presetId) {
     const preset = announcementPresets().find((p) => p.id === opts.presetId);
     if (!preset) throw new AiError("Anuncio no encontrado", 404);
-    mediaUrls = [await upload(await renderAnnouncement(preset, { format, tema: "claro", layout: "tabla" }))];
+    // Historias: con la plantilla de Canva de Tommy (si Canva está conectado).
+    let canvaUrl: string | null = null;
+    if (format === "story") {
+      try { canvaUrl = await renderBrandStory(preset); } catch (e) { console.error("[social] plantilla Canva", e); }
+    }
+    mediaUrls = [canvaUrl || (await upload(await renderAnnouncement(preset, { format, tema: "claro", layout: "tabla" })))];
     if (format === "post") caption = [preset.titulo, ...(preset.subtitulo ? [preset.subtitulo] : []), ...preset.lineas].join("\n");
   } else {
     productIds = (opts.productIds || []).slice(0, format === "story" ? 5 : 10);
