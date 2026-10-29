@@ -28,7 +28,13 @@ export default function PublishActions({ postId, isStory, handle, beforeAction, 
   beforeAction?: () => Promise<void>; // ej. guardar el texto editado
   onPublished?: (permalink: string) => void;
 }) {
-  const [when, setWhen] = useState("");
+  // Viene de "+ Subir algo" en la agenda (?fecha=...): ese dia ya elegido.
+  const [when, setWhen] = useState(() => {
+    try {
+      const f = new URLSearchParams(window.location.search).get("fecha");
+      return f && +new Date(f) > Date.now() ? f : "";
+    } catch { return ""; }
+  });
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [confirmNow, setConfirmNow] = useState(false);

@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
 
 // "Tu community manager": la pantalla simple. Te propone que publicar,
 // te arma el post en un clic y vos solo aprobas, agendas o descartas.
-export default async function SocialHome({ searchParams }: { searchParams: Promise<{ open?: string }> }) {
-  const { open } = await searchParams;
+export default async function SocialHome({ searchParams }: { searchParams: Promise<{ open?: string; fecha?: string }> }) {
+  const { open, fecha } = await searchParams;
   if (!isSocialEnabled()) {
     return (
       <div style={{ padding: "48px" }}>
@@ -37,6 +37,7 @@ export default async function SocialHome({ searchParams }: { searchParams: Promi
       spent={spent}
       budget={aiConfig.monthlyBudgetUsd}
       openId={open}
+      fecha={fecha}
     />
   );
 }

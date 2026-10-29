@@ -102,7 +102,7 @@ export default function AnnouncementStudio({ account }: { account: Account | nul
   }
 
   return (
-    <section style={card}>
+    <section id="anuncio" style={card}>
       <h2 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "4px" }}>Anuncio (horarios, feriados, avisos)</h2>
       <p style={{ fontSize: "13px", color: "#737373", marginBottom: "20px" }}>
         Escribí la info como te salga. La IA solo la ordena en título y renglones: no agrega nada. Todo es editable antes de armar la imagen.

@@ -11,7 +11,7 @@ const STORE = {
   address: "Av. Constitución 270, B7167 Pinamar, Provincia de Buenos Aires",
   phone: "011 15-3086-6758",
   phoneHref: "+5491130866758", // 011 15-3086-6758 en formato internacional
-  hours: "Todos los días, 10:00 a 22:30",
+  hours: ["Temporada (15/12 al 31/03): todos los días, 10:00 a 22:30", "Resto del año: viernes a domingo, 11 a 14 y 17 a 20 hs"],
   mapsQuery: "Av. Constitución 270, Pinamar, Buenos Aires",
 };
 
@@ -31,7 +31,7 @@ const BRANDS = [
 ];
 
 // Temporada vigente o próxima: 15/12 al 31/03, todos los días 10 a 22:30.
-// Resto del año: viernes a domingo, 10 a 20.
+// Resto del año: viernes a domingo, 11 a 14 y 17 a 20.
 function seasonDates(now = new Date()) {
   const y = now.getFullYear();
   const startYear = now.getMonth() < 3 ? y - 1 : y;
@@ -87,7 +87,13 @@ export default function StoresPage() {
       {
         "@type": "OpeningHoursSpecification",
         dayOfWeek: ["Friday", "Saturday", "Sunday"],
-        opens: "10:00",
+        opens: "11:00",
+        closes: "14:00",
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Friday", "Saturday", "Sunday"],
+        opens: "17:00",
         closes: "20:00",
       },
       {
@@ -138,7 +144,7 @@ export default function StoresPage() {
               </div>
               <div>
                 <p className="font-semibold text-[#0A0A0A] mb-1">Horario</p>
-                <p>{STORE.hours}</p>
+                {STORE.hours.map((h) => <p key={h}>{h}</p>)}
               </div>
               <div>
                 <p className="font-semibold text-[#0A0A0A] mb-1">Teléfono</p>

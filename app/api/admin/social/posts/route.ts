@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
     const items = await prisma.scheduledPost.findMany({
       where: {
         OR: [
-          { status: { in: ["approved", "publishing", "paused", "failed"] }, scheduledAt: { gte, lt } },
+          // "draft" con fecha = propuesta del plan semanal (falta aprobar).
+          { status: { in: ["draft", "approved", "publishing", "paused", "failed"] }, scheduledAt: { gte, lt } },
           { status: "published", publishedAt: { gte, lt } },
         ],
       },
@@ -27,7 +28,8 @@ export async function GET(request: NextRequest) {
   }
   const [upcoming, drafts, recent] = await Promise.all([
     prisma.scheduledPost.findMany({ where: { status: { in: ["approved", "publishing"] } }, orderBy: { scheduledAt: "asc" }, take: 50 }),
-    prisma.scheduledPost.findMany({ where: { status: { in: ["draft", "paused", "failed"] } }, orderBy: { createdAt: "desc" }, take: 20 }),
+    // Las propuestas del plan (borrador con fecha) se ven en la agenda, no aca.
+    prisma.scheduledPost.findMany({ where: { OR: [{ status: "draft", scheduledAt: null }, { status: { in: ["paused", "failed"] } }] }, orderBy: { createdAt: "desc" }, take: 20 }),
     prisma.scheduledPost.findMany({ where: { status: "published" }, orderBy: { publishedAt: "desc" }, take: 12 }),
   ]);
   return NextResponse.json({ upcoming, drafts, recent });

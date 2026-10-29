@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import InstagramPreview from "./InstagramPreview";
 import StoryPreview from "./StoryPreview";
-import WeekAgenda from "./WeekAgenda";
+import WeekAgenda, { isProposal, rememberDiscard, type Refill } from "./WeekAgenda";
 
 type Account = { handle: string; picture: string | null; status: string } | null;
 type Suggestion = {
@@ -13,6 +13,7 @@ type Suggestion = {
 type Post = {
   id: string; caption: string; mediaUrls: string[]; mediaType: string; status: string;
   scheduledAt: string | null; publishedAt: string | null; permalink: string | null; lastError: string | null; createdAt: string;
+  productIds?: string[];
 };
 
 const btn: React.CSSProperties = { background: "#0A0A0A", color: "white", border: "none", borderRadius: "10px", padding: "10px 16px", fontSize: "13px", fontWeight: 600, cursor: "pointer" };
@@ -41,13 +42,16 @@ function toLocalInput(d: Date) {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-export default function CommunityManager({ account, hasVoice, unread, urgent, spent, budget, openId }: {
-  account: Account; hasVoice: boolean; unread: number; urgent: number; spent: number; budget: number; openId?: string;
+export default function CommunityManager({ account, hasVoice, unread, urgent, spent, budget, openId, fecha }: {
+  account: Account; hasVoice: boolean; unread: number; urgent: number; spent: number; budget: number; openId?: string; fecha?: string;
 }) {
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
   const [posts, setPosts] = useState<{ upcoming: Post[]; drafts: Post[]; recent: Post[] }>({ upcoming: [], drafts: [], recent: [] });
   const [building, setBuilding] = useState<string>("");
   const [open, setOpen] = useState<Post | null>(null);
+  // Propuestas de la semana para revisar una tras otra.
+  const [queue, setQueue] = useState<Post[]>([]);
+  const [refill, setRefill] = useState<Refill>(null);
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
 
@@ -107,7 +111,7 @@ export default function CommunityManager({ account, hasVoice, unread, urgent, sp
   return (
     <div style={{ padding: "clamp(16px, 5vw, 48px)", maxWidth: "1000px" }}>
       <h1 style={{ fontSize: "26px", fontWeight: 700, letterSpacing: "-0.02em", marginBottom: "4px" }}>Tu community manager</h1>
-      <p style={{ fontSize: "14px", color: "#737373" }}>Te propongo qué publicar con lo que pasa en la tienda. Vos solo elegís, revisás y aprobás.</p>
+      <p style={{ fontSize: "14px", color: "#737373" }}>Te armo la semana con lo que pasa en la tienda. Vos revisás y aprobás: nada sale sin tu OK.</p>
 
       {/* Estado rapido */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px", marginTop: "24px" }}>
@@ -142,16 +146,17 @@ export default function CommunityManager({ account, hasVoice, unread, urgent, sp
 
       {error && <div style={{ ...card, marginTop: "16px", borderColor: "#FCA5A5", background: "#FEF2F2", fontSize: "13px", color: "#991B1B" }}>{error}</div>}
 
-      <h2 style={h2}>Agenda</h2>
+      <h2 style={h2}>Tu semana</h2>
       <WeekAgenda
         account={account}
         ready={!!ready}
         reloadKey={reloadKey}
-        onOpen={(p) => setOpen(p as unknown as Post)}
+        refill={refill}
+        onOpen={(p, q) => { setOpen(p as unknown as Post); setQueue(q as unknown as Post[]); }}
         onChanged={(m) => { setToast(m); load(); }}
       />
 
-      <h2 style={h2}>Para hoy</h2>
+      <h2 style={h2}>Ideas sueltas para hoy</h2>
       {suggestions === null ? (
         <p style={{ fontSize: "13px", color: "#737373" }}>Mirando la tienda…</p>
       ) : !visible.length ? (
@@ -202,7 +207,23 @@ export default function CommunityManager({ account, hasVoice, unread, urgent, sp
       </p>
 
       {open && account && (
-        <Review post={open} account={account} onClose={() => setOpen(null)} onDone={(m) => { setOpen(null); setToast(m); load(); }} />
+        <Review key={open.id} post={open} account={account} fecha={open.id === openId ? fecha : undefined}
+          position={queue.length > 1 ? { i: queue.findIndex((q) => q.id === open.id) + 1, n: queue.length } : null}
+          onClose={() => { setOpen(null); setQueue([]); }}
+          onDone={(m) => {
+            // Si venia revisando propuestas, abre la siguiente.
+            const rest = queue.filter((q) => q.id !== open.id);
+            const idx = queue.findIndex((q) => q.id === open.id);
+            const next = rest[Math.min(Math.max(idx, 0), rest.length - 1)];
+            setQueue(rest);
+            setOpen(next || null);
+            setToast(m); load();
+          }}
+          onSkip={() => {
+            const idx = queue.findIndex((q) => q.id === open.id);
+            if (queue.length > 1) setOpen(queue[(idx + 1) % queue.length]);
+          }}
+          onReplace={(p) => setRefill({ day: p.scheduledAt || "", format: p.mediaType === "story" ? "story" : "post", n: Date.now() })} />
       )}
 
       {toast && (
@@ -218,6 +239,7 @@ function thumb(u: string) {
 }
 
 function statusLabel(p: Post) {
+  if (isProposal(p)) return "Propuesta para " + fmt(p.scheduledAt);
   if (p.status === "published") return "Publicado " + fmt(p.publishedAt);
   if (p.status === "approved") return "Sale " + fmt(p.scheduledAt);
   if (p.status === "publishing") return "Publicando…";
@@ -243,11 +265,16 @@ function PostList({ posts, onOpen }: { posts: Post[]; onOpen: (p: Post) => void 
   );
 }
 
-function Review({ post, account, onClose, onDone }: {
-  post: Post; account: NonNullable<Account>; onClose: () => void; onDone: (msg: string) => void;
+function Review({ post, account, fecha, position, onClose, onDone, onSkip, onReplace }: {
+  post: Post; account: NonNullable<Account>; fecha?: string; position: { i: number; n: number } | null;
+  onClose: () => void; onDone: (msg: string) => void; onSkip: () => void; onReplace: (p: Post) => void;
 }) {
   const [caption, setCaption] = useState(post.caption);
-  const [when, setWhen] = useState(post.scheduledAt ? toLocalInput(new Date(post.scheduledAt)) : "");
+  // Fecha: la de la propuesta/agenda, o la del dia elegido en "+ Subir algo".
+  const [when, setWhen] = useState(post.scheduledAt ? toLocalInput(new Date(post.scheduledAt)) : fecha && !isNaN(+new Date(fecha)) ? fecha : "");
+  const proposal = isProposal(post);
+  const [openedAt] = useState(() => Date.now());
+  const whenOk = !!when && +new Date(when) > openedAt + 60_000;
   const [confirming, setConfirming] = useState<"" | "now" | "schedule">("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -279,8 +306,14 @@ function Review({ post, account, onClose, onDone }: {
         </div>
         <div style={{ flex: 1, minWidth: "280px", display: "flex", flexDirection: "column", gap: "12px" }}>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <div style={{ fontWeight: 700, fontSize: "16px" }}>{isStory ? "Historia" : "Post"} · {statusLabel(post)}</div>
-            <button onClick={onClose} style={{ ...ghost, padding: "4px 10px" }}>✕</button>
+            <div style={{ fontWeight: 700, fontSize: "16px" }}>
+              {isStory ? "Historia" : "Post"} · {statusLabel(post)}
+              {position && <div style={{ fontSize: "12px", fontWeight: 500, color: "#737373", marginTop: "2px" }}>Propuesta {position.i} de {position.n}</div>}
+            </div>
+            <div style={{ display: "flex", gap: "6px", alignItems: "flex-start" }}>
+              {position && <button onClick={onSkip} style={{ ...ghost, padding: "4px 10px" }}>Siguiente →</button>}
+              <button onClick={onClose} style={{ ...ghost, padding: "4px 10px" }}>✕</button>
+            </div>
           </div>
           {!isStory && (
             <>
@@ -314,6 +347,19 @@ function Review({ post, account, onClose, onDone }: {
                   <button style={btn} disabled={busy} onClick={() => run(async () => { await saveCaption(); await call(`/api/admin/social/posts/${post.id}/publish`, { confirm: true }); onDone("Publicado en Instagram ✓"); })}>{busy ? "Publicando…" : "Sí, publicar"}</button>
                   <button style={ghost} onClick={() => setConfirming("")}>No</button>
                 </div>
+              ) : proposal ? (
+                // Propuesta del plan: aprobar es el OK (un toque), con la fecha de arriba.
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  <button style={{ ...btn, opacity: whenOk ? 1 : 0.5 }} disabled={busy || !whenOk}
+                    onClick={() => run(async () => { await saveCaption(); await call(`/api/admin/social/posts/${post.id}/schedule`, { confirm: true, scheduledAt: new Date(when).toISOString() }); onDone("Aprobado ✓ sale " + fmt(new Date(when).toISOString())); })}>
+                    {busy ? "…" : "Aprobar"}
+                  </button>
+                  {!isStory && !!post.productIds?.length && (
+                    <button style={ghost} disabled={busy} onClick={() => run(async () => { const j = await call("/api/admin/social/caption", { productIds: post.productIds }); setCaption(j.text); })}>Otro texto</button>
+                  )}
+                  <button style={ghost} disabled={busy} onClick={() => run(async () => { await call(`/api/admin/social/posts/${post.id}`, undefined, "DELETE"); rememberDiscard(post.productIds); onReplace(post); onDone("Buscando otra opción para ese día…"); })}>Cambiar por otra</button>
+                  <button style={ghost} onClick={() => setConfirming("now")}>Publicar ahora</button>
+                </div>
               ) : (
                 <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                   <button style={{ ...btn, opacity: when ? 1 : 0.5 }} disabled={!when} onClick={() => setConfirming("schedule")}>Agendar</button>
@@ -328,7 +374,7 @@ function Review({ post, account, onClose, onDone }: {
                 {post.status === "approved" ? (
                   <button style={{ ...ghost, color: "#B91C1C" }} disabled={busy} onClick={() => run(async () => { await call(`/api/admin/social/posts/${post.id}/cancel`); onDone("Sacado de la agenda"); })}>Sacar de la agenda</button>
                 ) : (
-                  <button style={{ ...ghost, color: "#B91C1C" }} disabled={busy} onClick={() => run(async () => { await call(`/api/admin/social/posts/${post.id}`, undefined, "DELETE"); onDone("Descartado"); })}>Descartar</button>
+                  <button style={{ ...ghost, color: "#B91C1C" }} disabled={busy} onClick={() => run(async () => { await call(`/api/admin/social/posts/${post.id}`, undefined, "DELETE"); if (proposal) rememberDiscard(post.productIds); onDone("Descartado"); })}>Descartar</button>
                 )}
               </div>
             </>
