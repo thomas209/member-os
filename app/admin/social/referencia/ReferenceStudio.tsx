@@ -90,7 +90,8 @@ export default function ReferenceStudio() {
     setBusy("draft"); setError("");
     try {
       const j = await call({ action: "draft", spec, productId: product.id, tag: tag || null, format });
-      window.location.href = "/admin/social?open=" + j.post.id;
+      const fecha = new URLSearchParams(window.location.search).get("fecha");
+      window.location.href = "/admin/social?open=" + j.post.id + (fecha ? "&fecha=" + encodeURIComponent(fecha) : "");
     } catch (e) { setError(e instanceof Error ? e.message : "Error"); setBusy(""); }
   }
 

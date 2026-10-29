@@ -10,11 +10,15 @@ export async function POST(request: NextRequest) {
   if (off) return off;
   try {
     const b = await request.json();
+    // Propuesta del plan semanal: fecha futura opcional.
+    const when = b.scheduledAt ? new Date(String(b.scheduledAt)) : null;
+    if (when && (isNaN(+when) || +when < Date.now())) return NextResponse.json({ error: "Fecha inválida o pasada" }, { status: 400 });
     const post = await createDraft({
       productIds: Array.isArray(b.productIds) ? b.productIds.map(String) : undefined,
       tag: b.tag && (POST_TAGS as readonly string[]).includes(b.tag) ? (b.tag as PostTag) : null,
       format: b.format === "story" ? "story" : "post",
       presetId: b.presetId ? String(b.presetId) : undefined,
+      scheduledAt: when,
     });
     return NextResponse.json({ post });
   } catch (e) {

@@ -22,7 +22,9 @@ const NOTES: Record<string, string> = {
   "ULTIMOS TALLES": "Quedan pocos talles: generá urgencia sin exagerar.",
 };
 
-export async function createDraft(opts: { productIds?: string[]; tag?: PostTag | null; format?: PostFormat; presetId?: string }) {
+// scheduledAt opcional: queda como PROPUESTA para ese momento (sigue siendo
+// borrador; recien sale cuando Tommy la aprueba).
+export async function createDraft(opts: { productIds?: string[]; tag?: PostTag | null; format?: PostFormat; presetId?: string; scheduledAt?: Date | null }) {
   const account = await getInstagramAccount();
   if (!account) throw new AiError("Conectá Instagram primero", 400);
   const format: PostFormat = opts.format === "story" ? "story" : "post";
@@ -50,6 +52,7 @@ export async function createDraft(opts: { productIds?: string[]; tag?: PostTag |
       caption,
       mediaUrls,
       mediaType: format === "story" ? "story" : mediaUrls.length > 1 ? "carousel" : "image",
+      scheduledAt: opts.scheduledAt ?? null,
     },
   });
 }
