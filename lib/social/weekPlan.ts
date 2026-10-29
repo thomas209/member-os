@@ -142,16 +142,22 @@ export async function planWeek(weekStart: Date, exclude: string[] = []): Promise
   ].filter((b) => !urgent.some((u) => u.presetId === b.presetId)) as Cand[];
   const r0 = Math.floor(+weekStart / (7 * DAY)) % brand.length;
   const presets: Cand[] = [brand[r0], brand[(r0 + 1) % brand.length]].filter(Boolean);
-  const stories: Cand[] = [...urgent];
-  let pi = 0;
-  while (stories.length < storySlots.length) {
-    // Una de cada 3 historias es de la marca (local / envios), maximo 2.
-    if (stories.length % 3 === 2 && pi < presets.length) { stories.push(presets[pi++]); continue; }
+  // Miercoles y sabado: historia de marca (asi al descartarla y "Completar"
+  // se vuelve a armar ese mismo dia). El resto: urgentes y productos.
+  const BRAND_DAYS = [2, 5];
+  const brandQ: Cand[] = [...urgent.filter((u) => u.presetId), ...presets];
+  const productQ: Cand[] = urgent.filter((u) => !u.presetId);
+  const nextProduct = (): Cand | undefined => {
+    const q = productQ.shift();
+    if (q) return q;
     const id = pool()[0];
-    if (!id) { if (pi < presets.length) { stories.push(presets[pi++]); continue; } break; }
-    stories.push({ format: "story", kind: "producto", title: names.get(id) || "Producto", description: "Historia con el producto, foto real y precio.", productIds: [id], tag: null });
+    if (!id) return undefined;
     mark([id]);
-  }
+    return { format: "story", kind: "producto", title: names.get(id) || "Producto", description: "Historia con el producto, foto real y precio.", productIds: [id], tag: null };
+  };
+  const stories: (Cand | undefined)[] = storySlots.map((sl) =>
+    BRAND_DAYS.includes(sl.d) && brandQ.length ? brandQ.shift() : nextProduct() || brandQ.shift()
+  );
 
   const out: PlanSlot[] = [];
   postSlots.forEach((s, i) => { if (posts[i]) out.push({ ...posts[i], key: `post-${s.d}`, when: s.at.toISOString() }); });
