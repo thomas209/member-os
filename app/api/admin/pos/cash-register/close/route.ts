@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
+import { breakdown } from "@/lib/payment-split";
 
 // Cierra la sesion de caja abierta: compara el efectivo contado a mano
 // contra lo esperado (apertura + ventas en efectivo de la sesion).
@@ -24,15 +25,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No se encontro una caja abierta con ese id" }, { status: 400 });
     }
 
-    const byMethod = await prisma.order.groupBy({
-      by: ["paymentMethod"],
+    // Solo la parte en efectivo de cada venta (incluye la parte en efectivo
+    // de los pagos divididos).
+    const orders = await prisma.order.findMany({
       where: { cashRegisterSessionId: session.id, status: { not: "CANCELLED" } },
-      _sum: { total: true },
+      select: { paymentMethod: true, paymentSplit: true, total: true },
     });
 
     let cashSales = 0;
-    for (const g of byMethod) {
-      if ((g.paymentMethod || "EFECTIVO") === "EFECTIVO") cashSales += Number(g._sum.total ?? 0);
+    for (const o of orders) {
+      cashSales += breakdown(o.paymentMethod, o.paymentSplit, Number(o.total)).EFECTIVO;
     }
 
     const expectedCash = Number(session.openingAmount) + cashSales;

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { COUNTED_ORDER_STATUSES } from "@/lib/customerCrm";
 import { buildWhatsappLink } from "@/lib/whatsapp";
 import CustomerCrmPanel from "./CustomerCrmPanel";
+import { paymentLabel } from "@/lib/payment-split";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ const PAYMENT_LABELS: Record<string, string> = {
   TRANSFERENCIA: "Transferencia",
   EFECTIVO: "Efectivo",
   TARJETA: "Tarjeta",
+  MIXTO: "Pago dividido",
 };
 
 export default async function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -168,7 +170,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                   </td>
                   <td style={{ padding: "14px 20px", fontSize: "12px", color: "#737373" }}>{order.channel === "POS" ? "Local" : "Online"}</td>
                   <td style={{ padding: "14px 20px", fontSize: "12px", color: "#737373" }}>
-                    {order.paymentMethod ? PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod : "-"}
+                    {paymentLabel(order.paymentMethod, order.paymentSplit)}
                   </td>
                   <td style={{ padding: "14px 20px", fontSize: "12px" }}>{STATUS_LABELS[order.status] || order.status}</td>
                   <td style={{ padding: "14px 20px", fontSize: "13px", fontWeight: 700 }}>${Number(order.total).toLocaleString("es-AR")}</td>

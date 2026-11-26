@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { breakdown } from "@/lib/payment-split";
 
 // Devuelve la sesion de caja abierta (si hay una) junto con los totales
 // vendidos en esa sesion, desglosados por metodo de pago.
@@ -15,20 +16,20 @@ export async function GET() {
       return NextResponse.json({ session: null });
     }
 
-    const byMethod = await prisma.order.groupBy({
-      by: ["paymentMethod"],
+    // Una venta con pago dividido suma cada parte en su medio.
+    const orders = await prisma.order.findMany({
       where: { cashRegisterSessionId: session.id, status: { not: "CANCELLED" } },
-      _sum: { total: true },
-      _count: true,
+      select: { paymentMethod: true, paymentSplit: true, total: true },
     });
 
     const totals: Record<string, number> = { EFECTIVO: 0, TARJETA: 0, TRANSFERENCIA: 0 };
-    let orderCount = 0;
-    for (const g of byMethod) {
-      const method = g.paymentMethod || "EFECTIVO";
-      if (method in totals) totals[method] += Number(g._sum.total ?? 0);
-      orderCount += g._count;
+    for (const o of orders) {
+      const b = breakdown(o.paymentMethod, o.paymentSplit, Number(o.total));
+      totals.EFECTIVO += b.EFECTIVO;
+      totals.TARJETA += b.TARJETA;
+      totals.TRANSFERENCIA += b.TRANSFERENCIA;
     }
+    const orderCount = orders.length;
 
     const expectedCash = Number(session.openingAmount) + totals.EFECTIVO;
 

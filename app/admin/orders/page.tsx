@@ -19,6 +19,7 @@ const PAYMENT_LABELS: Record<string, string> = {
   TRANSFERENCIA: "Transferencia",
   EFECTIVO: "Efectivo",
   TARJETA: "Tarjeta",
+  MIXTO: "Pago dividido",
 };
 
 export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ channel?: string }> }) {
