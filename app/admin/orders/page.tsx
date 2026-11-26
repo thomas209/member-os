@@ -45,7 +45,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
         <p style={{fontSize:"13px",color:"#737373"}}>{orders.length} pedidos {activeChannel ? "(" + CHANNEL_LABELS[activeChannel].toLowerCase() + ")" : "en total"}</p>
       </div>
 
-      <div style={{display:"flex",gap:"8px",marginBottom:"20px"}}>
+      <div className="adm-filters" style={{display:"flex",gap:"8px",marginBottom:"20px"}}>
         {filters.map((f) => (
           <a
             key={f.label}
@@ -62,14 +62,14 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
         ))}
       </div>
 
-      <div style={{backgroundColor:"white",border:"1px solid #E8E8E8"}}>
+      <div className="adm-card" style={{backgroundColor:"white",border:"1px solid #E8E8E8"}}>
         {orders.map((order) => (
-          <div key={order.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:"1px solid #F4F4F4"}}>
-            <div style={{display:"flex",alignItems:"center",gap:"24px",flex:1}}>
-              <p style={{fontSize:"13px",fontWeight:"700",fontFamily:"monospace",width:"60px",flexShrink:0}}>
+          <div key={order.id} className="ord-row" style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:"1px solid #F4F4F4"}}>
+            <div className="ord-info" style={{display:"flex",alignItems:"center",gap:"24px",flex:1}}>
+              <p className="ord-num" style={{fontSize:"13px",fontWeight:"700",fontFamily:"monospace",width:"60px",flexShrink:0}}>
                 #{String(order.orderNumber).padStart(4,"0")}
               </p>
-              <div style={{flex:1}}>
+              <div className="ord-who" style={{flex:1}}>
                 <p style={{fontSize:"13px",fontWeight:"500"}}>
                   {order.guestFirstName ? order.guestFirstName + " " + order.guestLastName : "Venta en local"}
                 </p>
@@ -86,7 +86,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
               <span style={{fontSize:"11px",color:"#737373",flexShrink:0,whiteSpace:"nowrap"}}>
                 {order.paymentMethod ? PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod : "—"}
               </span>
-              <p style={{fontSize:"13px",fontWeight:"700",width:"100px",flexShrink:0}}>
+              <p className="ord-total" style={{fontSize:"13px",fontWeight:"700",width:"100px",flexShrink:0}}>
                 ${Number(order.total).toLocaleString("es-AR")}
               </p>
               <span style={{
@@ -121,11 +121,12 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                   Por encargo
                 </span>
               )}
-              <p style={{fontSize:"12px",color:"#737373",flexShrink:0}}>
+              <p className="ord-date" style={{fontSize:"12px",color:"#737373",flexShrink:0}}>
                 {new Date(order.createdAt).toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })}
               </p>
             </div>
             <a
+              className="ord-btn"
               href={order.channel === "POS" ? "/admin/pos/receipt/" + order.id : "/admin/orders/" + order.id}
               style={{
                 fontSize:"12px",fontWeight:"600",letterSpacing:"0.06em",
