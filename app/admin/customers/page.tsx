@@ -29,12 +29,12 @@ export default async function CustomersPage() {
 
   return (
     <div style={{ padding: "48px" }}>
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
+      <div className="adm-head" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
         <div>
           <h1 style={{ fontSize: "24px", fontWeight: "700", letterSpacing: "-0.02em", marginBottom: "4px" }}>Clientes</h1>
           <p style={{ fontSize: "13px", color: "#737373" }}>{rows.length} clientes en total</p>
         </div>
-        <div style={{ display: "flex", gap: "12px" }}>
+        <div className="adm-head-actions" style={{ display: "flex", gap: "12px" }}>
           <Link
             href="/admin/campaigns"
             style={{ padding: "10px 18px", fontSize: "12px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", border: "1px solid #0A0A0A", backgroundColor: "#0A0A0A", color: "white", textDecoration: "none", display: "inline-flex", alignItems: "center" }}
@@ -50,8 +50,8 @@ export default async function CustomersPage() {
           <BackfillButton />
         </div>
       </div>
-      <div style={{ backgroundColor: "white", border: "1px solid #E8E8E8" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <div className="adm-card" style={{ backgroundColor: "white", border: "1px solid #E8E8E8" }}>
+        <table className="adm-cards" style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid #E8E8E8" }}>
               {["Cliente", "Email", "Telefono", "Tags", "Pedidos", "Total gastado"].map((h) => (
@@ -62,13 +62,13 @@ export default async function CustomersPage() {
           <tbody>
             {rows.map((c) => (
               <tr key={c.id} style={{ borderBottom: "1px solid #F4F4F4" }}>
-                <td style={{ padding: "16px", fontSize: "13px", fontWeight: "500" }}>
+                <td className="c-main" style={{ padding: "16px", fontSize: "13px", fontWeight: "500" }}>
                   <Link href={"/admin/customers/" + c.id} style={{ color: "#0A0A0A", textDecoration: "none" }}>
                     {c.name}
                   </Link>
                 </td>
-                <td style={{ padding: "16px", fontSize: "13px", color: "#737373" }}>{c.email}</td>
-                <td style={{ padding: "16px", fontSize: "13px", color: "#737373" }}>{c.phone || "-"}</td>
+                <td className="c-main" style={{ padding: "16px", fontSize: "13px", color: "#737373", wordBreak: "break-all" }}>{c.email}</td>
+                <td data-l="Teléfono" style={{ padding: "16px", fontSize: "13px", color: "#737373" }}>{c.phone || "-"}</td>
                 <td style={{ padding: "16px" }}>
                   {c.tags.length === 0 ? (
                     <span style={{ fontSize: "12px", color: "#D1D1D1" }}>-</span>
@@ -82,8 +82,8 @@ export default async function CustomersPage() {
                     </div>
                   )}
                 </td>
-                <td style={{ padding: "16px", fontSize: "13px", fontWeight: "600" }}>{c.orderCount}</td>
-                <td style={{ padding: "16px", fontSize: "13px", fontWeight: "700" }}>${c.totalSpent.toLocaleString("es-AR")}</td>
+                <td data-l="Pedidos" style={{ padding: "16px", fontSize: "13px", fontWeight: "600" }}>{c.orderCount}</td>
+                <td data-l="Total" style={{ padding: "16px", fontSize: "13px", fontWeight: "700" }}>${c.totalSpent.toLocaleString("es-AR")}</td>
               </tr>
             ))}
             {rows.length === 0 && (
