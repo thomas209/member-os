@@ -102,7 +102,9 @@ export default function PosPage() {
 
   // --- Cobro ---
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | "MIXTO" | null>(null);
+  // Pago dividido: monto que se paga con cada medio (texto del input)
+  const [splitInputs, setSplitInputs] = useState<Record<PaymentMethod, string>>({ EFECTIVO: "", TARJETA: "", TRANSFERENCIA: "" });
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const [lastSale, setLastSale] = useState<{ orderId: string; orderNumber: number; total: number; customerName: string; customerPhone: string } | null>(null);
@@ -124,7 +126,7 @@ export default function PosPage() {
   // --- Historial de ventas del turno ---
   const [showSalesModal, setShowSalesModal] = useState(false);
   const [salesList, setSalesList] = useState<
-    { id: string; orderNumber: number; createdAt: string; paymentMethod: string | null; total: number; itemCount: number; status: string }[] | null
+    { id: string; orderNumber: number; createdAt: string; paymentMethod: string | null; paymentLabel?: string; total: number; itemCount: number; status: string }[] | null
   >(null);
   const [loadingSales, setLoadingSales] = useState(false);
 
@@ -137,6 +139,23 @@ export default function PosPage() {
   const discountAmount = Math.min(total, (appliedCoupon?.discountAmount || 0) + manualDiscount);
   const totalToCharge = total - discountAmount;
   const discountPercent = total > 0 ? Math.round((discountAmount / total) * 100) : 0;
+
+  // Pago dividido: cuanto se cargo, cuanto falta y si esta listo para cobrar
+  const splitAmounts = (Object.keys(PAYMENT_LABELS) as PaymentMethod[]).reduce(
+    (acc, m) => ({ ...acc, [m]: Math.max(0, Number(splitInputs[m]) || 0) }),
+    {} as Record<PaymentMethod, number>
+  );
+  const splitSum = splitAmounts.EFECTIVO + splitAmounts.TARJETA + splitAmounts.TRANSFERENCIA;
+  const splitRemaining = totalToCharge - splitSum;
+  const splitUsed = (Object.keys(splitAmounts) as PaymentMethod[]).filter((m) => splitAmounts[m] > 0).length;
+  const splitReady = Math.abs(splitRemaining) <= 1 && splitUsed >= 2;
+  const canConfirm = !!selectedMethod && (selectedMethod !== "MIXTO" || splitReady);
+  // Completa un medio con lo que falta para llegar al total
+  const fillSplitRest = (m: PaymentMethod) => {
+    const others = splitSum - splitAmounts[m];
+    const rest = Math.max(0, Math.round(totalToCharge - others));
+    setSplitInputs((prev) => ({ ...prev, [m]: rest ? String(rest) : "" }));
+  };
 
   const fetchCashSession = async () => {
     try {
@@ -436,6 +455,7 @@ export default function PosPage() {
       return;
     }
     setSelectedMethod(null);
+    setSplitInputs({ EFECTIVO: "", TARJETA: "", TRANSFERENCIA: "" });
     setCheckoutError("");
     setCouponCodeInput("");
     setCouponError("");
@@ -479,7 +499,7 @@ export default function PosPage() {
   };
 
   const confirmCheckout = async () => {
-    if (!selectedMethod || cart.length === 0) return;
+    if (!canConfirm || !selectedMethod || cart.length === 0) return;
     setCheckingOut(true);
     setCheckoutError("");
     try {
@@ -489,6 +509,7 @@ export default function PosPage() {
         body: JSON.stringify({
           items: cart.map((c) => ({ variantId: c.variantId, qty: c.qty })),
           paymentMethod: selectedMethod,
+          paymentSplit: selectedMethod === "MIXTO" ? splitAmounts : undefined,
           couponCode: appliedCoupon?.code,
           manualDiscount,
           customerName: customerName.trim(),
@@ -896,7 +917,69 @@ export default function PosPage() {
                   {PAYMENT_LABELS[method]}
                 </button>
               ))}
+              <button
+                onClick={() => setSelectedMethod("MIXTO")}
+                style={{
+                  padding: "14px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  borderRadius: "8px",
+                  border: selectedMethod === "MIXTO" ? "2px solid #0A0A0A" : "1px dashed #D1D1D1",
+                  backgroundColor: selectedMethod === "MIXTO" ? "#0A0A0A" : "white",
+                  color: selectedMethod === "MIXTO" ? "white" : "#0A0A0A",
+                  textAlign: "left",
+                  cursor: "pointer",
+                }}
+              >
+                Dividir pago <span style={{ fontWeight: 400, opacity: 0.7 }}>· efectivo, tarjeta y/o transferencia</span>
+              </button>
             </div>
+
+            {selectedMethod === "MIXTO" && (
+              <div style={{ border: "1px solid #E8E8E8", borderRadius: "10px", padding: "12px", marginBottom: "16px" }}>
+                <p style={{ fontSize: "12px", color: "#737373", marginBottom: "10px" }}>
+                  Carga cuanto paga con cada medio. &quot;Resto&quot; completa lo que falta.
+                </p>
+                {(Object.keys(PAYMENT_LABELS) as PaymentMethod[]).map((m) => (
+                  <div key={m} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                    <span style={{ width: "96px", fontSize: "13px", fontWeight: "600", flexShrink: 0 }}>{PAYMENT_LABELS[m]}</span>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      value={splitInputs[m]}
+                      onChange={(e) => setSplitInputs((prev) => ({ ...prev, [m]: e.target.value }))}
+                      placeholder="$0"
+                      style={{ flex: 1, minWidth: 0, padding: "10px 12px", fontSize: "14px", border: "1px solid #E8E8E8", borderRadius: "8px", boxSizing: "border-box" }}
+                    />
+                    <button
+                      onClick={() => fillSplitRest(m)}
+                      style={{ padding: "10px 10px", fontSize: "11px", fontWeight: "700", backgroundColor: "white", border: "1px solid #E8E8E8", borderRadius: "8px", cursor: "pointer", flexShrink: 0 }}
+                    >
+                      Resto
+                    </button>
+                  </div>
+                ))}
+                <div
+                  style={{
+                    marginTop: "4px",
+                    padding: "8px 10px",
+                    borderRadius: "8px",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    backgroundColor: splitReady ? "#DCFCE7" : "#FEF3C7",
+                    color: splitReady ? "#16A34A" : "#92400E",
+                  }}
+                >
+                  {splitReady
+                    ? "Suma justo $" + Math.round(totalToCharge).toLocaleString("es-AR")
+                    : splitRemaining > 1
+                    ? "Faltan $" + Math.round(splitRemaining).toLocaleString("es-AR")
+                    : splitRemaining < -1
+                    ? "Te pasaste por $" + Math.round(-splitRemaining).toLocaleString("es-AR")
+                    : "Carga al menos dos medios"}
+                </div>
+              </div>
+            )}
 
             <div style={{ marginBottom: "12px" }}>
               <label style={{ fontSize: "11px", color: "#A3A3A3", textTransform: "uppercase", letterSpacing: "0.06em" }}>Cupon (opcional)</label>
@@ -1046,17 +1129,17 @@ export default function PosPage() {
               </button>
               <button
                 onClick={confirmCheckout}
-                disabled={!selectedMethod || checkingOut}
+                disabled={!canConfirm || checkingOut}
                 style={{
                   flex: 2,
                   padding: "12px",
                   fontSize: "13px",
                   fontWeight: "700",
-                  backgroundColor: !selectedMethod || checkingOut ? "#E8E8E8" : "#0A0A0A",
-                  color: !selectedMethod || checkingOut ? "#A3A3A3" : "white",
+                  backgroundColor: !canConfirm || checkingOut ? "#E8E8E8" : "#0A0A0A",
+                  color: !canConfirm || checkingOut ? "#A3A3A3" : "white",
                   border: "none",
                   borderRadius: "8px",
-                  cursor: !selectedMethod || checkingOut ? "not-allowed" : "pointer",
+                  cursor: !canConfirm || checkingOut ? "not-allowed" : "pointer",
                 }}
               >
                 {checkingOut ? "Procesando..." : "Confirmar cobro"}
@@ -1228,7 +1311,7 @@ export default function PosPage() {
                           {voided && <span style={{ marginLeft: "8px", fontSize: "10px", fontWeight: "700", color: "#DC2626", textDecoration: "none" }}>ANULADA</span>}
                         </p>
                         <p style={{ fontSize: "11px", color: "#737373" }}>
-                          {new Date(s.createdAt).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Argentina/Buenos_Aires" })} · {PAYMENT_LABELS[(s.paymentMethod as PaymentMethod) || "EFECTIVO"] || s.paymentMethod}
+                          {new Date(s.createdAt).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Argentina/Buenos_Aires" })} · {s.paymentLabel || PAYMENT_LABELS[(s.paymentMethod as PaymentMethod) || "EFECTIVO"] || s.paymentMethod}
                         </p>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>

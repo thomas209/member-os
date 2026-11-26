@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import { breakdown, paymentLabel } from "@/lib/payment-split";
 
 const PAYMENT_LABELS: Record<string, string> = {
   EFECTIVO: "Efectivo",
@@ -30,9 +31,11 @@ export default async function CashHistoryDetailPage({ params }: { params: Promis
   let validOrderCount = 0;
   for (const o of session.orders) {
     if (o.status === "CANCELLED") continue; // no cuenta para los totales de caja
-    const method = o.paymentMethod || "EFECTIVO";
     const amount = Number(o.total);
-    if (method in totals) totals[method] += amount;
+    const b = breakdown(o.paymentMethod, o.paymentSplit, amount);
+    totals.EFECTIVO += b.EFECTIVO;
+    totals.TARJETA += b.TARJETA;
+    totals.TRANSFERENCIA += b.TRANSFERENCIA;
     totalSales += amount;
     validOrderCount += 1;
   }
@@ -122,7 +125,7 @@ export default async function CashHistoryDetailPage({ params }: { params: Promis
                   {voided && <span style={{ marginLeft: "8px", fontSize: "10px", fontWeight: "700", color: "#DC2626", textDecoration: "none" }}>ANULADA</span>}
                 </p>
                 <p style={{ fontSize: "11px", color: "#737373" }}>
-                  {new Date(o.createdAt).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Argentina/Buenos_Aires" })} · {PAYMENT_LABELS[o.paymentMethod || "EFECTIVO"] || o.paymentMethod}
+                  {new Date(o.createdAt).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Argentina/Buenos_Aires" })} · {paymentLabel(o.paymentMethod || "EFECTIVO", o.paymentSplit)}
                 </p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
+import { breakdown } from "@/lib/payment-split";
 
 export default async function CashHistoryPage() {
   const sessions = await prisma.cashRegisterSession.findMany({
@@ -7,7 +8,7 @@ export default async function CashHistoryPage() {
     take: 60,
     include: {
       openedBy: { select: { firstName: true, lastName: true } },
-      orders: { select: { paymentMethod: true, total: true, status: true } },
+      orders: { select: { paymentMethod: true, paymentSplit: true, total: true, status: true } },
     },
   });
 
@@ -16,8 +17,7 @@ export default async function CashHistoryPage() {
     // formando parte del historial general de pedidos
     const validOrders = s.orders.filter((o) => o.status !== "CANCELLED");
     const cashSales = validOrders
-      .filter((o) => (o.paymentMethod || "EFECTIVO") === "EFECTIVO")
-      .reduce((sum, o) => sum + Number(o.total), 0);
+      .reduce((sum, o) => sum + breakdown(o.paymentMethod, o.paymentSplit, Number(o.total)).EFECTIVO, 0);
     const totalSales = validOrders.reduce((sum, o) => sum + Number(o.total), 0);
     const expectedCash = Number(s.openingAmount) + cashSales;
     const counted = s.closingAmountCounted !== null ? Number(s.closingAmountCounted) : null;

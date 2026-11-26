@@ -64,6 +64,7 @@ export default async function PublicReceiptPage({ params }: { params: Promise<{ 
     orderNumber: order.orderNumber,
     createdAt: order.createdAt,
     paymentMethod: order.paymentMethod,
+    paymentSplit: order.paymentSplit,
     subtotal: Number(order.subtotal),
     discountAmount: Number(order.discountAmount),
     shippingCost: Number(order.shippingCost),

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { paymentLabel } from "@/lib/payment-split";
 
 // Historial de ventas de la sesion de caja abierta (o de una sesion
 // puntual si se pasa sessionId), para el panel "Ventas de hoy" del POS.
@@ -30,6 +31,7 @@ export async function GET(request: Request) {
         orderNumber: o.orderNumber,
         createdAt: o.createdAt,
         paymentMethod: o.paymentMethod,
+        paymentLabel: paymentLabel(o.paymentMethod || "EFECTIVO", o.paymentSplit),
         total: Number(o.total),
         discountAmount: Number(o.discountAmount),
         itemCount: o.items.reduce((sum, i) => sum + i.quantity, 0),

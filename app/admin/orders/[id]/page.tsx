@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import OrderActions from "./OrderActions";
 import ShareReceipt from "./ShareReceipt";
 import ShareTracking from "./ShareTracking";
+import { paymentLabel } from "@/lib/payment-split";
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: "Pendiente",
@@ -25,12 +26,6 @@ const STATUS_COLORS: Record<string, string> = {
   REFUNDED: "#737373",
 };
 
-const PAYMENT_LABELS: Record<string, string> = {
-  MERCADOPAGO: "Mercado Pago",
-  TRANSFERENCIA: "Transferencia",
-  EFECTIVO: "Efectivo",
-  TARJETA: "Tarjeta",
-};
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -75,7 +70,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               fontSize:"11px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",
               color:"#525252", backgroundColor:"#F4F4F4", padding:"4px 10px", marginLeft:"8px",
             }}>
-              {PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod}
+              {paymentLabel(order.paymentMethod, order.paymentSplit)}
             </span>
           )}
           {order.paymentMethod === "TRANSFERENCIA" && order.status === "PENDING" && (

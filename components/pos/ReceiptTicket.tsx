@@ -1,13 +1,11 @@
-const PAYMENT_LABELS: Record<string, string> = {
-  EFECTIVO: "Efectivo",
-  TARJETA: "Tarjeta",
-  TRANSFERENCIA: "Transferencia",
-};
+import { paymentLabel } from "@/lib/payment-split";
 
 export type ReceiptOrderData = {
   orderNumber: number;
   createdAt: Date | string;
   paymentMethod: string | null;
+  // Pago dividido (paymentMethod = "MIXTO"): monto por medio
+  paymentSplit?: unknown;
   subtotal: number;
   discountAmount: number;
   shippingCost?: number;
@@ -66,7 +64,7 @@ export default function ReceiptTicket({ order }: { order: ReceiptOrderData }) {
       <div style={{ borderTop: "1px dashed #A3A3A3", borderBottom: "1px dashed #A3A3A3", padding: "8px 0", marginBottom: "12px" }}>
         <p>Venta #{order.orderNumber}</p>
         <p>{dateStr}</p>
-        <p>Pago: {PAYMENT_LABELS[order.paymentMethod || ""] || order.paymentMethod || "-"}</p>
+        <p>Pago: {paymentLabel(order.paymentMethod, order.paymentSplit)}</p>
         {order.guestFirstName && (
           <p>Cliente: {order.guestFirstName} {order.guestLastName}</p>
         )}

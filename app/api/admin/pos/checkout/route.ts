@@ -4,8 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { refrescarTienda } from "@/lib/storeCache";
 import { upsertCustomerByEmail } from "@/lib/customerCrm";
 import { sendOrderConfirmationEmail } from "@/lib/email";
+import { POS_METHODS, readSplit, type PaymentSplit } from "@/lib/payment-split";
 
-const PAYMENT_METHODS = ["EFECTIVO", "TARJETA", "TRANSFERENCIA"];
+// MIXTO = pago dividido (parte efectivo, parte tarjeta y/o transferencia)
+const PAYMENT_METHODS = ["EFECTIVO", "TARJETA", "TRANSFERENCIA", "MIXTO"];
 
 class StockError extends Error {
   detail: { productName: string; size: string; available: number };
@@ -45,6 +47,12 @@ export async function POST(request: NextRequest) {
     }
     if (!PAYMENT_METHODS.includes(paymentMethod)) {
       return NextResponse.json({ error: "Metodo de pago invalido" }, { status: 400 });
+    }
+    // Pago dividido: tiene que haber al menos dos medios con monto. Que la
+    // suma de exacto el total se revisa abajo, cuando ya se calculo el total.
+    const splitInput: PaymentSplit = paymentMethod === "MIXTO" ? readSplit(body.paymentSplit) : {};
+    if (paymentMethod === "MIXTO" && Object.keys(splitInput).length < 2) {
+      return NextResponse.json({ error: "Para dividir el pago carga el monto de al menos dos medios" }, { status: 400 });
     }
 
     const cashSession = await prisma.cashRegisterSession.findFirst({ where: { status: "OPEN" } });
@@ -142,6 +150,22 @@ export async function POST(request: NextRequest) {
       const discountAmount = Math.min(subtotal, couponDiscount + manualDiscountInput);
       const total = subtotal - discountAmount;
 
+      // Pago dividido: la suma tiene que dar el total (se tolera $1 por
+      // redondeo y esa diferencia se ajusta en el medio de mayor monto).
+      let paymentSplit: PaymentSplit | undefined;
+      if (paymentMethod === "MIXTO") {
+        const sum = POS_METHODS.reduce((acc, m) => acc + (splitInput[m] || 0), 0);
+        if (Math.abs(sum - total) > 1) {
+          throw new CheckoutError(
+            "Los montos del pago dividido suman $" + Math.round(sum).toLocaleString("es-AR") +
+            " y el total es $" + Math.round(total).toLocaleString("es-AR") + ". Revisalos."
+          );
+        }
+        paymentSplit = { ...splitInput };
+        const biggest = POS_METHODS.filter((m) => paymentSplit![m]).sort((a, b) => paymentSplit![b]! - paymentSplit![a]!)[0];
+        paymentSplit[biggest] = Math.round((paymentSplit[biggest]! + (total - sum)) * 100) / 100;
+      }
+
       const createdOrder = await tx.order.create({
         data: {
           status: "PAID",
@@ -151,6 +175,7 @@ export async function POST(request: NextRequest) {
           total,
           channel: "POS",
           paymentMethod,
+          paymentSplit,
           cashRegisterSessionId: cashSession.id,
           couponId: coupon?.id,
           couponCode: coupon?.code,
