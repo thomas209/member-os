@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 const LOGO = "https://res.cloudinary.com/dklvmlzds/image/upload/v1783912898/MEMBER_B_1_3_wyfasx.png";
 
 type Claimed = { code: string; email: string; validUntil: string | null };
-type Props = { token: string; percent: number; minAmount: number | null; days: number; username: string | null; claimed: Claimed | null };
+type Props = { demo?: boolean; token: string; percent: number; minAmount: number | null; days: number; username: string | null; claimed: Claimed | null };
 
 const fecha = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString("es-AR", { day: "numeric", month: "long", timeZone: "America/Argentina/Buenos_Aires" }) : "";
 
 // Sobre cerrado -> la persona carga sus datos -> el sobre se abre, sale la
 // gift card con su codigo. Si ya la habia pedido, la ve abierta directamente.
-export default function GiftExperience({ token, percent, minAmount, days, username, claimed }: Props) {
+export default function GiftExperience({ demo, token, percent, minAmount, days, username, claimed }: Props) {
   const [phase, setPhase] = useState<"closed" | "opening" | "rising" | "open">(claimed ? "open" : "closed");
   const [data, setData] = useState<Claimed | null>(claimed);
   const [f, setF] = useState({ firstName: "", lastName: "", email: "", phone: "" });
@@ -28,6 +28,13 @@ export default function GiftExperience({ token, percent, minAmount, days, userna
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true); setError("");
+    if (demo) {
+      // Demo: no guarda nada ni manda mails, solo muestra la experiencia
+      setData({ code: "GIFT-DEMO30", email: f.email || "tu@mail.com", validUntil: new Date(Date.now() + days * 864e5).toISOString() });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setTimeout(() => setPhase("opening"), 350);
+      return;
+    }
     try {
       const res = await fetch("/api/gift/claim", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, ...f }) });
       const d = await res.json();
@@ -79,6 +86,7 @@ export default function GiftExperience({ token, percent, minAmount, days, userna
           <button type="button" className="gx-copy" onClick={copy}>{copied ? "¡Copiado!" : "Copiar código " + data.code}</button>
           <p className="gx-note">Te lo mandamos también a <b>{data.email}</b>. Usalo en el checkout, en &quot;Cupón&quot;, eligiendo pagar por transferencia{minAmount ? ", en compras desde $" + minAmount.toLocaleString("es-AR") : ""}. Un solo uso, con este mismo email.</p>
           <a href="/catalog" className="cart-cta" style={{ marginTop: 18 }}>Ir a la tienda</a>
+          {demo && <p className="gx-note">Esto es una demo: el código no es real y no se guardó nada.</p>}
         </div>
       ) : phase === "closed" ? (
         <form onSubmit={submit} style={{ marginTop: 26 }}>
