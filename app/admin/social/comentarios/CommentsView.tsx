@@ -33,6 +33,14 @@ export default function CommentsView() {
   const [error, setError] = useState("");
   const [conn, setConn] = useState("");
 
+  const [igMsg, setIgMsg] = useState("");
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("ig") === "ok") setIgMsg("✓ Instagram conectado con el permiso de comentarios");
+    else if (q.get("ig") === "error") setIgMsg("✗ " + (q.get("msg") || "No se pudo conectar"));
+    if (q.get("ig")) window.history.replaceState(null, "", "/admin/social/comentarios");
+  }, []);
+
   const load = useCallback(async () => {
     const r = await fetch("/api/admin/social/comments");
     const d = await r.json();
@@ -168,8 +176,12 @@ export default function CommentsView() {
 
       <div style={card}>
         <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "#737373" }}>Conexión con Instagram</div>
-        <p style={{ fontSize: 13, color: "#525252", margin: "6px 0 10px" }}>Para que lleguen los comentarios, la app de Meta tiene que tener el permiso de comentarios y el aviso de &quot;comments&quot; activado. Este botón revisa y activa la suscripción.</p>
-        <button style={btnGhost} onClick={checkConn}>Revisar conexión</button> <span style={{ fontSize: 13, marginLeft: 8 }}>{conn}</span>
+        <p style={{ fontSize: 13, color: "#525252", margin: "6px 0 10px" }}>Para responder comentarios, Instagram tiene que estar conectado con el permiso de comentarios. &quot;Conectar con Instagram&quot; te lleva a aceptar los permisos y guarda el acceso solo (sin copiar tokens).</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <a href="/api/admin/social/instagram/connect" style={{ ...btn, textDecoration: "none" }}>Conectar con Instagram</a>
+          <button style={btnGhost} onClick={checkConn}>Revisar conexión</button>
+          <span style={{ fontSize: 13 }}>{conn || igMsg}</span>
+        </div>
       </div>
 
       {recent.length > 0 && (
