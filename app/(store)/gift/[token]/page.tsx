@@ -7,6 +7,14 @@ export const metadata: Metadata = { title: "Tu gift card · Member Club", robots
 
 export default async function GiftPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
+  // Link de demo para mostrar como se ve (no toca la base)
+  if (token === "demo") {
+    return (
+      <div style={{ maxWidth: 520, margin: "0 auto", padding: "36px 24px 64px", overflow: "hidden" }}>
+        <GiftExperience demo token="demo" percent={30} minAmount={100000} days={30} username="member_ba" claimed={null} />
+      </div>
+    );
+  }
   const reply = await prisma.commentReply.findUnique({ where: { token }, include: { rule: true } });
   if (!reply || !reply.rule.giftPercent) {
     return (
