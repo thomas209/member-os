@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     if (input.phone && input.phone.replace(/\D/g, "").length < 8) return NextResponse.json({ error: "Ingresá un teléfono válido (con código de área)" }, { status: 400 });
     const r = await claimGift(input);
     if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status || 400 });
-    return NextResponse.json({ ok: true, email: r.email, alreadyClaimed: !!r.alreadyClaimed });
+    return NextResponse.json({ ok: true, email: r.email, code: r.code, validUntil: r.validUntil ? r.validUntil.toISOString() : null, alreadyClaimed: !!r.alreadyClaimed });
   } catch (e) {
     console.error("[gift] claim", e);
     return NextResponse.json({ error: "Algo salió mal, probá de nuevo en un rato." }, { status: 500 });

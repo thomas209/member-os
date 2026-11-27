@@ -15,7 +15,7 @@ function newCode() {
 
 export type ClaimInput = { token: string; firstName: string; lastName: string; email: string; phone?: string };
 export type ClaimResult =
-  | { ok: true; code: string; email: string; alreadyClaimed?: boolean }
+  | { ok: true; code: string; email: string; validUntil: Date | null; alreadyClaimed?: boolean }
   | { ok: false; error: string; status?: number };
 
 export async function claimGift(input: ClaimInput): Promise<ClaimResult> {
@@ -25,7 +25,8 @@ export async function claimGift(input: ClaimInput): Promise<ClaimResult> {
 
   // Ya la pidio: se reenvia el mismo codigo al mismo mail
   if (reply.claimedAt && reply.couponCode) {
-    return { ok: true, code: reply.couponCode, email: reply.email || email, alreadyClaimed: true };
+    const c = await prisma.coupon.findUnique({ where: { code: reply.couponCode }, select: { validUntil: true } });
+    return { ok: true, code: reply.couponCode, email: reply.email || email, validUntil: c?.validUntil ?? null, alreadyClaimed: true };
   }
   if (await hasPreviousPurchase(email)) {
     return { ok: false, error: "La gift card es para tu primera compra y este email ya tiene compras en Member Club." };
@@ -71,5 +72,5 @@ export async function claimGift(input: ClaimInput): Promise<ClaimResult> {
   } catch (e) {
     console.error("[gift] mail", e);
   }
-  return { ok: true, code, email };
+  return { ok: true, code, email, validUntil };
 }
