@@ -116,3 +116,37 @@ export async function getActiveToken() {
 export async function markReauth(accountId: string) {
   await prisma.socialAccount.update({ where: { id: accountId }, data: { status: "reauth_required" } });
 }
+
+// ---- Comentarios ----
+export type IgComment = { id: string; text?: string; from?: { id: string; username?: string }; media?: { id: string } };
+
+// Lee el comentario desde la API (asi no dependemos del cuerpo del aviso).
+export function getComment(token: string, commentId: string) {
+  return ig<IgComment>("/" + encodeURIComponent(commentId), token, { fields: "id,text,from,media" });
+}
+
+// Respuesta publica debajo del comentario.
+export function replyToComment(token: string, commentId: string, message: string) {
+  return ig<{ id: string }>("/" + encodeURIComponent(commentId) + "/replies", token, { message: message.slice(0, 2000) }, "POST");
+}
+
+// Mensaje privado a quien comento (Instagram deja uno por comentario, dentro de los 7 dias).
+export async function privateReplyToComment(token: string, commentId: string, text: string) {
+  const res = await fetch(GRAPH + "/me/messages", {
+    method: "POST",
+    headers: { authorization: "Bearer " + token, "content-type": "application/json" },
+    body: JSON.stringify({ recipient: { comment_id: commentId }, message: { text: text.slice(0, 1000) } }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.error) {
+    const e = data.error || {};
+    console.error("[instagram] private reply", res.status, e.code, e.message);
+    throw new InstagramError("Instagram no mandó el privado: " + (e.message || res.status), e.code === 190 ? 401 : 502, e.code === 190);
+  }
+  return (data.message_id as string) || null;
+}
+
+// Activa los avisos de mensajes y comentarios para la cuenta conectada.
+export function subscribeWebhooks(token: string) {
+  return ig<{ success?: boolean }>("/me/subscribed_apps", token, { subscribed_fields: "messages,comments" }, "POST");
+}

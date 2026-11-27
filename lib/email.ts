@@ -7,6 +7,7 @@ import ProcessingEmail from "@/emails/ProcessingEmail";
 import DeliveredEmail from "@/emails/DeliveredEmail";
 import LoginLinkEmail from "@/emails/LoginLinkEmail";
 import PromoEmail from "@/emails/PromoEmail";
+import GiftCardEmail from "@/emails/GiftCardEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -365,4 +366,29 @@ export async function sendPromoEmailBatch(recipients: PromoRecipient[], content:
   }
 
   return { sent, failed, total: recipients.length, errors };
+}
+
+type SendGiftCardEmailParams = {
+  to: string;
+  firstName: string;
+  code: string;
+  percent: number;
+  minAmount?: number | null;
+  validUntil: Date;
+};
+
+// Gift card por comentar en Instagram (sale cuando completa el formulario de /gift/<token>).
+export async function sendGiftCardEmail(params: SendGiftCardEmailParams) {
+  const { to, ...rest } = params;
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to,
+    subject: "Tu gift card de " + rest.percent + "% OFF 🎁",
+    react: GiftCardEmail(rest),
+  });
+  if (error) {
+    console.error("Error enviando email de gift card:", error);
+    throw new Error("Error al enviar email de gift card");
+  }
+  return data;
 }

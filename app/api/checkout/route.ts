@@ -6,6 +6,7 @@ import { calculateTransferDiscount, BANK_CBU, BANK_HOLDER } from "@/lib/bankDeta
 import { sendTransferInstructionsEmail, datosEntrega } from "@/lib/email";
 import { getCurrentCustomerId } from "@/lib/customerAuth";
 import { upsertCustomerByEmail } from "@/lib/customerCrm";
+import { checkCoupon } from "@/lib/coupons";
 
 export async function POST(request: Request) {
   try {
@@ -60,39 +61,17 @@ export async function POST(request: Request) {
       });
     }
 
-    // Validar cupon (no se combina con el descuento por transferencia)
+    // Cupon: los comunes no se combinan con transferencia; los "solo
+    // transferencia" (gift card) reemplazan el descuento por transferencia.
     let discountAmount = 0;
     let coupon = null;
 
-    if (couponCode && paymentMethod !== "TRANSFERENCIA") {
-      coupon = await prisma.coupon.findUnique({
-        where: { code: couponCode.toUpperCase() },
-      });
-
-      if (!coupon || !coupon.isActive) {
-        return NextResponse.json({ error: "Cupon invalido" }, { status: 400 });
-      }
-
-      if (coupon.validUntil && coupon.validUntil < new Date()) {
-        return NextResponse.json({ error: "Cupon expirado" }, { status: 400 });
-      }
-
-      if (coupon.maxUses && coupon.usedCount >= coupon.maxUses) {
-        return NextResponse.json({ error: "Cupon sin usos disponibles" }, { status: 400 });
-      }
-
-      if (coupon.minOrderAmount && subtotal < Number(coupon.minOrderAmount)) {
-        return NextResponse.json({ error: "Monto minimo no alcanzado" }, { status: 400 });
-      }
-
-      if (coupon.type === "PERCENTAGE") {
-        discountAmount = subtotal * (Number(coupon.value) / 100);
-      } else {
-        discountAmount = Number(coupon.value);
-      }
-    }
-
-    if (paymentMethod === "TRANSFERENCIA") {
+    if (couponCode) {
+      const r = await checkCoupon({ code: couponCode, subtotal, paymentMethod, email: shippingAddress?.email });
+      if (!r.ok) return NextResponse.json({ error: r.error }, { status: 400 });
+      coupon = r.coupon;
+      discountAmount = r.discountAmount;
+    } else if (paymentMethod === "TRANSFERENCIA") {
       discountAmount = calculateTransferDiscount(
         orderItems.map((i) => ({ price: i.unitPrice, quantity: i.quantity }))
       );
@@ -147,7 +126,7 @@ export async function POST(request: Request) {
         shippingCost,
         total,
         couponId: coupon?.id,
-        couponCode: paymentMethod === "TRANSFERENCIA" ? null : couponCode?.toUpperCase(),
+        couponCode: coupon ? coupon.code : null,
         // _meta: datos tecnicos para atribuir la compra en Meta (Conversions API).
         // Solo queda en el pedido, no en la ficha del cliente.
         shippingAddress: { ...shippingAddress, _meta: metaInfo },
