@@ -19,6 +19,7 @@ const groups: NavGroup[] = [
   ...(socialOn ? [{ title: "Marketing", links: [
     { href: "/admin/social", label: "Community manager", icon: "calendario" },
     { href: "/admin/social/inbox", label: "Mensajes", icon: "chat" },
+    { href: "/admin/social/comentarios", label: "Comentarios", icon: "regalo" },
     { href: "/admin/social/referencia", label: "Desde un ejemplo", icon: "brillo" },
     { href: "/admin/social/crear", label: "Crear a mano", icon: "lapiz" },
   ]}] : []),

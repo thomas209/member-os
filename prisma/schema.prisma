@@ -229,6 +229,13 @@ model Coupon {
   validFrom      DateTime?
   validUntil     DateTime?
   isActive       Boolean      @default(true)
+  // Cupones especiales (ej. gift card por comentar en Instagram):
+  // transferOnly = solo se puede usar pagando por transferencia (reemplaza el descuento comun por transferencia)
+  // firstPurchaseOnly = solo si ese email no tiene compras anteriores
+  transferOnly      Boolean   @default(false)
+  firstPurchaseOnly Boolean   @default(false)
+  source            String?   // ej. "ig-comment"
+  email             String?   // si tiene valor, solo lo puede usar ese email
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   orders         Order[]
@@ -550,4 +557,47 @@ model AppSetting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
+}
+
+// Respuestas automaticas a comentarios de Instagram ("Comenta GIFT y te mandamos...").
+// mediaIds vacio + allMedia = todas las publicaciones.
+model CommentRule {
+  id             String         @id @default(cuid())
+  active         Boolean        @default(true)
+  name           String
+  keyword        String         // palabra que tienen que comentar (ej. GIFT). Vacio = cualquier comentario
+  allMedia       Boolean        @default(false)
+  mediaIds       String[]
+  publicReply    String?        // respuesta en el comentario. {usuario}
+  privateMessage String         // DM. {usuario} {link} {porcentaje} {minimo}
+  link           String?
+  // Gift card: si giftPercent tiene valor, a cada persona se le genera un codigo unico
+  giftPercent    Int?
+  giftMinAmount  Int?
+  giftDays       Int?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  replies        CommentReply[]
+}
+
+model CommentReply {
+  id          String      @id @default(cuid())
+  ruleId      String
+  rule        CommentRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  igUserId    String
+  igUsername  String?
+  commentId   String      @unique
+  mediaId     String?
+  commentText String?
+  token       String      @unique // link personal para cargar sus datos y recibir la gift card
+  claimedAt   DateTime?
+  email       String?
+  customerId  String?
+  couponCode  String?
+  status      String      @default("sent") // sent | failed
+  error       String?
+  createdAt   DateTime    @default(now())
+
+  @@unique([ruleId, igUserId])
+  @@index([ruleId, createdAt])
 }

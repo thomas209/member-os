@@ -20,6 +20,7 @@ export default function CheckoutPage() {
   const [couponStatus, setCouponStatus] = useState<"idle" | "checking" | "valid" | "invalid">("idle");
   const [couponMessage, setCouponMessage] = useState("");
   const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponTransferOnly, setCouponTransferOnly] = useState(false);
   const [form, setForm] = useState({
     firstName: "", lastName: "", email: "", phone: "",
     street: "", number: "", floor: "", city: "", province: "", postalCode: "",
@@ -109,7 +110,7 @@ export default function CheckoutPage() {
       const res = await fetch("/api/checkout/coupon", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: couponCode, subtotal: totalPrice() }),
+        body: JSON.stringify({ code: couponCode, subtotal: totalPrice(), paymentMethod, email: form.email }),
       });
       const data = await res.json();
       if (!data.valid) {
@@ -120,6 +121,7 @@ export default function CheckoutPage() {
       }
       setCouponStatus("valid");
       setCouponDiscount(data.discountAmount);
+      setCouponTransferOnly(!!data.transferOnly);
       setCouponMessage("Cupon aplicado");
     } catch {
       setCouponStatus("invalid");
@@ -131,7 +133,23 @@ export default function CheckoutPage() {
   const shippingCost = calculateShippingCost(totalPrice());
   const missingForFreeShipping = FREE_SHIPPING_THRESHOLD - totalPrice();
   const transferDiscount = calculateTransferDiscount(items.map((i) => ({ price: i.price, quantity: i.quantity })));
-  const appliedDiscount = paymentMethod === "TRANSFERENCIA" ? transferDiscount : (couponStatus === "valid" ? couponDiscount : 0);
+  // Con un cupon valido se usa su descuento (la gift card "solo transferencia"
+  // reemplaza el descuento comun por transferencia); sin cupon, el de transferencia.
+  const couponApplied = couponStatus === "valid";
+  const appliedDiscount = couponApplied ? couponDiscount : (paymentMethod === "TRANSFERENCIA" ? transferDiscount : 0);
+
+  // Si cambia el medio de pago, el cupon aplicado se vuelve a validar a mano
+  // (un cupon comun no va con transferencia y la gift card es solo transferencia).
+  const prevPayment = useRef(paymentMethod);
+  useEffect(() => {
+    if (prevPayment.current === paymentMethod) return;
+    prevPayment.current = paymentMethod;
+    if (couponStatus !== "idle") {
+      setCouponStatus("idle");
+      setCouponDiscount(0);
+      setCouponMessage("");
+    }
+  }, [paymentMethod, couponStatus]);
   const finalTotal = totalPrice() - appliedDiscount + shippingCost;
 
   const handleSubmit = async () => {
@@ -161,7 +179,7 @@ export default function CheckoutPage() {
           items: items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
           shippingAddress: form,
           paymentMethod,
-          couponCode: paymentMethod === "MERCADOPAGO" && couponStatus === "valid" ? couponCode : null,
+          couponCode: couponStatus === "valid" ? couponCode : null,
           meta: metaCookies(),
         }),
       });
@@ -328,15 +346,16 @@ export default function CheckoutPage() {
         </div>
         <div style={{marginBottom:"16px",paddingBottom:"16px",borderBottom:"1px solid rgba(10,10,10,0.08)"}}>
           <label className="co-label">Cupon</label>
-          {paymentMethod === "TRANSFERENCIA" ? (
-            <p style={{fontSize:"12px",color:"#A3A3A3"}}>No se puede combinar con el descuento por transferencia</p>
-          ) : (
+          {paymentMethod === "TRANSFERENCIA" && (
+            <p style={{fontSize:"12px",color:"#A3A3A3",marginBottom:"8px"}}>Con transferencia solo valen las gift cards (no se suman al descuento por transferencia)</p>
+          )}
+          {(
             <>
               <div style={{display:"flex",gap:"8px"}}>
                 <input
                   value={couponCode}
                   onChange={(e) => handleCouponChange(e.target.value)}
-                  placeholder="WELCOME10"
+                  placeholder={paymentMethod === "TRANSFERENCIA" ? "GIFT-XXXXXX" : "WELCOME10"}
                   disabled={couponStatus === "valid"}
                   className="co-campo co-campo-blanco" style={{flex:1,minWidth:0,textTransform:"uppercase",opacity:couponStatus==="valid"?0.6:1}}
                 />
@@ -374,7 +393,7 @@ export default function CheckoutPage() {
         {appliedDiscount > 0 && (
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:"4px"}}>
             <p style={{fontSize:"14px",color:"#737373"}}>
-              Descuento{paymentMethod === "TRANSFERENCIA" ? " (transferencia)" : ""}
+              Descuento{couponApplied ? (couponTransferOnly ? " (gift card)" : " (cupón)") : paymentMethod === "TRANSFERENCIA" ? " (transferencia)" : ""}
             </p>
             <p style={{fontSize:"14px",color:"#737373"}}>-${appliedDiscount.toLocaleString("es-AR")}</p>
           </div>
