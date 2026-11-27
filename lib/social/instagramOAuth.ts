@@ -13,7 +13,9 @@ export const IG_SCOPES = [
 export function siteUrl() {
   return (process.env.NEXT_PUBLIC_URL || "https://www.memberclubargentina.com").replace(/\/$/, "");
 }
-export const redirectUri = () => siteUrl() + "/api/admin/social/instagram/callback";
+// Tiene que ser exactamente la cargada en Meta (Instagram business login).
+export const redirectUri = () =>
+  process.env.INSTAGRAM_REDIRECT_URI || "https://www.memberclubargentina.com/api/admin/social/instagram/callback";
 
 export function authorizeUrl(state: string) {
   const u = new URL("https://www.instagram.com/oauth/authorize");
